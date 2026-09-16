@@ -57,7 +57,9 @@ plausibly could:
 - Forgiving flow: a typo advances the cursor; backspace rewinds and lets you
   fix it; the original mistake still shows in accuracy.
 - Enter is required at a line break, and a stray Enter mid-line does not advance.
-- `Tab` restarts, `Esc` leaves, `Enter` advances only once finished.
+- `Alt+R` restarts, `Esc` leaves, `Enter` advances only once finished, and
+  `Tab` moves focus off the typing surface like anywhere else (#3 — it used
+  to be bound to restart and trap keyboard focus on `<body>`).
 - **Finishing a drill does not jump to the next passage.** This one already
   broke once; it gets a permanent test.
 - Progress survives a reload, and Statistics reflects it.
@@ -67,10 +69,17 @@ plausibly could:
 ### 1.3 Accessibility
 
 `@axe-core/playwright` on each route, failing on serious and critical
-violations. Two things to expect honestly:
+violations — but **not as the contrast gate**. Measured in #3: the page
+background is a layered gradient axe cannot resolve to a single colour, so it
+reports every element's contrast `incomplete` rather than pass or fail. On
+Home that was 60 elements silently unchecked, at the same time the untyped-code
+token sat at 1.96:1. An `incomplete` result is not a pass; CI should fail on it
+the same as a violation, once this Playwright harness exists.
 
-- It **will** fail on first run. §5.1 is not hypothetical.
-- Axe cannot see the real problem on the drill screen. See §5.2.
+Contrast itself is asserted separately, as a deterministic unit test over the
+token table (`src/lib/themes.test.ts`, one theme per row) — no browser, no
+gradient to trip over. axe still earns its place for what it *can* see:
+structure, roles, names, and reachability.
 
 Also worth asserting: keyboard-only reachability, visible focus, and that
 `prefers-reduced-motion` is respected (it already is).
@@ -216,15 +225,16 @@ you have not typed yet** — which is the text you must read in order to type it
 At 1.96:1 that is not an audit nag, it is the primary function of the product
 being hard to see. I chose that value for drama and did not check it.
 
-Proposed fix, which I think keeps the design intact: raise the dim tokens to
-clear 4.5:1 (roughly `#81786e` is the floor on this background), and win the
-drama back at the other end — make the typed-correct state brighter and let it
-carry a faint phosphor glow, so the passage still visibly lights up as you type
-it. Dim-to-lit stays dramatic; the dim end just stops being unreadable.
+**Resolved in #2, differently than the fix sketched above.** Rather than
+raising this one theme's dim tokens and spending its visual identity to do
+it, it ships as one of four themes — see `docs/decisions/0004-four-theme-system.md`.
+`dark` keeps its original values and is the one theme allowed to fail its
+own target deliberately; the other three clear AA or AAA on every token,
+syntax colours included. `src/lib/themes.test.ts` is the proof.
 
-The indent dots are a defensible exception: they are decorative, they mark
-whitespace you are explicitly not asked to type, and nothing is lost if they go
-unseen. Worth a documented suppression rather than a fix.
+The indent dots (`ghost-deep`) stay a defensible exception in every theme:
+decorative, marking whitespace you are explicitly not asked to type, nothing
+lost if they go unseen.
 
 ### 5.2 The drill screen is invisible to a screen reader
 
@@ -233,18 +243,23 @@ accessible name, no live region, and no focusable input — the key handler is o
 `window`. A screen reader user gets no announcement of what to type, whether
 they were right, or that the drill ended.
 
-Fully solving this for a _typing-speed trainer_ is a genuine design question,
-not a checkbox, and I would rather you decide the ambition than have me guess.
-The cheap floor is a visually-hidden live region announcing the passage, errors
-and the result. Say if you want it in scope.
+**Addressed in #3.** The key handler moved off `window` onto the typing
+surface itself, which is now focusable, has an accessible name exposing the
+passage as readable text, and sits next to a polite live region announcing
+misses and the final result. That also fixed the keyboard trap below — the
+surface needed to be a real focusable element either way.
+
+Going further than that floor (a richer reading experience for the passage
+itself, live per-character state) is still a genuine product question for a
+typing-*speed* trainer, not something either PR assumed an answer to.
 
 ### 5.3 The repository has no LICENSE
 
-It is public with no licence file, which under default copyright means all
-rights reserved — nobody may legally copy, fork or reuse it. That may be exactly
-what you want. If it is not, MIT or Apache-2.0 are the usual picks, and
-Apache-2.0 additionally grants patent rights. Your call; I will not pick one
-for you.
+**Resolved in #4.** It was public with no licence file, which under default
+copyright meant all rights reserved — nobody could legally copy, fork or
+reuse it. MIT now covers the code (`LICENSE`) and CC-BY-SA-4.0 covers lesson
+content (`src/content/LICENSE`) — see
+`docs/decisions/0003-licensing-split.md` for the reasoning behind the split.
 
 ---
 

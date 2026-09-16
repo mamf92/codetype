@@ -1,0 +1,49 @@
+name: New track proposal
+description: Propose a new track — a course or a dispatch — for an existing language.
+labels: [content, new-track]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        See `CONTRIBUTING.md` before you start writing: track content is
+        licensed CC-BY-SA-4.0, not MIT, and `src/content/content.test.ts`
+        enforces the shape (≥3 drills per lesson, ≤10 lines per drill, unique
+        ids, no duplicate passages in a lesson).
+  - type: dropdown
+    id: language
+    attributes:
+      label: Language
+      options:
+        - TypeScript
+        - React
+        - Tailwind CSS
+        - JavaScript
+        - Next.js
+        - Python
+        - Kotlin
+        - Java
+        - Something not listed yet
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind
+      options:
+        - course (evergreen material)
+        - dispatch (something recent, worth burning in while it's news)
+    validations:
+      required: true
+  - type: textarea
+    id: pitch
+    attributes:
+      label: What would this track teach, and why does it need several lessons rather than one?
+    validations:
+      required: true
+  - type: textarea
+    id: source
+    attributes:
+      label: Source material
+      description: For a dispatch, the article/RFC/changelog it's drawn from. For a course, what you're drawing on.
+    validations:
+      required: false
