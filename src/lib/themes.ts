@@ -20,28 +20,30 @@ export const THEMES: ThemeMeta[] = [
   {
     id: 'dark',
     label: 'Amber phosphor',
-    description: 'The original warm tube. Untyped code sits dim on purpose.',
+    description:
+      'The original warm tube. Amber phosphor lingers a beat after the beam passes — untyped code sits dim on purpose.',
     scheme: 'dark',
     highContrast: false,
   },
   {
     id: 'dark-contrast',
     label: 'Amber, high contrast',
-    description: 'Same tube, pushed until every token clears AAA.',
+    description: 'Same tube, driven harder — even the dimmest token cuts through clean.',
     scheme: 'dark',
     highContrast: true,
   },
   {
     id: 'light',
     label: 'Monochrome screen',
-    description: 'The cool screen that came after the tube. Not paper.',
+    description:
+      'The cool screen that came after — faster phosphor, sharper edges, no lingering glow. Not paper.',
     scheme: 'light',
     highContrast: false,
   },
   {
     id: 'light-contrast',
     label: 'Screen, high contrast',
-    description: 'Same screen, pushed until every token clears AAA.',
+    description: 'Same screen, pushed until every token stands out sharp against the white.',
     scheme: 'light',
     highContrast: true,
   },
