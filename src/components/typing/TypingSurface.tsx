@@ -2,8 +2,8 @@ import { forwardRef, type KeyboardEvent as ReactKeyboardEvent } from 'react'
 import { colourForScope } from '@/lib/scopes'
 import type { CompiledDrill, EntryState } from '@/engine/types'
 
-const GHOST = '#2b241b'
-const PENDING = '#4a4036'
+const GHOST = 'var(--color-ghost-deep)'
+const PENDING = 'var(--color-ghost)'
 
 function Caret() {
   return (
@@ -70,9 +70,10 @@ export const TypingSurface = forwardRef<
                           ? { color: colourForScope(cell.scope) }
                           : state === 'wrong'
                             ? {
-                                color: '#e24b3f',
-                                background: 'rgba(226, 75, 63, 0.14)',
-                                borderBottom: '2px solid #e24b3f',
+                                color: 'var(--color-fault)',
+                                background:
+                                  'color-mix(in srgb, var(--color-fault) 14%, transparent)',
+                                borderBottom: '2px solid var(--color-fault)',
                               }
                             : { color: PENDING }
                       }

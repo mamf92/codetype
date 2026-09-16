@@ -295,7 +295,7 @@ export default function Drill() {
               <span className="text-[9px] tracking-[0.2em] text-faint uppercase">
                 Passage {current.position + 1} of {current.total}
               </span>
-              <div className="h-1 bg-[#1c1710]">
+              <div className="h-1 bg-ink-line">
                 <div
                   className="h-full bg-amber shadow-[0_0_10px_rgba(255,176,0,0.55)]"
                   style={{
