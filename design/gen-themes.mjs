@@ -10,23 +10,23 @@ const THEMES = {
          amber:'#ffb000', signal:'#3ddbd9', fault:'#e24b3f', scan:'rgba(255,176,0,0.028)',
          kw:'#ffb000', id:'#e8dccb', num:'#ffd27a', punc:'#8f8172' } },
   DarkContrast: {
-    label: 'Dark · high contrast', note: 'untyped code 5.99:1 — clears AA',
-    v: { bg:'#060505', panel:'linear-gradient(to bottom,#161310,#0e0c0a)', line:'#3a3129',
-         text:'#f7efe3', muted:'#c3b6a5', faint:'#ab9e8d', pending:'#97897a',
-         amber:'#ffc247', signal:'#5fe9e1', fault:'#ff7063', scan:'rgba(255,194,71,0.022)',
-         kw:'#ffc247', id:'#f7efe3', num:'#ffd68a', punc:'#c3b6a5' } },
+    label: 'Dark · high contrast', note: 'untyped code 7.73:1 — clears AAA',
+    v: { bg:'#050404', panel:'linear-gradient(to bottom,#171310,#0d0b09)', line:'#40372d',
+         text:'#fbf5ec', muted:'#d6cbbb', faint:'#c2b6a4', pending:'#ab9d8b',
+         amber:'#ffc76b', signal:'#74efe6', fault:'#ff8a7d', scan:'rgba(255,199,107,0.020)',
+         kw:'#ffc76b', id:'#fbf5ec', num:'#ffd89a', punc:'#c2b6a4' } },
   Light: {
-    label: 'Light', note: 'untyped code 4.74:1 — clears AA',
-    v: { bg:'#f4eee3', panel:'linear-gradient(to bottom,#fdfbf6,#efe7d9)', line:'#d9cfbd',
-         text:'#1f1913', muted:'#5e5448', faint:'#6b6154', pending:'#726859',
-         amber:'#8a4f00', signal:'#0f6a66', fault:'#a32a1d', scan:'rgba(120,80,0,0.030)',
-         kw:'#8a4f00', id:'#1f1913', num:'#7a4a00', punc:'#5e5448' } },
+    label: 'Light · monochrome screen', note: 'untyped code 4.73:1 — clears AA',
+    v: { bg:'#edf0f5', panel:'linear-gradient(to bottom,#f8fafc,#e6eaf1)', line:'#c9d1de',
+         text:'#101a2b', muted:'#3f4b5c', faint:'#4a5666', pending:'#5f6b7d',
+         amber:'#1b4a8f', signal:'#0a6058', fault:'#a82217', scan:'rgba(20,45,90,0.030)',
+         kw:'#1b4a8f', id:'#101a2b', num:'#2d6099', punc:'#4a5666' } },
   LightContrast: {
-    label: 'Light · high contrast', note: 'untyped code 7.89:1 — clears AAA',
-    v: { bg:'#fdfbf6', panel:'linear-gradient(to bottom,#ffffff,#f7f2e9)', line:'#c4b8a4',
-         text:'#0a0805', muted:'#3d362c', faint:'#453d32', pending:'#574e42',
-         amber:'#6b3c00', signal:'#0a4f4c', fault:'#7d1d11', scan:'rgba(80,50,0,0.034)',
-         kw:'#6b3c00', id:'#0a0805', num:'#5c3700', punc:'#3d362c' } },
+    label: 'Light · high contrast', note: 'untyped code 9.09:1 — clears AAA',
+    v: { bg:'#f7f9fc', panel:'linear-gradient(to bottom,#ffffff,#eef2f8)', line:'#aab7c9',
+         text:'#05090f', muted:'#242f3d', faint:'#2b3746', pending:'#3b4654',
+         amber:'#10336b', signal:'#04433e', fault:'#7a150c', scan:'rgba(10,30,70,0.034)',
+         kw:'#10336b', id:'#05090f', num:'#1c477f', punc:'#2b3746' } },
 }
 
 for (const [name, { label, note, v }] of Object.entries(THEMES)) {

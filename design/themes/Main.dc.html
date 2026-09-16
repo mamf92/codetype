@@ -58,7 +58,7 @@
   .cap { font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--faint); }
   </style>
 </helmet>
-<div class="screen" style="--bg:#060505; --panel:linear-gradient(to bottom,#161310,#0e0c0a); --line:#3a3129; --text:#f7efe3; --muted:#c3b6a5; --faint:#ab9e8d; --pending:#97897a; --amber:#ffc247; --signal:#5fe9e1; --fault:#ff7063; --scan:rgba(255,194,71,0.022);">
+<div class="screen" style="--bg:#050404; --panel:linear-gradient(to bottom,#171310,#0d0b09); --line:#40372d; --text:#fbf5ec; --muted:#d6cbbb; --faint:#c2b6a4; --pending:#ab9d8b; --amber:#ffc76b; --signal:#74efe6; --fault:#ff8a7d; --scan:rgba(255,199,107,0.020);">
   <div class="pad" style="align-items: center; justify-content: center; gap: 0;">
 
     <div style="display: flex; align-items: center; gap: 12px;">
@@ -72,62 +72,63 @@
       how to spell it.
     </p>
 
-    <div style="display: flex; align-items: center; gap: 14px; margin: 40px 0 18px;">
-      <span style="height: 1px; width: 60px; background: var(--line);"></span>
+    <div style="display: flex; align-items: center; gap: 14px; margin: 40px 0 6px;">
+      <span style="height: 1px; width: 56px; background: var(--line);"></span>
       <span style="font-size: 10px; letter-spacing: 0.24em; text-transform: uppercase; color: var(--faint);">Choose how it should look</span>
-      <span style="height: 1px; width: 60px; background: var(--line);"></span>
+      <span style="height: 1px; width: 56px; background: var(--line);"></span>
     </div>
+    <p style="margin: 0 0 20px; font-size: 10px; color: var(--faint);">The whole page changes as you move between them.</p>
 
-    <div style="display: grid; grid-template-columns: repeat(4, 232px); gap: 16px;">
+    <div style="display: grid; grid-template-columns: repeat(4, 236px); gap: 16px;">
 
-      <div style="border: 2px solid var(--amber); padding: 0; background: #0c0a08;">
-        <div style="padding: 16px 16px 12px; font-family: 'Martian Mono', monospace; font-size: 12px; line-height: 1.8;">
+      <div style="border: 1px solid var(--line); background: #0c0a08;">
+        <div style="padding: 15px 15px 11px; font-family: 'Martian Mono', monospace; font-size: 12px; line-height: 1.75;">
           <span style="color:#ffb000">const</span><span style="color:#8f8172"> [</span><span style="color:#e8dccb">n</span><span style="color:#8f8172">] = </span><br><span style="color:#4a4036">useState(0)</span>
         </div>
-        <div style="border-top: 1px solid #241d15; padding: 11px 16px; display: flex; flex-direction: column; gap: 3px;">
-          <span style="font-size: 11px; color: #e8dccb;">Dark</span>
-          <span style="font-size: 9px; color: #8f8172;">Dim untyped text</span>
+        <div style="border-top: 1px solid #241d15; padding: 11px 15px; display: flex; flex-direction: column; gap: 3px;">
+          <span style="font-size: 11px; color: #e8dccb;">Amber phosphor</span>
+          <span style="font-size: 9px; color: #8f8172;">Dim untyped text · 1.96:1</span>
         </div>
       </div>
 
-      <div style="border: 1px solid var(--line); background: #060505;">
-        <div style="padding: 16px 16px 12px; font-family: 'Martian Mono', monospace; font-size: 12px; line-height: 1.8;">
-          <span style="color:#ffc247">const</span><span style="color:#c3b6a5"> [</span><span style="color:#f7efe3">n</span><span style="color:#c3b6a5">] = </span><br><span style="color:#97897a">useState(0)</span>
+      <div style="border: 2px solid var(--amber); background: #050404;">
+        <div style="padding: 14px 14px 10px; font-family: 'Martian Mono', monospace; font-size: 12px; line-height: 1.75;">
+          <span style="color:#ffc76b">const</span><span style="color:#c2b6a4"> [</span><span style="color:#fbf5ec">n</span><span style="color:#c2b6a4">] = </span><br><span style="color:#ab9d8b">useState(0)</span>
         </div>
-        <div style="border-top: 1px solid #3a3129; padding: 11px 16px; display: flex; flex-direction: column; gap: 3px;">
-          <span style="font-size: 11px; color: #f7efe3;">Dark, high contrast</span>
-          <span style="font-size: 9px; color: #c3b6a5;">Untyped text stays legible</span>
-        </div>
-      </div>
-
-      <div style="border: 1px solid var(--line); background: #f4eee3;">
-        <div style="padding: 16px 16px 12px; font-family: 'Martian Mono', monospace; font-size: 12px; line-height: 1.8;">
-          <span style="color:#8a4f00">const</span><span style="color:#5e5448"> [</span><span style="color:#1f1913">n</span><span style="color:#5e5448">] = </span><br><span style="color:#726859">useState(0)</span>
-        </div>
-        <div style="border-top: 1px solid #d9cfbd; padding: 11px 16px; display: flex; flex-direction: column; gap: 3px;">
-          <span style="font-size: 11px; color: #1f1913;">Light</span>
-          <span style="font-size: 9px; color: #5e5448;">Warm paper, ink on it</span>
+        <div style="border-top: 1px solid #40372d; padding: 10px 14px; display: flex; flex-direction: column; gap: 3px;">
+          <span style="font-size: 11px; color: #fbf5ec;">Amber, high contrast</span>
+          <span style="font-size: 9px; color: #d6cbbb;">Clears AAA · 7.73:1</span>
         </div>
       </div>
 
-      <div style="border: 1px solid var(--line); background: #fdfbf6;">
-        <div style="padding: 16px 16px 12px; font-family: 'Martian Mono', monospace; font-size: 12px; line-height: 1.8;">
-          <span style="color:#6b3c00">const</span><span style="color:#3d362c"> [</span><span style="color:#0a0805">n</span><span style="color:#3d362c">] = </span><br><span style="color:#574e42">useState(0)</span>
+      <div style="border: 1px solid var(--line); background: #edf0f5;">
+        <div style="padding: 15px 15px 11px; font-family: 'Martian Mono', monospace; font-size: 12px; line-height: 1.75;">
+          <span style="color:#1b4a8f">const</span><span style="color:#4a5666"> [</span><span style="color:#101a2b">n</span><span style="color:#4a5666">] = </span><br><span style="color:#5f6b7d">useState(0)</span>
         </div>
-        <div style="border-top: 1px solid #c4b8a4; padding: 11px 16px; display: flex; flex-direction: column; gap: 3px;">
-          <span style="font-size: 11px; color: #0a0805;">Light, high contrast</span>
-          <span style="font-size: 9px; color: #3d362c;">Maximum legibility</span>
+        <div style="border-top: 1px solid #c9d1de; padding: 11px 15px; display: flex; flex-direction: column; gap: 3px;">
+          <span style="font-size: 11px; color: #101a2b;">Monochrome screen</span>
+          <span style="font-size: 9px; color: #3f4b5c;">Clears AA · 4.73:1</span>
+        </div>
+      </div>
+
+      <div style="border: 1px solid var(--line); background: #f7f9fc;">
+        <div style="padding: 15px 15px 11px; font-family: 'Martian Mono', monospace; font-size: 12px; line-height: 1.75;">
+          <span style="color:#10336b">const</span><span style="color:#2b3746"> [</span><span style="color:#05090f">n</span><span style="color:#2b3746">] = </span><br><span style="color:#3b4654">useState(0)</span>
+        </div>
+        <div style="border-top: 1px solid #aab7c9; padding: 11px 15px; display: flex; flex-direction: column; gap: 3px;">
+          <span style="font-size: 11px; color: #05090f;">Screen, high contrast</span>
+          <span style="font-size: 9px; color: #242f3d;">Clears AAA · 9.09:1</span>
         </div>
       </div>
 
     </div>
 
-    <div style="display: flex; align-items: center; gap: 14px; margin-top: 44px;">
-      <span style="background: var(--amber); color: #060505; padding: 13px 26px; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;">Start typing</span>
+    <div style="display: flex; align-items: center; gap: 14px; margin-top: 42px;">
+      <span style="background: var(--amber); color: #050404; padding: 13px 26px; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;">Start typing</span>
       <span style="font-size: 10px; color: var(--faint);">or press <span style="border: 1px solid var(--line); padding: 3px 8px; color: var(--text);">Enter</span></span>
     </div>
 
-    <p style="margin: 26px 0 0; font-size: 10px; color: var(--faint);">You can change this later in settings.</p>
+    <p style="margin: 24px 0 0; font-size: 10px; color: var(--faint);">You can change this later in settings.</p>
 
   </div>
 </div>

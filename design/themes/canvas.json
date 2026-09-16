@@ -1,25 +1,32 @@
 {
   "artboards": [
     { "file": "Main.dc.html", "title": "First visit", "x": 0, "y": 0, "w": 1440, "h": 900 },
-    { "file": "DarkCurrent.dc.html", "title": "Dark (current)", "x": 0, "y": 1080, "w": 900, "h": 560 },
-    { "file": "DarkContrast.dc.html", "title": "Dark high contrast", "x": 1000, "y": 1080, "w": 900, "h": 560 },
-    { "file": "Light.dc.html", "title": "Light", "x": 0, "y": 1760, "w": 900, "h": 560 },
-    { "file": "LightContrast.dc.html", "title": "Light high contrast", "x": 1000, "y": 1760, "w": 900, "h": 560 }
+    { "file": "DarkCurrent.dc.html", "title": "Amber phosphor", "x": 0, "y": 1080, "w": 900, "h": 560 },
+    { "file": "DarkContrast.dc.html", "title": "Amber high contrast", "x": 1000, "y": 1080, "w": 900, "h": 560 },
+    { "file": "Light.dc.html", "title": "Monochrome screen", "x": 0, "y": 1760, "w": 900, "h": 560 },
+    { "file": "LightContrast.dc.html", "title": "Screen high contrast", "x": 1000, "y": 1760, "w": 900, "h": 560 }
   ],
   "annotations": [
     {
-      "id": "ratios",
+      "id": "concept",
       "x": 1560,
       "y": 0,
-      "w": 560,
-      "text": "All four show the same moment: one line typed, a miss on the next,\nthe rest still to come.\n\nThe number that matters is the untyped text, because that is what you\nhave to read in order to type it.\n\n  Dark (current)         1.96:1   below AA\n  Dark high contrast     5.99:1   clears AA\n  Light                  4.74:1   clears AA\n  Light high contrast    7.89:1   clears AAA\n\nEvery colour in the three new themes was computed against its own\nbackground, not eyeballed."
+      "w": 580,
+      "text": "Two CRT eras, not a colour inversion.\n\nDark is a warm amber phosphor tube. Light is the cool monochrome\nscreen that came after it — a blue-white display with near-black\nblue letters, the way an early all-in-one looked.\n\nThe axis between them is temperature, not brightness. That is what\nmakes them siblings instead of one being the other with the lights\nturned on.\n\nDeliberately NOT paper: no cream, no warm off-white, no ivory. The\nground stays a screen the whole way through, because the product is\na screen."
     },
     {
-      "id": "default-question",
+      "id": "ratios",
       "x": 1560,
-      "y": 420,
-      "w": 560,
-      "text": "One thing the welcome screen has to answer: which theme paints it,\nbefore anyone has chosen.\n\nIt is drawn here in dark high contrast, so the choice itself is\nlegible. Starting in the current dark theme would mean a first-time\nvisitor reads the picker at 1.96:1.\n\nBetter still: seed the initial pick from the system — prefers-color-scheme\nfor dark or light, prefers-contrast: more for the high contrast pair —\nso the highlighted card is already the right one when the page opens."
+      "y": 430,
+      "w": 580,
+      "text": "All four show the same moment: one line typed, a miss on the next,\nthe rest still to come.\n\nThe number that matters is the untyped text, because that is what\nyou have to read in order to type it.\n\n  Amber phosphor          1.96:1   below AA — kept as-is\n  Amber high contrast     7.73:1   clears AAA\n  Monochrome screen       4.73:1   clears AA\n  Screen high contrast    9.09:1   clears AAA\n\nBoth high-contrast themes clear AAA on every token, syntax colours\nincluded. Every value was computed against its own background."
+    },
+    {
+      "id": "picker",
+      "x": 1560,
+      "y": 900,
+      "w": 580,
+      "text": "How the picker handles its own contrast:\n\nThe whole page adopts a theme as you move between them, so you are\nchoosing by seeing rather than by reading a label. A swatch cannot\ntell you what typing in a theme feels like; the page can.\n\nThe picker chrome and the start button stay on the high-contrast\ntoken set of whichever scheme is showing. So even while the amber\nphosphor theme is previewing at 1.96:1, the control you need in\norder to leave it stays legible.\n\nThe opening guess comes from the system — prefers-color-scheme picks\nthe pair, prefers-contrast: more picks the high-contrast one of that\npair — so for most people the highlighted card is already right and\nthe picker only has to confirm."
     }
   ],
   "launch": { "view": "canvas" }
