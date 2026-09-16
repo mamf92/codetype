@@ -1,0 +1,137 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@200;300;400;600&family=Martian+Mono:wght@300;400;500;600&display=swap">
+  <style>
+  *, *::before, *::after { box-sizing: border-box; }
+  body { margin: 0; background: #0f0e0d; }
+
+  .screen {
+    position: relative; width: 100%; height: 100%; overflow: hidden;
+    background: var(--bg); color: var(--text);
+    font-family: 'Martian Mono', ui-monospace, 'SF Mono', monospace;
+    font-size: 12px; letter-spacing: -0.02em;
+  }
+  .screen::before {
+    content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 40;
+    background: repeating-linear-gradient(to bottom,
+      var(--scan) 0px, var(--scan) 1px, transparent 1px, transparent 3px);
+  }
+  .display { font-family: 'Unbounded', 'Trebuchet MS', sans-serif; letter-spacing: -0.03em; }
+  a { color: var(--amber); text-decoration: none; }
+  a:hover { color: var(--text); }
+
+  .pad { position: relative; z-index: 10; height: 100%; padding: 26px 30px;
+         display: flex; flex-direction: column; gap: 16px; }
+
+  .themetag { display: flex; align-items: baseline; justify-content: space-between; }
+  .themename { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--amber); }
+  .ratio { font-size: 10px; color: var(--muted); }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .chip { font-size: 9px; padding: 5px 10px; border: 1px solid var(--line); color: var(--pending); }
+  .chip.done { border-color: var(--signal); color: var(--signal); }
+  .chip.on { background: var(--amber); color: var(--bg); border-color: var(--amber); }
+
+  .surface {
+    background: var(--panel); border: 1px solid var(--line);
+    padding: 26px 28px; flex: 1;
+  }
+  .code {
+    margin: 0; font-family: 'Martian Mono', ui-monospace, monospace;
+    font-size: 17px; line-height: 1.95; letter-spacing: -0.04em;
+    white-space: pre-wrap; word-break: break-word;
+  }
+  .caret { display: inline-block; width: 3px; height: 22px; background: var(--amber);
+           vertical-align: -4px; margin: 0 -1.5px; }
+
+  .hud { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+         gap: 1px; background: var(--line); border: 1px solid var(--line); }
+  .cell { background: var(--panel); padding: 12px 14px; display: flex; flex-direction: column; gap: 5px; }
+  .cell b { font-family: 'Unbounded', sans-serif; font-weight: 300; font-size: 21px; }
+  .cap { font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--faint); }
+  </style>
+</helmet>
+<div class="screen" style="--bg:#050404; --panel:linear-gradient(to bottom,#171310,#0d0b09); --line:#40372d; --text:#fbf5ec; --muted:#d6cbbb; --faint:#c2b6a4; --pending:#ab9d8b; --amber:#ffc76b; --signal:#74efe6; --fault:#ff8a7d; --scan:rgba(255,199,107,0.020);">
+  <div class="pad" style="align-items: center; justify-content: center; gap: 0;">
+
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <span class="display" style="font-size: 30px; font-weight: 600; color: var(--amber); letter-spacing: 0.02em;">CODETYPE</span>
+      <span style="width: 12px; height: 30px; background: var(--amber);"></span>
+    </div>
+
+    <p style="margin: 22px 0 0; max-width: 620px; text-align: center; font-size: 13px; line-height: 1.85; color: var(--muted);">
+      Typing practice that doubles as concept rehearsal. Every lesson says one
+      thing several ways, so your fingers learn the shape of an idea — not just
+      how to spell it.
+    </p>
+
+    <div style="display: flex; align-items: center; gap: 14px; margin: 40px 0 6px;">
+      <span style="height: 1px; width: 56px; background: var(--line);"></span>
+      <span style="font-size: 10px; letter-spacing: 0.24em; text-transform: uppercase; color: var(--faint);">Choose how it should look</span>
+      <span style="height: 1px; width: 56px; background: var(--line);"></span>
+    </div>
+    <p style="margin: 0 0 20px; font-size: 10px; color: var(--faint);">The whole page changes as you move between them.</p>
+
+    <div style="display: grid; grid-template-columns: repeat(4, 236px); gap: 16px;">
+
+      <div style="border: 1px solid var(--line); background: #0c0a08;">
+        <div style="padding: 15px 15px 11px; font-family: 'Martian Mono', monospace; font-size: 12px; line-height: 1.75;">
+          <span style="color:#ffb000">const</span><span style="color:#8f8172"> [</span><span style="color:#e8dccb">n</span><span style="color:#8f8172">] = </span><br><span style="color:#4a4036">useState(0)</span>
+        </div>
+        <div style="border-top: 1px solid #241d15; padding: 11px 15px; display: flex; flex-direction: column; gap: 3px;">
+          <span style="font-size: 11px; color: #e8dccb;">Amber phosphor</span>
+          <span style="font-size: 9px; color: #8f8172;">Dim untyped text · 1.96:1</span>
+        </div>
+      </div>
+
+      <div style="border: 2px solid var(--amber); background: #050404;">
+        <div style="padding: 14px 14px 10px; font-family: 'Martian Mono', monospace; font-size: 12px; line-height: 1.75;">
+          <span style="color:#ffc76b">const</span><span style="color:#c2b6a4"> [</span><span style="color:#fbf5ec">n</span><span style="color:#c2b6a4">] = </span><br><span style="color:#ab9d8b">useState(0)</span>
+        </div>
+        <div style="border-top: 1px solid #40372d; padding: 10px 14px; display: flex; flex-direction: column; gap: 3px;">
+          <span style="font-size: 11px; color: #fbf5ec;">Amber, high contrast</span>
+          <span style="font-size: 9px; color: #d6cbbb;">Clears AAA · 7.73:1</span>
+        </div>
+      </div>
+
+      <div style="border: 1px solid var(--line); background: #edf0f5;">
+        <div style="padding: 15px 15px 11px; font-family: 'Martian Mono', monospace; font-size: 12px; line-height: 1.75;">
+          <span style="color:#1b4a8f">const</span><span style="color:#4a5666"> [</span><span style="color:#101a2b">n</span><span style="color:#4a5666">] = </span><br><span style="color:#5f6b7d">useState(0)</span>
+        </div>
+        <div style="border-top: 1px solid #c9d1de; padding: 11px 15px; display: flex; flex-direction: column; gap: 3px;">
+          <span style="font-size: 11px; color: #101a2b;">Monochrome screen</span>
+          <span style="font-size: 9px; color: #3f4b5c;">Clears AA · 4.73:1</span>
+        </div>
+      </div>
+
+      <div style="border: 1px solid var(--line); background: #f7f9fc;">
+        <div style="padding: 15px 15px 11px; font-family: 'Martian Mono', monospace; font-size: 12px; line-height: 1.75;">
+          <span style="color:#10336b">const</span><span style="color:#2b3746"> [</span><span style="color:#05090f">n</span><span style="color:#2b3746">] = </span><br><span style="color:#3b4654">useState(0)</span>
+        </div>
+        <div style="border-top: 1px solid #aab7c9; padding: 11px 15px; display: flex; flex-direction: column; gap: 3px;">
+          <span style="font-size: 11px; color: #05090f;">Screen, high contrast</span>
+          <span style="font-size: 9px; color: #242f3d;">Clears AAA · 9.09:1</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 14px; margin-top: 42px;">
+      <span style="background: var(--amber); color: #050404; padding: 13px 26px; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;">Start typing</span>
+      <span style="font-size: 10px; color: var(--faint);">or press <span style="border: 1px solid var(--line); padding: 3px 8px; color: var(--text);">Enter</span></span>
+    </div>
+
+    <p style="margin: 24px 0 0; font-size: 10px; color: var(--faint);">You can change this later in settings.</p>
+
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

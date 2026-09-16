@@ -1,0 +1,96 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@200;300;400;600&family=Martian+Mono:wght@300;400;500;600&display=swap">
+  <style>
+  *, *::before, *::after { box-sizing: border-box; }
+  body { margin: 0; background: #0f0e0d; }
+
+  .screen {
+    position: relative; width: 100%; height: 100%; overflow: hidden;
+    background: var(--bg); color: var(--text);
+    font-family: 'Martian Mono', ui-monospace, 'SF Mono', monospace;
+    font-size: 12px; letter-spacing: -0.02em;
+  }
+  .screen::before {
+    content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 40;
+    background: repeating-linear-gradient(to bottom,
+      var(--scan) 0px, var(--scan) 1px, transparent 1px, transparent 3px);
+  }
+  .display { font-family: 'Unbounded', 'Trebuchet MS', sans-serif; letter-spacing: -0.03em; }
+  a { color: var(--amber); text-decoration: none; }
+  a:hover { color: var(--text); }
+
+  .pad { position: relative; z-index: 10; height: 100%; padding: 26px 30px;
+         display: flex; flex-direction: column; gap: 16px; }
+
+  .themetag { display: flex; align-items: baseline; justify-content: space-between; }
+  .themename { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--amber); }
+  .ratio { font-size: 10px; color: var(--muted); }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .chip { font-size: 9px; padding: 5px 10px; border: 1px solid var(--line); color: var(--pending); }
+  .chip.done { border-color: var(--signal); color: var(--signal); }
+  .chip.on { background: var(--amber); color: var(--bg); border-color: var(--amber); }
+
+  .surface {
+    background: var(--panel); border: 1px solid var(--line);
+    padding: 26px 28px; flex: 1;
+  }
+  .code {
+    margin: 0; font-family: 'Martian Mono', ui-monospace, monospace;
+    font-size: 17px; line-height: 1.95; letter-spacing: -0.04em;
+    white-space: pre-wrap; word-break: break-word;
+  }
+  .caret { display: inline-block; width: 3px; height: 22px; background: var(--amber);
+           vertical-align: -4px; margin: 0 -1.5px; }
+
+  .hud { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+         gap: 1px; background: var(--line); border: 1px solid var(--line); }
+  .cell { background: var(--panel); padding: 12px 14px; display: flex; flex-direction: column; gap: 5px; }
+  .cell b { font-family: 'Unbounded', sans-serif; font-weight: 300; font-size: 21px; }
+  .cap { font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--faint); }
+  </style>
+</helmet>
+<div class="screen" style="--bg: #f7f9fc; --panel: linear-gradient(to bottom,#ffffff,#eef2f8); --line: #aab7c9; --text: #05090f; --muted: #242f3d; --faint: #2b3746; --pending: #3b4654; --amber: #10336b; --signal: #04433e; --fault: #7a150c; --scan: rgba(10,30,70,0.034); --kw: #10336b; --id: #05090f; --num: #1c477f; --punc: #2b3746;">
+  <div class="pad">
+
+    <div class="themetag">
+      <span class="themename">Light · high contrast</span>
+      <span class="ratio">untyped code 9.09:1 — clears AAA</span>
+    </div>
+
+    <div class="chips">
+      <span class="chip done">direct value</span>
+      <span class="chip on">updater with previous state</span>
+      <span class="chip">updater on an object</span>
+      <span class="chip">toggling in a callback</span>
+    </div>
+
+    <div class="surface">
+      <pre class="code"><span style="color: var(--kw)">const</span><span style="color: var(--punc)"> [</span><span style="color: var(--id)">count</span><span style="color: var(--punc)">, </span><span style="color: var(--id)">setCount</span><span style="color: var(--punc)">] = </span><span style="color: var(--id)">useState</span><span style="color: var(--punc)">(</span><span style="color: var(--num)">0</span><span style="color: var(--punc)">)</span>
+<span style="color: var(--id)">setCount</span><span style="color: var(--punc)">((</span><span style="color: var(--id)">pr</span><span style="color: var(--fault); background: color-mix(in srgb, var(--fault) 14%, transparent); border-bottom: 2px solid var(--fault)">e</span><span class="caret"></span><span style="color: var(--pending)">v) =&gt; prev + 1)</span></pre>
+    </div>
+
+    <div class="hud">
+      <div class="cell"><span class="cap">Speed</span><span><b style="color: var(--amber)">71</b></span></div>
+      <div class="cell"><span class="cap">Accuracy</span><span><b style="color: var(--signal)">92</b></span></div>
+      <div class="cell"><span class="cap">Missed</span><span><b style="color: var(--fault)">1</b></span></div>
+      <div class="cell"><span class="cap">Passage 2 of 21</span>
+        <div style="height: 4px; background: var(--line); margin-top: 4px;">
+          <div style="width: 58%; height: 100%; background: var(--amber);"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+</body>
+</html>
