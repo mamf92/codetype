@@ -4,6 +4,9 @@
   "version": "0.1.0",
   "type": "module",
   "description": "Typing practice that doubles as concept rehearsal, for developers.",
+  "engines": {
+    "node": ">=20.19"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
