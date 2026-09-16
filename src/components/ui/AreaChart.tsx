@@ -67,14 +67,7 @@ export function AreaChart({
               strokeWidth="1"
             />
           ))}
-          <line
-            x1="0"
-            y1="200"
-            x2="1000"
-            y2="200"
-            stroke="var(--color-ink-edge)"
-            strokeWidth="1"
-          />
+          <line x1="0" y1="200" x2="1000" y2="200" stroke="var(--color-ink-edge)" strokeWidth="1" />
           <polygon fill={`url(#${gradientId})`} points={`${points} 1000,200 0,200`} />
           <polyline
             fill="none"

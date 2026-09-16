@@ -132,9 +132,9 @@ export default function Home() {
               }
             >
               <Sparkline
-              values={series.map((point) => point.sessions)}
-              stroke="var(--color-amber-dim)"
-            />
+                values={series.map((point) => point.sessions)}
+                stroke="var(--color-amber-dim)"
+              />
             </StatTile>
           </div>
         </div>

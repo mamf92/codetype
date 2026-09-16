@@ -58,7 +58,8 @@ export function TypingSurface({
                           : state === 'wrong'
                             ? {
                                 color: 'var(--color-fault)',
-                                background: 'color-mix(in srgb, var(--color-fault) 14%, transparent)',
+                                background:
+                                  'color-mix(in srgb, var(--color-fault) 14%, transparent)',
                                 borderBottom: '2px solid var(--color-fault)',
                               }
                             : { color: PENDING }
