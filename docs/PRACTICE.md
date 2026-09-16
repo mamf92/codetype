@@ -3,6 +3,24 @@
 Targeted remediation for the keys you actually miss: five levels from a single
 repeated motion up to real code, generated from your own error record.
 
+> **Implemented in #6.** The plan below is kept as the design record; three
+> places the shipped version simplifies it, honestly:
+>
+> - **Level 3** interferes the current pair against itself, not a genuinely
+>   different previously-practiced pair — a single-key entry point has no
+>   queue of "the pair before this one" to draw on. It degrades gracefully to
+>   level 2's pattern (`src/engine/practice/generators.ts`).
+> - **Mastery's "next ~30 presses in ordinary drills"** is judged as a
+>   delta against the lifetime ledger at the moment 30 new presses have
+>   landed, not a dedicated rolling window independent of the ledger. Same
+>   evidence, simpler state (`src/engine/practice/mastery.ts`).
+> - **"Your own median" latency** is a ledger-wide mean, not a true median —
+>   nothing stores a raw per-keystroke distribution to take a median of, only
+>   running sums (`ownBaselineLatencyMs` in `src/engine/metrics.ts`).
+>
+> Everything else below — the ledger extension, corpus-frequency ranking, the
+> five generators, the Leitner probation ladder — shipped as designed.
+
 ## 1. The idea
 
 The catalogue teaches concepts. This does not — it goes back to the root of

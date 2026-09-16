@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from 'react'
 import type { LanguageId } from '@/content/schema'
 import type { ThemeId } from '@/lib/themes'
-import { appendSession, readProgress, writeProgress } from './progress'
+import { appendSession, beginProbation, readProgress, writeProgress } from './progress'
 import type { ProgressDocument, SessionRecord } from './progress'
 
 /**
@@ -39,3 +39,7 @@ export const setTheme = (theme: ThemeId): void => commit({ ...document_, theme }
 
 /** Used by the settings affordance on Statistics. */
 export const clearHistory = (): void => commit({ ...document_, sessions: [] })
+
+/** Call once a key has passed all five practice levels — puts it on probation. */
+export const startKeyProbation = (char: string): void =>
+  commit(beginProbation(document_, char, Date.now()))

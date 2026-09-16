@@ -26,16 +26,57 @@ export function computeMetrics(state: SessionState, now: number): Metrics {
   }
 }
 
+function mergeCounts(
+  base: Record<string, number>,
+  addition: Record<string, number>,
+): Record<string, number> {
+  const merged = { ...base }
+  for (const [key, count] of Object.entries(addition)) merged[key] = (merged[key] ?? 0) + count
+  return merged
+}
+
 export function mergeLedgers(base: KeyLedger, addition: KeyLedger): KeyLedger {
   const merged: KeyLedger = { ...base }
   for (const [char, entry] of Object.entries(addition)) {
-    const existing = merged[char] ?? { pressed: 0, missed: 0 }
+    const existing = merged[char] ?? {
+      pressed: 0,
+      missed: 0,
+      latencyMs: 0,
+      confusions: {},
+      codes: {},
+    }
     merged[char] = {
       pressed: existing.pressed + entry.pressed,
       missed: existing.missed + entry.missed,
+      latencyMs: existing.latencyMs + entry.latencyMs,
+      confusions: mergeCounts(existing.confusions, entry.confusions),
+      codes: mergeCounts(existing.codes, entry.codes),
     }
   }
   return merged
+}
+
+/** Mean latency in ms for a key, or null if it has never been pressed. */
+export const meanLatency = (entry: { pressed: number; latencyMs: number }): number | null =>
+  entry.pressed > 0 ? entry.latencyMs / entry.pressed : null
+
+/**
+ * A stand-in for "your own median" latency, used as the mastery baseline in
+ * `practice/mastery.ts`: the mean latency across every keystroke in the
+ * ledger, not just one key. It's a mean rather than a true median — nothing
+ * here stores a raw per-keystroke distribution to take a median of, only
+ * running sums — but it moves with the same thing a median would (how fast
+ * you generally react), and is cheap to keep exactly in sync with a ledger
+ * that merges incrementally. Null until there's any evidence at all.
+ */
+export function ownBaselineLatencyMs(ledger: KeyLedger): number | null {
+  let totalMs = 0
+  let totalPresses = 0
+  for (const entry of Object.values(ledger)) {
+    totalMs += entry.latencyMs
+    totalPresses += entry.pressed
+  }
+  return totalPresses > 0 ? totalMs / totalPresses : null
 }
 
 export interface KeyStanding {

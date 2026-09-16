@@ -75,13 +75,13 @@ export function useTypingSession(code: string, grammar: Grammar): TypingSession 
     }
     if (event.key === 'Enter') {
       event.preventDefault()
-      dispatch({ type: 'newline', at: Date.now() })
+      dispatch({ type: 'newline', code: event.code, at: Date.now() })
       return
     }
     if (event.key.length === 1) {
       // Space would scroll the page out from under the passage.
       if (event.key === ' ') event.preventDefault()
-      dispatch({ type: 'character', char: event.key, at: Date.now() })
+      dispatch({ type: 'character', char: event.key, code: event.code, at: Date.now() })
     }
   }, [])
 

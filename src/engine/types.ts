@@ -31,9 +31,26 @@ export interface CompiledDrill {
 
 export type EntryState = 'pending' | 'correct' | 'wrong'
 
-/** How often a given expected character was reached, and how often missed. */
+/**
+ * Everything recorded about the times a passage asked for a given character.
+ *
+ * `confusions` and `codes` are keyed by, respectively, what was actually
+ * typed on a miss and the physical key (`event.code`) that produced it —
+ * this is what lets a discrimination pair or a layout be learned from real
+ * typing instead of assumed. `latencyMs` is a running sum; divide by
+ * `pressed` for the mean. See `docs/decisions/0005-key-practice-ledger.md`.
+ */
+export interface KeyStat {
+  pressed: number
+  missed: number
+  latencyMs: number
+  confusions: Record<string, number>
+  codes: Record<string, number>
+}
+
+/** How often a given expected character was reached, and how it went. */
 export interface KeyLedger {
-  [character: string]: { pressed: number; missed: number }
+  [character: string]: KeyStat
 }
 
 export interface SessionState {
@@ -47,6 +64,8 @@ export interface SessionState {
   keyLedger: KeyLedger
   startedAt: number | null
   finishedAt: number | null
+  /** Timestamp of the last accepted keystroke, for measuring latency on the next one. */
+  lastActionAt: number | null
 }
 
 export interface Metrics {

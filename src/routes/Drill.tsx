@@ -4,6 +4,7 @@ import { drillSequence, trackById } from '@/content/index'
 import { useTypingSession } from '@/engine/useTypingSession'
 import { recordSession, useProgress } from '@/store/useProgress'
 import { TypingSurface } from '@/components/typing/TypingSurface'
+import { rankForPractice } from '@/engine/practice/ranking'
 import NotFound from './NotFound'
 
 function Readout({
@@ -85,6 +86,7 @@ export default function Drill() {
       correctness: metrics.correctness,
       durationMs: metrics.elapsedMs,
       keyLedger: state.keyLedger,
+      kind: 'drill',
     })
   }, [state.finishedAt, state.keyLedger, current, track, metrics])
 
@@ -274,7 +276,26 @@ export default function Drill() {
               </Link>
             </div>
           </div>
-        ) : (
+        ) : null}
+
+        {finished &&
+          (() => {
+            const worst = rankForPractice(state.keyLedger, 1)[0]
+            if (worst === undefined || worst.missed === 0) return null
+            return (
+              <p className="reveal mt-3 w-full text-center text-[11px] text-faint">
+                <Link
+                  to={`/practice/${encodeURIComponent(worst.char)}`}
+                  className="text-amber hover:text-amber-soft"
+                >
+                  Practice &quot;{worst.char === ' ' ? 'space' : worst.char}&quot;
+                </Link>{' '}
+                — the key that cost you the most this run.
+              </p>
+            )
+          })()}
+
+        {!finished && (
           <div
             className="reveal mt-7 grid w-full grid-cols-2 gap-px border border-ink-line bg-ink-line md:grid-cols-4"
             style={{ animationDelay: '0.3s' }}
