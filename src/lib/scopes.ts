@@ -4,40 +4,46 @@
  * Deliberately narrow: everything sits in the amber family or parchment. A
  * phosphor tube never showed a rainbow, and a six-hue syntax theme would fight
  * the one signal that matters on this screen — whether you got it right.
+ *
+ * Values are CSS custom property references, not literal hex. Four themes
+ * live entirely in `[data-theme]` CSS (src/styles/index.css); a colour typed
+ * as a literal here would freeze at whichever theme was active when the
+ * drill compiled, since these are written into an inline `style` once and
+ * React has no reason to re-render on a theme switch.
  */
 const SCOPE_COLOURS: Record<string, string> = {
-  keyword: '#ffb000',
-  atrule: '#ffb000',
-  rule: '#ffb000',
-  selector: '#ffb000',
-  tag: '#ffb000',
-  important: '#ffb000',
+  keyword: 'var(--color-amber)',
+  atrule: 'var(--color-amber)',
+  rule: 'var(--color-amber)',
+  selector: 'var(--color-amber)',
+  tag: 'var(--color-amber)',
+  important: 'var(--color-amber)',
 
-  'class-name': '#ffd27a',
-  'maybe-class-name': '#ffd27a',
-  builtin: '#ffd27a',
-  number: '#ffd27a',
-  boolean: '#ffd27a',
-  constant: '#ffd27a',
-  'attr-name': '#ffd27a',
-  symbol: '#ffd27a',
+  'class-name': 'var(--color-amber-soft)',
+  'maybe-class-name': 'var(--color-amber-soft)',
+  builtin: 'var(--color-amber-soft)',
+  number: 'var(--color-amber-soft)',
+  boolean: 'var(--color-amber-soft)',
+  constant: 'var(--color-amber-soft)',
+  'attr-name': 'var(--color-amber-soft)',
+  symbol: 'var(--color-amber-soft)',
 
-  string: '#a8925f',
-  char: '#a8925f',
-  'attr-value': '#a8925f',
-  regex: '#a8925f',
-  url: '#a8925f',
+  string: 'var(--color-syntax-string)',
+  char: 'var(--color-syntax-string)',
+  'attr-value': 'var(--color-syntax-string)',
+  regex: 'var(--color-syntax-string)',
+  url: 'var(--color-syntax-string)',
 
-  operator: '#8f8172',
-  punctuation: '#8f8172',
-  'template-punctuation': '#8f8172',
+  operator: 'var(--color-muted)',
+  punctuation: 'var(--color-muted)',
+  'template-punctuation': 'var(--color-muted)',
 
-  comment: '#5c5245',
-  prolog: '#5c5245',
-  doctype: '#5c5245',
+  comment: 'var(--color-syntax-comment)',
+  prolog: 'var(--color-syntax-comment)',
+  doctype: 'var(--color-syntax-comment)',
 }
 
-const DEFAULT_COLOUR = '#e8dccb'
+const DEFAULT_COLOUR = 'var(--color-parchment)'
 
 export const colourForScope = (scope: string | null): string =>
   scope === null ? DEFAULT_COLOUR : (SCOPE_COLOURS[scope] ?? DEFAULT_COLOUR)

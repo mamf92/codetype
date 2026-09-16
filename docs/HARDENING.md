@@ -225,12 +225,16 @@ you have not typed yet** — which is the text you must read in order to type it
 At 1.96:1 that is not an audit nag, it is the primary function of the product
 being hard to see. I chose that value for drama and did not check it.
 
-**Resolved in #2, differently than the fix sketched above.** Rather than
-raising this one theme's dim tokens and spending its visual identity to do
-it, it ships as one of four themes — see `docs/decisions/0004-four-theme-system.md`.
-`dark` keeps its original values and is the one theme allowed to fail its
-own target deliberately; the other three clear AA or AAA on every token,
-syntax colours included. `src/lib/themes.test.ts` is the proof.
+**Resolved in #2, differently than proposed above.** Rather than raising this
+one theme's dim tokens and losing the drama, it ships as one of four themes —
+two CRT eras (warm amber tube, cool monochrome screen), each with a
+high-contrast sibling that clears AAA on every token, syntax colours
+included. This theme, `dark`, keeps its original values and is the one theme
+allowed to fail its own target deliberately; anyone who wants the drama back
+just picks it, and anyone who needs the text legible picks one of the other
+three. `src/styles/index.css` has the palettes and
+`docs/decisions/0004-four-theme-system.md` has the reasoning;
+`src/lib/themes.test.ts` has the proof.
 
 The indent dots (`ghost-deep`) stay a defensible exception in every theme:
 decorative, marking whitespace you are explicitly not asked to type, nothing
@@ -238,20 +242,15 @@ lost if they go unseen.
 
 ### 5.2 The drill screen is invisible to a screen reader
 
-Not something axe will flag. The typing surface is a `div` of `span`s with no
-accessible name, no live region, and no focusable input — the key handler is on
-`window`. A screen reader user gets no announcement of what to type, whether
-they were right, or that the drill ended.
-
 **Addressed in #3.** The key handler moved off `window` onto the typing
 surface itself, which is now focusable, has an accessible name exposing the
 passage as readable text, and sits next to a polite live region announcing
-misses and the final result. That also fixed the keyboard trap below — the
-surface needed to be a real focusable element either way.
+misses and the final result. That was also what fixed the keyboard trap below
+— the surface needed to be a real focusable element either way.
 
-Going further than that floor (a richer reading experience for the passage
-itself, live per-character state) is still a genuine product question for a
-typing-*speed* trainer, not something either PR assumed an answer to.
+Going further than the cheap floor (a richer reading experience for the
+passage itself, live per-character state) is still a genuine product question
+for a typing-*speed* trainer, not something this PR assumed an answer to.
 
 ### 5.3 The repository has no LICENSE
 

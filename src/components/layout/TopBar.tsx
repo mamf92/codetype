@@ -6,6 +6,7 @@ const LINKS = [
   { to: '/', label: 'Home', end: true },
   { to: '/explore', label: 'Explore', end: false },
   { to: '/statistics', label: 'Statistics', end: false },
+  { to: '/settings', label: 'Settings', end: false },
 ]
 
 export function TopBar() {

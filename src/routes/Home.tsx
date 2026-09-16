@@ -76,6 +76,7 @@ export default function Home() {
 
   return (
     <div className="flex flex-col gap-7">
+      <h1 className="sr-only">Home</h1>
       <div className="grid gap-5 lg:grid-cols-[1fr_420px]">
         <div className="grid gap-3.5 sm:grid-cols-2 xl:grid-cols-4">
           <div className="reveal" style={{ animationDelay: '0.05s' }}>
@@ -131,7 +132,10 @@ export default function Home() {
                 <span className="text-muted">best speed {Math.round(stats.bestWpm)} wpm</span>
               }
             >
-              <Sparkline values={series.map((point) => point.sessions)} stroke="#6b4d17" />
+              <Sparkline
+                values={series.map((point) => point.sessions)}
+                stroke="var(--color-amber-dim)"
+              />
             </StatTile>
           </div>
         </div>

@@ -1,4 +1,13 @@
-import { useCallback, useEffect, useMemo, useReducer, useState } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
+  type KeyboardEvent as ReactKeyboardEvent,
+  type RefObject,
+} from 'react'
 import type { Grammar } from '@/content/schema'
 import { compileDrill } from './compile'
 import { initialSession, reduceSession } from './session'
@@ -11,6 +20,9 @@ export interface TypingSession {
   state: SessionState
   metrics: Metrics
   restart: () => void
+  /** Attach to the focusable element that should receive typed keys. */
+  surfaceRef: RefObject<HTMLDivElement | null>
+  onSurfaceKeyDown: (event: ReactKeyboardEvent<HTMLDivElement>) => void
 }
 
 /** How often live metrics refresh while typing. Fast enough to feel live. */
@@ -19,8 +31,12 @@ const TICK_MS = 250
 /**
  * Binds the pure session reducer to the keyboard.
  *
- * Listens on `window` rather than a focused input: there is no text field to
- * lose focus, so the drill can never silently stop accepting keystrokes.
+ * Keys are handled by the focusable typing surface itself, via
+ * `onSurfaceKeyDown`, rather than a `window` listener — a `window` listener
+ * has no way to let `Tab` leave the surface, which made the whole drill
+ * screen a keyboard trap. The surface is focused automatically when a drill
+ * loads, so typing can still start without a click; once focus moves away
+ * (by `Tab` or a click), keys stop being claimed, same as any other control.
  */
 export function useTypingSession(code: string, grammar: Grammar): TypingSession {
   const compiled = useMemo(() => compileDrill(code, grammar), [code, grammar])
@@ -36,34 +52,37 @@ export function useTypingSession(code: string, grammar: Grammar): TypingSession 
     dispatch({ type: 'reset' })
   }, [compiled])
 
+  const surfaceRef = useRef<HTMLDivElement>(null)
+
   useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent): void => {
-      if (event.ctrlKey || event.metaKey || event.altKey) return
+    surfaceRef.current?.focus()
+  }, [compiled])
 
-      if (event.key === 'Tab') {
-        event.preventDefault()
-        dispatch({ type: 'reset' })
-        return
-      }
-      if (event.key === 'Backspace') {
-        event.preventDefault()
-        dispatch({ type: 'backspace' })
-        return
-      }
-      if (event.key === 'Enter') {
-        event.preventDefault()
-        dispatch({ type: 'newline', at: Date.now() })
-        return
-      }
-      if (event.key.length === 1) {
-        // Space would scroll the page out from under the passage.
-        if (event.key === ' ') event.preventDefault()
-        dispatch({ type: 'character', char: event.key, at: Date.now() })
-      }
+  const onSurfaceKeyDown = useCallback((event: ReactKeyboardEvent<HTMLDivElement>) => {
+    // Restart shortcut lives behind Alt so a bare letter can still be typed —
+    // Tab is deliberately left alone; it is how you leave the surface.
+    if (event.altKey && !event.ctrlKey && !event.metaKey && event.key.toLowerCase() === 'r') {
+      event.preventDefault()
+      dispatch({ type: 'reset' })
+      return
     }
+    if (event.ctrlKey || event.metaKey || event.altKey) return
 
-    window.addEventListener('keydown', onKeyDown)
-    return () => window.removeEventListener('keydown', onKeyDown)
+    if (event.key === 'Backspace') {
+      event.preventDefault()
+      dispatch({ type: 'backspace' })
+      return
+    }
+    if (event.key === 'Enter') {
+      event.preventDefault()
+      dispatch({ type: 'newline', at: Date.now() })
+      return
+    }
+    if (event.key.length === 1) {
+      // Space would scroll the page out from under the passage.
+      if (event.key === ' ') event.preventDefault()
+      dispatch({ type: 'character', char: event.key, at: Date.now() })
+    }
   }, [])
 
   // The clock only ticks while a drill is genuinely in flight.
@@ -76,7 +95,10 @@ export function useTypingSession(code: string, grammar: Grammar): TypingSession 
   }, [running])
 
   const metrics = useMemo(() => computeMetrics(state, now), [state, now])
-  const restart = useCallback(() => dispatch({ type: 'reset' }), [])
+  const restart = useCallback(() => {
+    dispatch({ type: 'reset' })
+    surfaceRef.current?.focus()
+  }, [])
 
-  return { compiled, state, metrics, restart }
+  return { compiled, state, metrics, restart, surfaceRef, onSurfaceKeyDown }
 }

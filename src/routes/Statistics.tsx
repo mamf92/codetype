@@ -78,7 +78,7 @@ export default function Statistics() {
         <AreaChart
           values={series.map((point) => point.wpm)}
           labels={ticks(series.map((point) => point.day))}
-          stroke="#ffb000"
+          stroke="var(--color-amber)"
           gradientId="speed"
         />
       </Panel>
@@ -95,7 +95,7 @@ export default function Statistics() {
           </div>
           <AreaChart
             values={series.map((point) => point.accuracy * 100)}
-            stroke="#3ddbd9"
+            stroke="var(--color-signal)"
             gradientId="accuracy"
             domain={[Math.min(80, ...series.map((p) => p.accuracy * 100)), 100]}
           />
@@ -117,12 +117,13 @@ export default function Statistics() {
               {trouble.map((key) => (
                 <div key={key.char} className="flex items-center gap-3">
                   <KeyCap char={key.char} tone={key.errorRate > 0.18 ? 'fault' : 'warn'} small />
-                  <div className="h-2 flex-1 bg-[#1c1710]">
+                  <div className="h-2 flex-1 bg-ink-line">
                     <div
                       className="h-full"
                       style={{
                         width: `${Math.min(100, key.errorRate * 100).toFixed(0)}%`,
-                        background: key.errorRate > 0.18 ? '#e24b3f' : '#c98a2f',
+                        background:
+                          key.errorRate > 0.18 ? 'var(--color-fault)' : 'var(--color-amber-soft)',
                       }}
                     />
                   </div>
@@ -154,7 +155,7 @@ export default function Statistics() {
               return (
                 <div
                   key={track.id}
-                  className={`grid grid-cols-[2.4fr_1fr_0.8fr_0.8fr_1fr_1.2fr] gap-3 border-b border-[#15120e] px-3.5 py-3 text-[11px] ${
+                  className={`grid grid-cols-[2.4fr_1fr_0.8fr_0.8fr_1fr_1.2fr] gap-3 border-b border-ink-raised px-3.5 py-3 text-[11px] ${
                     never ? 'text-ghost' : 'text-parchment'
                   } ${i % 2 === 1 ? 'bg-ink-sunk' : ''}`}
                 >
