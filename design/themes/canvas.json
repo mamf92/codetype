@@ -1,0 +1,26 @@
+{
+  "artboards": [
+    { "file": "Main.dc.html", "title": "First visit", "x": 0, "y": 0, "w": 1440, "h": 900 },
+    { "file": "DarkCurrent.dc.html", "title": "Dark (current)", "x": 0, "y": 1080, "w": 900, "h": 560 },
+    { "file": "DarkContrast.dc.html", "title": "Dark high contrast", "x": 1000, "y": 1080, "w": 900, "h": 560 },
+    { "file": "Light.dc.html", "title": "Light", "x": 0, "y": 1760, "w": 900, "h": 560 },
+    { "file": "LightContrast.dc.html", "title": "Light high contrast", "x": 1000, "y": 1760, "w": 900, "h": 560 }
+  ],
+  "annotations": [
+    {
+      "id": "ratios",
+      "x": 1560,
+      "y": 0,
+      "w": 560,
+      "text": "All four show the same moment: one line typed, a miss on the next,\nthe rest still to come.\n\nThe number that matters is the untyped text, because that is what you\nhave to read in order to type it.\n\n  Dark (current)         1.96:1   below AA\n  Dark high contrast     5.99:1   clears AA\n  Light                  4.74:1   clears AA\n  Light high contrast    7.89:1   clears AAA\n\nEvery colour in the three new themes was computed against its own\nbackground, not eyeballed."
+    },
+    {
+      "id": "default-question",
+      "x": 1560,
+      "y": 420,
+      "w": 560,
+      "text": "One thing the welcome screen has to answer: which theme paints it,\nbefore anyone has chosen.\n\nIt is drawn here in dark high contrast, so the choice itself is\nlegible. Starting in the current dark theme would mean a first-time\nvisitor reads the picker at 1.96:1.\n\nBetter still: seed the initial pick from the system — prefers-color-scheme\nfor dark or light, prefers-contrast: more for the high contrast pair —\nso the highlighted card is already the right one when the page opens."
+    }
+  ],
+  "launch": { "view": "canvas" }
+}

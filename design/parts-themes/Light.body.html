@@ -1,0 +1,33 @@
+<div class="screen" style="--bg: #f4eee3; --panel: linear-gradient(to bottom,#fdfbf6,#efe7d9); --line: #d9cfbd; --text: #1f1913; --muted: #5e5448; --faint: #6b6154; --pending: #726859; --amber: #8a4f00; --signal: #0f6a66; --fault: #a32a1d; --scan: rgba(120,80,0,0.030); --kw: #8a4f00; --id: #1f1913; --num: #7a4a00; --punc: #5e5448;">
+  <div class="pad">
+
+    <div class="themetag">
+      <span class="themename">Light</span>
+      <span class="ratio">untyped code 4.74:1 — clears AA</span>
+    </div>
+
+    <div class="chips">
+      <span class="chip done">direct value</span>
+      <span class="chip on">updater with previous state</span>
+      <span class="chip">updater on an object</span>
+      <span class="chip">toggling in a callback</span>
+    </div>
+
+    <div class="surface">
+      <pre class="code"><span style="color: var(--kw)">const</span><span style="color: var(--punc)"> [</span><span style="color: var(--id)">count</span><span style="color: var(--punc)">, </span><span style="color: var(--id)">setCount</span><span style="color: var(--punc)">] = </span><span style="color: var(--id)">useState</span><span style="color: var(--punc)">(</span><span style="color: var(--num)">0</span><span style="color: var(--punc)">)</span>
+<span style="color: var(--id)">setCount</span><span style="color: var(--punc)">((</span><span style="color: var(--id)">pr</span><span style="color: var(--fault); background: color-mix(in srgb, var(--fault) 14%, transparent); border-bottom: 2px solid var(--fault)">e</span><span class="caret"></span><span style="color: var(--pending)">v) =&gt; prev + 1)</span></pre>
+    </div>
+
+    <div class="hud">
+      <div class="cell"><span class="cap">Speed</span><span><b style="color: var(--amber)">71</b></span></div>
+      <div class="cell"><span class="cap">Accuracy</span><span><b style="color: var(--signal)">92</b></span></div>
+      <div class="cell"><span class="cap">Missed</span><span><b style="color: var(--fault)">1</b></span></div>
+      <div class="cell"><span class="cap">Passage 2 of 21</span>
+        <div style="height: 4px; background: var(--line); margin-top: 4px;">
+          <div style="width: 58%; height: 100%; background: var(--amber);"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
