@@ -120,7 +120,12 @@ export default function Drill() {
   // state" pattern: https://react.dev/reference/react/useState#storing-information-from-previous-renders) —
   // the announcement lands in the render that caused it instead of one tick
   // behind, and nothing here reaches outside React.
-  const [live, setLive] = useState({ compiled, errors: 0, finishedAt: null as number | null, message: '' })
+  const [live, setLive] = useState({
+    compiled,
+    errors: 0,
+    finishedAt: null as number | null,
+    message: '',
+  })
   if (live.compiled !== compiled) {
     setLive({ compiled, errors: 0, finishedAt: null, message: '' })
   } else if (state.finishedAt !== null && live.finishedAt === null) {

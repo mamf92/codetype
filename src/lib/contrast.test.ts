@@ -11,10 +11,7 @@ describe('contrastRatio', () => {
   })
 
   it('does not care which colour comes first', () => {
-    expect(contrastRatio('#0c0a08', '#e8dccb')).toBeCloseTo(
-      contrastRatio('#e8dccb', '#0c0a08'),
-      10,
-    )
+    expect(contrastRatio('#0c0a08', '#e8dccb')).toBeCloseTo(contrastRatio('#e8dccb', '#0c0a08'), 10)
   })
 })
 
