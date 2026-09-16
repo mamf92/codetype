@@ -77,9 +77,9 @@ token sat at 1.96:1. An `incomplete` result is not a pass; CI should fail on it
 the same as a violation, once this Playwright harness exists.
 
 Contrast itself is asserted separately, as a deterministic unit test over the
-token table (`src/lib/contrast.test.ts`) — no browser, no gradient to trip
-over. axe still earns its place for what it *can* see: structure, roles,
-names, and reachability.
+token table (`src/lib/themes.test.ts`, one theme per row) — no browser, no
+gradient to trip over. axe still earns its place for what it *can* see:
+structure, roles, names, and reachability.
 
 Also worth asserting: keyboard-only reachability, visible focus, and that
 `prefers-reduced-motion` is respected (it already is).
@@ -232,8 +232,9 @@ high-contrast sibling that clears AAA on every token, syntax colours
 included. This theme, `dark`, keeps its original values and is the one theme
 allowed to fail its own target deliberately; anyone who wants the drama back
 just picks it, and anyone who needs the text legible picks one of the other
-three. `src/styles/index.css` has the palettes, `src/lib/themes.test.ts`
-has the proof.
+three. `src/styles/index.css` has the palettes and
+`docs/decisions/0004-four-theme-system.md` has the reasoning;
+`src/lib/themes.test.ts` has the proof.
 
 The indent dots (`ghost-deep`) stay a defensible exception in every theme:
 decorative, marking whitespace you are explicitly not asked to type, nothing
@@ -253,11 +254,11 @@ for a typing-*speed* trainer, not something this PR assumed an answer to.
 
 ### 5.3 The repository has no LICENSE
 
-It is public with no licence file, which under default copyright means all
-rights reserved — nobody may legally copy, fork or reuse it. That may be exactly
-what you want. If it is not, MIT or Apache-2.0 are the usual picks, and
-Apache-2.0 additionally grants patent rights. Your call; I will not pick one
-for you.
+**Resolved in #4.** It was public with no licence file, which under default
+copyright meant all rights reserved — nobody could legally copy, fork or
+reuse it. MIT now covers the code (`LICENSE`) and CC-BY-SA-4.0 covers lesson
+content (`src/content/LICENSE`) — see
+`docs/decisions/0003-licensing-split.md` for the reasoning behind the split.
 
 ---
 

@@ -1,0 +1,33 @@
+name: Bug report
+description: Something in the app is broken or behaves unexpectedly.
+labels: [bug]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What did you expect, and what did you see instead?
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: How to reproduce
+      description: Steps, and which track/lesson/drill if it's specific to one.
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and OS
+      placeholder: e.g. Firefox 130 on macOS 15
+    validations:
+      required: false
+  - type: textarea
+    id: console
+    attributes:
+      label: Console errors
+      description: Anything in the browser's dev tools console, if relevant.
+      render: text
+    validations:
+      required: false

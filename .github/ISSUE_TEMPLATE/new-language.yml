@@ -1,0 +1,39 @@
+name: New language
+description: Propose adding a language that isn't in the catalogue at all yet.
+labels: [content, new-language]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Adding a language means: an entry in `LANGUAGES`
+        (`src/content/schema.ts`), a Prism grammar registered in
+        `src/lib/highlight.ts`, and at least one track with real content —
+        an empty language entry with nothing behind it isn't useful on its
+        own. See `CONTRIBUTING.md` for the content rules and licence split.
+  - type: input
+    id: language
+    attributes:
+      label: Language
+      placeholder: e.g. Go, Rust, C#
+    validations:
+      required: true
+  - type: input
+    id: grammar
+    attributes:
+      label: Prism grammar name
+      description: The refractor/Prism grammar this would highlight with, if you know it.
+    validations:
+      required: false
+  - type: textarea
+    id: pitch
+    attributes:
+      label: Why this language, and what would the first track cover?
+    validations:
+      required: true
+  - type: checkboxes
+    id: commitment
+    attributes:
+      label: Content
+      options:
+        - label: I'm proposing to write the first track myself, not just the entry
+          required: false
