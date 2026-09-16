@@ -38,7 +38,7 @@ export function TrackCard({
   const accent = stale ? 'fault' : isDispatch ? 'amber' : undefined
 
   return (
-    <Link to={`/drill/${track.id}`} className="group block">
+    <Link to={`/drill/${track.id}`} aria-label={track.title} className="group block">
       <Panel
         {...(accent === undefined ? {} : { accent })}
         className="flex h-full min-h-[216px] flex-col justify-between transition-colors group-hover:border-ink-edge"

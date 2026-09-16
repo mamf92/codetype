@@ -5,8 +5,18 @@ import { TopBar } from './TopBar'
 export function Shell({ children }: { children: ReactNode }) {
   return (
     <div className="crt min-h-dvh">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[60] focus:bg-amber focus:px-4 focus:py-2 focus:text-[11px] focus:tracking-[0.14em] focus:text-ink focus:uppercase"
+      >
+        Skip to content
+      </a>
       <TopBar />
-      <main className="relative z-10 mx-auto w-full max-w-[1440px] px-6 py-8 md:px-10">
+      <main
+        id="main-content"
+        tabIndex={-1}
+        className="relative z-10 mx-auto w-full max-w-[1440px] px-6 py-8 md:px-10 focus:outline-none"
+      >
         {children}
       </main>
     </div>

@@ -1,3 +1,4 @@
+import { forwardRef, type KeyboardEvent as ReactKeyboardEvent } from 'react'
 import { colourForScope } from '@/lib/scopes'
 import type { CompiledDrill, EntryState } from '@/engine/types'
 
@@ -20,18 +21,30 @@ function Caret() {
  * syntax colour, so the line you have done reads as code and the line ahead
  * reads as work. A missed character shows the character that was *expected*,
  * in red — you need to see what you should have hit, not what you did hit.
+ *
+ * The container is the focusable typing surface: it claims keys only while
+ * it holds focus, and its accessible name exposes the passage as readable
+ * text to a screen reader, which otherwise only sees a wall of single-letter
+ * `span`s.
  */
-export function TypingSurface({
-  compiled,
-  entries,
-  cursor,
-}: {
-  compiled: CompiledDrill
-  entries: EntryState[]
-  cursor: number
-}) {
+export const TypingSurface = forwardRef<
+  HTMLDivElement,
+  {
+    compiled: CompiledDrill
+    entries: EntryState[]
+    cursor: number
+    onKeyDown: (event: ReactKeyboardEvent<HTMLDivElement>) => void
+  }
+>(function TypingSurface({ compiled, entries, cursor, onKeyDown }, ref) {
   return (
-    <div className="panel border-t-ink-edge w-full px-6 py-8 shadow-[0_30px_80px_-40px_rgba(255,176,0,0.25)] sm:px-10 sm:py-11">
+    <div
+      ref={ref}
+      tabIndex={0}
+      role="group"
+      aria-label={`Typing surface. Type the passage: ${compiled.source}`}
+      onKeyDown={onKeyDown}
+      className="panel border-t-ink-edge w-full px-6 py-8 shadow-[0_30px_80px_-40px_rgba(255,176,0,0.25)] focus:outline-none focus-visible:ring-1 focus-visible:ring-amber sm:px-10 sm:py-11"
+    >
       <div className="font-mono text-base leading-[2.05] tracking-[-0.04em] break-words whitespace-pre-wrap sm:text-lg md:text-xl">
         {compiled.lines.map((line) => {
           // The newline that ends this line sits just past its last character.
@@ -83,4 +96,4 @@ export function TypingSurface({
       </div>
     </div>
   )
-}
+})

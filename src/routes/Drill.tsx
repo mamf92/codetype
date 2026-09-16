@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { drillSequence, trackById } from '@/content/index'
 import { useTypingSession } from '@/engine/useTypingSession'
@@ -59,7 +59,7 @@ export default function Drill() {
 
   const next = current === undefined ? undefined : sequence[current.position + 1]
 
-  const { compiled, state, metrics, restart } = useTypingSession(
+  const { compiled, state, metrics, restart, surfaceRef, onSurfaceKeyDown } = useTypingSession(
     current?.drill.code ?? '',
     current?.drill.grammar ?? 'typescript',
   )
@@ -96,8 +96,13 @@ export default function Drill() {
         navigate('/explore')
         return
       }
-      // Enter only advances once there is nothing left to type.
+      // Enter only advances once there is nothing left to type, and never
+      // hijacks Enter on a link or button someone tabbed to on purpose.
       if (event.key === 'Enter' && finished) {
+        if (event.target instanceof HTMLElement) {
+          const tag = event.target.tagName
+          if (tag === 'A' || tag === 'BUTTON') return
+        }
         event.preventDefault()
         navigate(next === undefined ? '/' : `/drill/${trackId}/${next.drill.id}`)
       }
@@ -106,6 +111,35 @@ export default function Drill() {
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [finished, navigate, next, trackId])
 
+  // A polite live region for the one AT audience the visual surface leaves
+  // out entirely: announce a miss as it happens, and the result once the
+  // drill ends. Deliberately terse — every keystroke already has a visual
+  // reaction, and this must not become a running commentary.
+  //
+  // Derived during render rather than in an effect (React's own "adjusting
+  // state" pattern: https://react.dev/reference/react/useState#storing-information-from-previous-renders) —
+  // the announcement lands in the render that caused it instead of one tick
+  // behind, and nothing here reaches outside React.
+  const [live, setLive] = useState({
+    compiled,
+    errors: 0,
+    finishedAt: null as number | null,
+    message: '',
+  })
+  if (live.compiled !== compiled) {
+    setLive({ compiled, errors: 0, finishedAt: null, message: '' })
+  } else if (state.finishedAt !== null && live.finishedAt === null) {
+    setLive({
+      compiled,
+      errors: state.errors,
+      finishedAt: state.finishedAt,
+      message: `Drill complete. ${metrics.wpm} words per minute, ${(metrics.accuracy * 100).toFixed(0)} percent accuracy.`,
+    })
+  } else if (state.errors > live.errors && state.finishedAt === null) {
+    setLive({ compiled, errors: state.errors, finishedAt: null, message: 'Miss.' })
+  }
+  const liveMessage = live.message
+
   if (track === undefined || current === undefined) return <NotFound />
 
   const { lesson, drill } = current
@@ -113,6 +147,15 @@ export default function Drill() {
 
   return (
     <div className="crt flex min-h-dvh flex-col">
+      <a
+        href="#drill-main"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[60] focus:bg-amber focus:px-4 focus:py-2 focus:text-[11px] focus:tracking-[0.14em] focus:text-ink focus:uppercase"
+      >
+        Skip to typing surface
+      </a>
+      <div aria-live="polite" className="sr-only">
+        {liveMessage}
+      </div>
       <header className="relative z-10 flex h-[68px] items-center justify-between gap-4 border-b border-ink-line px-6 md:px-10">
         <div className="flex min-w-0 items-center gap-3.5">
           <Link to="/" className="font-display text-[15px] font-semibold text-amber">
@@ -127,11 +170,15 @@ export default function Drill() {
         </div>
         <div className="hidden shrink-0 items-center gap-4.5 text-[10px] tracking-[0.14em] text-faint uppercase sm:flex">
           <span>Esc to bail</span>
-          <span>Tab to restart</span>
+          <span>Alt+R to restart</span>
         </div>
       </header>
 
-      <div className="relative z-10 mx-auto flex w-full max-w-[1040px] flex-1 flex-col items-center justify-center px-6 py-10 md:px-10">
+      <main
+        id="drill-main"
+        tabIndex={-1}
+        className="relative z-10 mx-auto flex w-full max-w-[1040px] flex-1 flex-col items-center justify-center px-6 py-10 md:px-10 focus:outline-none"
+      >
         <div
           className="reveal flex flex-col items-center gap-2.5 text-center"
           style={{ animationDelay: '0.05s' }}
@@ -174,7 +221,13 @@ export default function Drill() {
         </div>
 
         <div className="reveal mt-8 w-full" style={{ animationDelay: '0.22s' }}>
-          <TypingSurface compiled={compiled} entries={state.entries} cursor={state.cursor} />
+          <TypingSurface
+            ref={surfaceRef}
+            compiled={compiled}
+            entries={state.entries}
+            cursor={state.cursor}
+            onKeyDown={onSurfaceKeyDown}
+          />
         </div>
 
         {drill.note !== undefined && !finished && (
@@ -211,7 +264,7 @@ export default function Drill() {
                 onClick={restart}
                 className="border border-ink-edge px-4 py-2 text-[10px] tracking-[0.18em] text-parchment uppercase hover:border-amber hover:text-amber"
               >
-                Again · Tab
+                Again · Alt+R
               </button>
               <Link
                 to={next === undefined ? '/' : `/drill/${track.id}/${next.drill.id}`}
@@ -253,7 +306,7 @@ export default function Drill() {
             </div>
           </div>
         )}
-      </div>
+      </main>
     </div>
   )
 }
