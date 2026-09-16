@@ -62,7 +62,7 @@ export function KeyCap({
   const size = small ? 'w-[26px] h-6 text-xs' : 'w-9 h-[38px] text-[13px]'
   return (
     <span
-      className={`flex items-center justify-center rounded-[3px] border bg-gradient-to-b from-[#1b1610] to-[#120f0b] ${tones[tone]} ${size}`}
+      className={`flex items-center justify-center rounded-[3px] border bg-gradient-to-b from-ink-raised to-ink-sunk ${tones[tone]} ${size}`}
     >
       {/* A space is a real key with a real miss rate; give it a visible face. */}
       {char === ' ' ? '␣' : char === '\n' ? '⏎' : char}
@@ -99,7 +99,7 @@ export function StatTile({
 /** A bare line chart. No axes, no legend — it is a shape, not a table. */
 export function Sparkline({
   values,
-  stroke = '#ffb000',
+  stroke = 'var(--color-amber)',
   height = 28,
 }: {
   values: number[]
@@ -130,16 +130,22 @@ export function Sparkline({
   )
 }
 
-export function Meter({ fraction, tone = '#ffb000' }: { fraction: number; tone?: string }) {
+export function Meter({
+  fraction,
+  tone = 'var(--color-amber)',
+}: {
+  fraction: number
+  tone?: string
+}) {
   const clamped = Math.max(0, Math.min(1, fraction))
   return (
-    <div className="h-1 bg-[#1c1710]">
+    <div className="h-1 bg-ink-line">
       <div
         className="h-full"
         style={{
           width: `${(clamped * 100).toFixed(1)}%`,
           background: tone,
-          boxShadow: `0 0 10px ${tone}80`,
+          boxShadow: `0 0 10px color-mix(in srgb, ${tone} 50%, transparent)`,
         }}
       />
     </div>

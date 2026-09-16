@@ -216,15 +216,19 @@ you have not typed yet** — which is the text you must read in order to type it
 At 1.96:1 that is not an audit nag, it is the primary function of the product
 being hard to see. I chose that value for drama and did not check it.
 
-Proposed fix, which I think keeps the design intact: raise the dim tokens to
-clear 4.5:1 (roughly `#81786e` is the floor on this background), and win the
-drama back at the other end — make the typed-correct state brighter and let it
-carry a faint phosphor glow, so the passage still visibly lights up as you type
-it. Dim-to-lit stays dramatic; the dim end just stops being unreadable.
+**Resolved in #2, differently than proposed above.** Rather than raising this
+one theme's dim tokens and losing the drama, it ships as one of four themes —
+two CRT eras (warm amber tube, cool monochrome screen), each with a
+high-contrast sibling that clears AAA on every token, syntax colours
+included. This theme, `dark`, keeps its original values and is the one theme
+allowed to fail its own target deliberately; anyone who wants the drama back
+just picks it, and anyone who needs the text legible picks one of the other
+three. `src/styles/index.css` has the palettes, `src/lib/themes.test.ts`
+has the proof.
 
-The indent dots are a defensible exception: they are decorative, they mark
-whitespace you are explicitly not asked to type, and nothing is lost if they go
-unseen. Worth a documented suppression rather than a fix.
+The indent dots (`ghost-deep`) stay a defensible exception in every theme:
+decorative, marking whitespace you are explicitly not asked to type, nothing
+lost if they go unseen.
 
 ### 5.2 The drill screen is invisible to a screen reader
 

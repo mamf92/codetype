@@ -131,7 +131,10 @@ export default function Home() {
                 <span className="text-muted">best speed {Math.round(stats.bestWpm)} wpm</span>
               }
             >
-              <Sparkline values={series.map((point) => point.sessions)} stroke="#6b4d17" />
+              <Sparkline
+              values={series.map((point) => point.sessions)}
+              stroke="var(--color-amber-dim)"
+            />
             </StatTile>
           </div>
         </div>
