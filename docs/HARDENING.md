@@ -57,7 +57,9 @@ plausibly could:
 - Forgiving flow: a typo advances the cursor; backspace rewinds and lets you
   fix it; the original mistake still shows in accuracy.
 - Enter is required at a line break, and a stray Enter mid-line does not advance.
-- `Tab` restarts, `Esc` leaves, `Enter` advances only once finished.
+- `Alt+R` restarts, `Esc` leaves, `Enter` advances only once finished, and
+  `Tab` moves focus off the typing surface like anywhere else (#3 — it used
+  to be bound to restart and trap keyboard focus on `<body>`).
 - **Finishing a drill does not jump to the next passage.** This one already
   broke once; it gets a permanent test.
 - Progress survives a reload, and Statistics reflects it.
@@ -67,10 +69,17 @@ plausibly could:
 ### 1.3 Accessibility
 
 `@axe-core/playwright` on each route, failing on serious and critical
-violations. Two things to expect honestly:
+violations — but **not as the contrast gate**. Measured in #3: the page
+background is a layered gradient axe cannot resolve to a single colour, so it
+reports every element's contrast `incomplete` rather than pass or fail. On
+Home that was 60 elements silently unchecked, at the same time the untyped-code
+token sat at 1.96:1. An `incomplete` result is not a pass; CI should fail on it
+the same as a violation, once this Playwright harness exists.
 
-- It **will** fail on first run. §5.1 is not hypothetical.
-- Axe cannot see the real problem on the drill screen. See §5.2.
+Contrast itself is asserted separately, as a deterministic unit test over the
+token table (`src/lib/contrast.test.ts`) — no browser, no gradient to trip
+over. axe still earns its place for what it *can* see: structure, roles,
+names, and reachability.
 
 Also worth asserting: keyboard-only reachability, visible focus, and that
 `prefers-reduced-motion` is respected (it already is).
@@ -228,15 +237,15 @@ unseen. Worth a documented suppression rather than a fix.
 
 ### 5.2 The drill screen is invisible to a screen reader
 
-Not something axe will flag. The typing surface is a `div` of `span`s with no
-accessible name, no live region, and no focusable input — the key handler is on
-`window`. A screen reader user gets no announcement of what to type, whether
-they were right, or that the drill ended.
+**Addressed in #3.** The key handler moved off `window` onto the typing
+surface itself, which is now focusable, has an accessible name exposing the
+passage as readable text, and sits next to a polite live region announcing
+misses and the final result. That was also what fixed the keyboard trap below
+— the surface needed to be a real focusable element either way.
 
-Fully solving this for a _typing-speed trainer_ is a genuine design question,
-not a checkbox, and I would rather you decide the ambition than have me guess.
-The cheap floor is a visually-hidden live region announcing the passage, errors
-and the result. Say if you want it in scope.
+Going further than the cheap floor (a richer reading experience for the
+passage itself, live per-character state) is still a genuine product question
+for a typing-*speed* trainer, not something this PR assumed an answer to.
 
 ### 5.3 The repository has no LICENSE
 
