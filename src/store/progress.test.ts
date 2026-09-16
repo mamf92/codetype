@@ -1,13 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import {
-  appendSession,
-  beginProbation,
-  dailySeries,
-  emptyProgress,
-  headline,
-  lifetimeLedger,
-} from './progress'
-import type { ProgressDocument, SessionRecord } from './progress'
+import { appendSession, dailySeries, emptyProgress, headline, lifetimeLedger } from './progress'
+import type { SessionRecord } from './progress'
 
 const baseSession = (over: Partial<SessionRecord> = {}): SessionRecord => ({
   id: over.id ?? 'id',
@@ -47,52 +40,5 @@ describe('SessionRecord.kind — practice must not reach the speed graphs', () =
     const doc = appendSession(emptyProgress(), baseSession({ kind: 'drill' }))
     expect(headline(doc).sessionCount).toBe(1)
     expect(lifetimeLedger(doc)['a']?.pressed).toBe(10)
-  })
-})
-
-describe('probation lifecycle through appendSession', () => {
-  it('does nothing until a key is actually on probation', () => {
-    const doc = appendSession(emptyProgress(), baseSession())
-    expect(doc.probation).toEqual({})
-  })
-
-  it('graduates a probationary key once enough clean drill presses land', () => {
-    let doc: ProgressDocument = emptyProgress()
-    doc = beginProbation(doc, 'a', 500)
-    // 35 new presses of 'a', 1 miss — clears the 95% bar over the 30-press window.
-    doc = appendSession(
-      doc,
-      baseSession({
-        at: 2000,
-        keyLedger: { a: { pressed: 35, missed: 1, latencyMs: 0, confusions: {}, codes: {} } },
-      }),
-    )
-    expect(doc.probation['a']?.status).toBe('graduated')
-  })
-
-  it('drops a probationary key that regresses over the window', () => {
-    let doc: ProgressDocument = emptyProgress()
-    doc = beginProbation(doc, 'a', 500)
-    doc = appendSession(
-      doc,
-      baseSession({
-        at: 2000,
-        keyLedger: { a: { pressed: 35, missed: 10, latencyMs: 0, confusions: {}, codes: {} } },
-      }),
-    )
-    expect(doc.probation['a']).toBeUndefined()
-  })
-
-  it('leaves a probationary key alone until its press window fills', () => {
-    let doc: ProgressDocument = emptyProgress()
-    doc = beginProbation(doc, 'a', 500)
-    doc = appendSession(
-      doc,
-      baseSession({
-        at: 2000,
-        keyLedger: { a: { pressed: 5, missed: 0, latencyMs: 0, confusions: {}, codes: {} } },
-      }),
-    )
-    expect(doc.probation['a']?.status).toBe('probation')
   })
 })

@@ -50,10 +50,10 @@ function KeyLedgerPanel() {
           </span>
           {worst !== undefined && (
             <Link
-              to={`/practice/${encodeURIComponent(worst.char)}`}
+              to="/practice"
               className="text-[10px] tracking-[0.14em] text-amber uppercase hover:text-amber-soft"
             >
-              Practice worst
+              Practice weak keys
             </Link>
           )}
         </div>
@@ -62,7 +62,7 @@ function KeyLedgerPanel() {
             <span className="text-[11px] text-muted">Nothing is giving you trouble yet.</span>
           ) : (
             bad.map((key) => (
-              <Link key={key.char} to={`/practice/${encodeURIComponent(key.char)}`}>
+              <Link key={key.char} to="/practice">
                 <KeyCap char={key.char} tone="fault" />
               </Link>
             ))
