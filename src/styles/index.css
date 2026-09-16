@@ -1,4 +1,16 @@
-@import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@200;300;400;600&family=Martian+Mono:wght@300;400;500;600&display=swap');
+/*
+ * Fonts are self-hosted, not pulled from Google's CDN.
+ *
+ * Serving them from our own origin keeps every visitor's IP off a third
+ * party (a live GDPR question in the EEA), lets the CSP drop Google's
+ * origins entirely, and removes a render-blocking cross-origin request.
+ *
+ * Both faces are OFL-1.1; the licences ship inside the packages. These
+ * stylesheets carry unicode-range subsets, so a browser downloads the Latin
+ * subset alone even though the package contains Cyrillic and Vietnamese too.
+ */
+@import '@fontsource-variable/unbounded';
+@import '@fontsource-variable/martian-mono';
 @import 'tailwindcss';
 
 /*
@@ -29,8 +41,8 @@
   --color-ghost: #4a4036;
   --color-ghost-deep: #2b241b;
 
-  --font-display: 'Unbounded', 'Trebuchet MS', sans-serif;
-  --font-mono: 'Martian Mono', ui-monospace, 'SF Mono', monospace;
+  --font-display: 'Unbounded Variable', 'Trebuchet MS', sans-serif;
+  --font-mono: 'Martian Mono Variable', ui-monospace, 'SF Mono', monospace;
 }
 
 @layer base {
