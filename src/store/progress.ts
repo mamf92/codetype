@@ -1,8 +1,6 @@
 import type { KeyLedger } from '@/engine/types'
 import { mergeLedgers } from '@/engine/metrics'
 import type { LanguageId, Track } from '@/content/schema'
-import { isReadyToCheck, recheckProbation, startProbation } from '@/engine/practice/mastery'
-import type { KeyProbation } from '@/engine/practice/mastery'
 import type { ThemeId } from '@/lib/themes'
 
 const STORAGE_KEY = 'codetype.progress.v1'
@@ -39,8 +37,6 @@ export interface ProgressDocument {
   version: 1
   favouriteLanguages: LanguageId[]
   sessions: SessionRecord[]
-  /** Keys that have passed all five practice levels, keyed by character — see mastery.ts. */
-  probation: Record<string, KeyProbation>
   /**
    * Undefined means "no choice stored yet" — the signal the welcome screen
    * uses to show itself, including for anyone who used the app before this
@@ -55,7 +51,6 @@ export const emptyProgress = (): ProgressDocument => ({
   version: 1,
   favouriteLanguages: ['typescript', 'react', 'tailwind'],
   sessions: [],
-  probation: {},
 })
 
 /**
@@ -84,7 +79,6 @@ export function readProgress(): ProgressDocument {
         ...session,
         kind: session.kind === 'practice' ? 'practice' : 'drill',
       })),
-      probation: typeof doc.probation === 'object' && doc.probation !== null ? doc.probation : {},
       ...(theme !== undefined ? { theme } : {}),
     }
   } catch {
@@ -101,44 +95,9 @@ export function writeProgress(doc: ProgressDocument): void {
   }
 }
 
-export const appendSession = (doc: ProgressDocument, record: SessionRecord): ProgressDocument => {
-  const withSession = { ...doc, sessions: [...doc.sessions, record].slice(-MAX_SESSIONS) }
-  // Only a real drill is evidence for a probation check — practice reps are
-  // exactly what probation exists to look past (see mastery.ts).
-  return record.kind === 'drill' ? recheckDueProbations(withSession, record.at) : withSession
-}
-
-/**
- * Every probationary or graduated key that's due gets judged against the
- * ledger as it stands after this session. A pass widens its interval; a
- * fail drops it off probation, back to being ranked for practice normally.
- */
-export function recheckDueProbations(doc: ProgressDocument, now: number): ProgressDocument {
-  const entries = Object.values(doc.probation)
-  if (entries.length === 0) return doc
-
-  const ledger = lifetimeLedger(doc)
-  const probation: Record<string, KeyProbation> = {}
-  for (const entry of entries) {
-    if (!isReadyToCheck(entry, ledger, now)) {
-      probation[entry.char] = entry
-      continue
-    }
-    const result = recheckProbation(entry, ledger, now)
-    if (result !== undefined) probation[entry.char] = result
-    // undefined: the key dropped off probation entirely.
-  }
-  return { ...doc, probation }
-}
-
-/** Call when a key has just passed all five practice levels. */
-export const beginProbation = (
-  doc: ProgressDocument,
-  char: string,
-  now: number,
-): ProgressDocument => ({
+export const appendSession = (doc: ProgressDocument, record: SessionRecord): ProgressDocument => ({
   ...doc,
-  probation: { ...doc.probation, [char]: startProbation(char, lifetimeLedger(doc), now) },
+  sessions: [...doc.sessions, record].slice(-MAX_SESSIONS),
 })
 
 // ---------------------------------------------------------------------------

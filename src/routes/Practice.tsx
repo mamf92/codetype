@@ -1,138 +1,81 @@
-import { useEffect, useMemo, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useMemo, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { useTypingSession } from '@/engine/useTypingSession'
 import { TypingSurface } from '@/components/typing/TypingSurface'
-import { recordSession, startKeyProbation, useProgress } from '@/store/useProgress'
+import { recordSession, useProgress } from '@/store/useProgress'
 import { lifetimeLedger } from '@/store/progress'
-import { meanLatency, ownBaselineLatencyMs } from '@/engine/metrics'
-import { confusionPairFor } from '@/engine/practice/ranking'
+import { mergeLedgers } from '@/engine/metrics'
+import type { KeyLedger } from '@/engine/types'
+import { rankForPractice } from '@/engine/practice/ranking'
 import {
-  generateContext,
-  generateDiscrimination,
-  generateInterference,
-  generateIsolation,
-  transferDrills,
-} from '@/engine/practice/generators'
-import type { LevelAttempt } from '@/engine/practice/mastery'
-import { passesLevel } from '@/engine/practice/mastery'
-import NotFound from './NotFound'
-
-const LEVEL_NAMES: Record<number, string> = {
-  1: 'Isolation',
-  2: 'Discrimination',
-  3: 'Interference',
-  4: 'Context',
-  5: 'Transfer',
-}
+  generateWeakKeyPractice,
+  MAX_PRACTICE_KEYS,
+  WEAK_KEY_STEP_NAMES,
+} from '@/engine/practice/weakKeys'
+import { useResultKeyboardNav } from '@/lib/useResultKeyboardNav'
+import { KeyCap } from '@/components/ui/primitives'
 
 export default function Practice() {
-  const { char: encoded } = useParams()
-  const char = encoded === undefined ? undefined : decodeURIComponent(encoded)
   const navigate = useNavigate()
   const progress = useProgress()
 
-  const ledger = useMemo(() => lifetimeLedger(progress), [progress])
-  const baseline = useMemo(() => ownBaselineLatencyMs(ledger), [ledger])
-  const pair = char === undefined ? undefined : confusionPairFor(ledger, char)
+  // Snapshotted once on entry, not re-derived as this session's own presses
+  // land — the set being practiced shouldn't shift mid-session (a real drill
+  // is excluded from this anyway; `lifetimeLedger` only ever sees `kind:
+  // 'drill'` sessions, see src/store/progress.ts).
+  const [ledger] = useState<KeyLedger>(() => lifetimeLedger(progress))
 
-  // Levels 2 and 3 need a real confusable pair to mean anything; without
-  // one (not enough evidence yet in the ledger) they're skipped rather than
-  // silently drilling something that isn't discrimination or interference.
-  const sequence = useMemo(() => (pair === undefined ? [1, 4, 5] : [1, 2, 3, 4, 5]), [pair])
+  const chars = useMemo(
+    () =>
+      rankForPractice(ledger)
+        // A line of nothing but spaces has no reachable caret — see the
+        // indentation invariant in CLAUDE.md. Space isn't practicable here.
+        .filter((key) => key.char !== ' ')
+        .slice(0, MAX_PRACTICE_KEYS)
+        .map((key) => key.char),
+    [ledger],
+  )
+  const passages = useMemo(() => generateWeakKeyPractice(chars), [chars])
+
   const [step, setStep] = useState(0)
-  const level = sequence[step] ?? 1
-
-  // Level 5 offers up to three real drills; retrying cycles to the next one
-  // rather than repeating the same passage.
-  const transferOptions = useMemo(() => (char === undefined ? [] : transferDrills(char, 3)), [char])
-  const [transferIndex, setTransferIndex] = useState(0)
-
-  const passage = useMemo(() => {
-    if (char === undefined) return ''
-    switch (level) {
-      case 1:
-        return generateIsolation(char)
-      case 2:
-        return pair === undefined ? generateIsolation(char) : generateDiscrimination(char, pair)
-      case 3:
-        // Simplified: interferes the pair against itself rather than a
-        // truly different previously-practiced pair, which needs a queue of
-        // keys practiced together that a single-key entry point doesn't
-        // have. Degrades gracefully to level 2's pattern — see generators.ts.
-        return pair === undefined
-          ? generateIsolation(char)
-          : generateInterference([char, pair], [char, pair])
-      case 4:
-        return generateContext(char)
-      default:
-        return (
-          transferOptions[transferIndex % Math.max(1, transferOptions.length)]?.code ??
-          generateContext(char)
-        )
-    }
-  }, [char, level, pair, transferOptions, transferIndex])
+  const passage = passages[step] ?? ''
+  const isLastStep = step === passages.length - 1
 
   const { compiled, state, metrics, restart, surfaceRef, onSurfaceKeyDown } = useTypingSession(
     passage,
     'typescript',
   )
 
-  useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent): void => {
-      if (event.key === 'Escape') navigate('/statistics')
-    }
-    window.addEventListener('keydown', onKeyDown)
-    return () => window.removeEventListener('keydown', onKeyDown)
-  }, [navigate])
-
-  // Derived during render rather than in an effect — React's own
-  // "adjusting state" pattern (see the equivalent in Drill.tsx) — so the
-  // pass/fail verdict lands in the render that finished the attempt, and
-  // resets to 'pending' the instant `restart()` clears `finishedAt` again
-  // without needing a matching setState call at every call site that resets.
-  const [outcome, setOutcome] = useState<{
-    finishedAt: number | null
-    result: 'pending' | 'passed' | 'failed'
-  }>({ finishedAt: null, result: 'pending' })
-  if (outcome.finishedAt !== state.finishedAt) {
-    if (state.finishedAt === null) {
-      setOutcome({ finishedAt: null, result: 'pending' })
-    } else {
-      const stat = char === undefined ? undefined : state.keyLedger[char]
-      const attempt: LevelAttempt = {
-        pressed: stat?.pressed ?? 0,
-        missed: stat?.missed ?? 0,
-        meanLatencyMs: stat === undefined ? null : meanLatency(stat),
-      }
-      setOutcome({
-        finishedAt: state.finishedAt,
-        result: passesLevel(attempt, baseline) ? 'passed' : 'failed',
-      })
-    }
-  }
-  const result = outcome.result
-
-  if (char === undefined) return <NotFound />
+  // Accumulates what's typed across steps so the one recorded session
+  // reflects all five, not just the last — each step is its own compiled
+  // drill, so `state` resets between them.
+  const [accumulated, setAccumulated] = useState<{ ledger: KeyLedger; durationMs: number }>({
+    ledger: {},
+    durationMs: 0,
+  })
 
   const finished = state.finishedAt !== null
-  const isLastLevel = step === sequence.length - 1
 
-  const retry = (): void => {
-    if (level === 5) setTransferIndex((i) => i + 1)
-    restart()
-  }
+  const retry = (): void => restart()
 
   const advance = (): void => {
-    if (!isLastLevel) {
+    const merged = {
+      ledger: mergeLedgers(accumulated.ledger, state.keyLedger),
+      durationMs: accumulated.durationMs + metrics.elapsedMs,
+    }
+    if (!isLastStep) {
+      // No explicit restart: the step change alone gives `useTypingSession` a
+      // new `compiled` passage, which already resets state and refocuses the
+      // surface (see the `[compiled]` effects in engine/useTypingSession.ts).
+      setAccumulated(merged)
       setStep((s) => s + 1)
-      restart()
       return
     }
     recordSession({
       id: crypto.randomUUID(),
       trackId: 'practice',
       lessonId: 'practice',
-      drillId: `practice-${char}`,
+      drillId: `practice-${chars.join('')}`,
       // Practice isn't tied to a real catalogue language; the field exists
       // for SessionRecord's shape, not to imply this was a TypeScript drill.
       language: 'typescript',
@@ -141,12 +84,36 @@ export default function Practice() {
       rawWpm: metrics.rawWpm,
       accuracy: metrics.accuracy,
       correctness: metrics.correctness,
-      durationMs: metrics.elapsedMs,
-      keyLedger: state.keyLedger,
+      durationMs: merged.durationMs,
+      keyLedger: merged.ledger,
       kind: 'practice',
     })
-    startKeyProbation(char)
     navigate('/statistics')
+  }
+
+  useResultKeyboardNav({
+    finished,
+    onBail: () => navigate('/statistics'),
+    onNext: advance,
+    onRetry: retry,
+  })
+
+  if (chars.length === 0) {
+    return (
+      <div className="crt flex min-h-dvh flex-col items-center justify-center gap-5 px-6 text-center">
+        <h1 className="font-display text-xl font-light text-parchment">Nothing to practice yet</h1>
+        <p className="max-w-sm text-[11px] leading-relaxed text-muted">
+          Weak keys are found from real drills. Type a few passages and the keys giving you trouble
+          will show up here.
+        </p>
+        <Link
+          to="/explore"
+          className="bg-amber px-4 py-2 text-[10px] tracking-[0.18em] text-ink uppercase hover:bg-amber-soft"
+        >
+          Find a drill
+        </Link>
+      </div>
+    )
   }
 
   return (
@@ -161,8 +128,10 @@ export default function Practice() {
             Practice
           </Link>
           <span className="text-ink-line">/</span>
-          <span className="truncate text-[11px] text-parchment">
-            key {char === ' ' ? 'space' : char}
+          <span className="flex items-center gap-1.5">
+            {chars.map((char) => (
+              <KeyCap key={char} char={char} tone="fault" small />
+            ))}
           </span>
         </div>
         <div className="hidden shrink-0 items-center gap-4.5 text-[10px] tracking-[0.14em] text-faint uppercase sm:flex">
@@ -173,18 +142,13 @@ export default function Practice() {
       <div className="relative z-10 mx-auto flex w-full max-w-[1040px] flex-1 flex-col items-center justify-center px-6 py-10 md:px-10">
         <div className="reveal flex flex-col items-center gap-2.5 text-center">
           <span className="text-[10px] tracking-[0.22em] text-faint uppercase">
-            Level {level} of 5 · step {step + 1} of {sequence.length}
+            Step {step + 1} of {passages.length}
           </span>
           <h1 className="font-display text-xl font-light text-parchment md:text-2xl">
-            {LEVEL_NAMES[level]}
+            {WEAK_KEY_STEP_NAMES[step] ?? WEAK_KEY_STEP_NAMES[0]}
           </h1>
           <p className="max-w-xl text-xs leading-relaxed text-muted">
-            {level === 1 && `Isolating the reach for "${char === ' ' ? 'space' : char}".`}
-            {level === 2 && pair !== undefined && `Telling "${char}" and "${pair}" apart.`}
-            {level === 3 && pair !== undefined && `"${char}" and "${pair}" under competition.`}
-            {level === 4 &&
-              `"${char === ' ' ? 'space' : char}" inside real shapes, still synthetic.`}
-            {level === 5 && 'Proving it in a real passage from the catalogue.'}
+            No pass or fail here — just reps on the keys giving you trouble.
           </p>
         </div>
 
@@ -204,14 +168,9 @@ export default function Practice() {
             style={{ animationDelay: '0.05s' }}
           >
             <div className="flex flex-wrap items-baseline gap-4">
-              <span
-                className={`font-display text-lg ${result === 'passed' ? 'text-signal' : 'text-fault'}`}
-              >
-                {result === 'passed' ? 'Level cleared' : 'Not yet'}
-              </span>
+              <span className="font-display text-lg text-signal">Step done</span>
               <span className="text-[11px] text-muted">
-                {(state.keyLedger[char]?.pressed ?? 0) - (state.keyLedger[char]?.missed ?? 0)} /{' '}
-                {state.keyLedger[char]?.pressed ?? 0} on &quot;{char === ' ' ? 'space' : char}&quot;
+                {metrics.wpm} wpm · {(metrics.accuracy * 100).toFixed(0)}% accurate
               </span>
             </div>
             <div className="flex items-center gap-3">
@@ -220,17 +179,15 @@ export default function Practice() {
                 onClick={retry}
                 className="border border-ink-edge px-4 py-2 text-[10px] tracking-[0.18em] text-parchment uppercase hover:border-amber hover:text-amber"
               >
-                Retry
+                Retry · R
               </button>
-              {result === 'passed' && (
-                <button
-                  type="button"
-                  onClick={advance}
-                  className="bg-amber px-4 py-2 text-[10px] tracking-[0.18em] text-ink uppercase hover:bg-amber-soft"
-                >
-                  {isLastLevel ? 'Finish · on probation next' : 'Next level'}
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={advance}
+                className="bg-amber px-4 py-2 text-[10px] tracking-[0.18em] text-ink uppercase hover:bg-amber-soft"
+              >
+                {isLastStep ? 'Finish · Enter' : 'Next step · Enter'}
+              </button>
             </div>
           </div>
         )}

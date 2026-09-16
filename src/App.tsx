@@ -30,7 +30,7 @@ export default function App() {
       {/* The drill and practice screens own the whole viewport: no chrome to look away at. */}
       <Route path="/drill/:trackId" element={<Drill />} />
       <Route path="/drill/:trackId/:drillId" element={<Drill />} />
-      <Route path="/practice/:char" element={<Practice />} />
+      <Route path="/practice" element={<Practice />} />
       <Route
         path="*"
         element={

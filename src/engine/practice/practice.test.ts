@@ -1,14 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { corpusCount, corpusTotal, frequencyPer1000 } from './corpusFrequency'
-import { confusionPairFor, rankForPractice, smoothedErrorRate } from './ranking'
-import {
-  generateContext,
-  generateDiscrimination,
-  generateInterference,
-  generateIsolation,
-  transferDrills,
-} from './generators'
-import { isReadyToCheck, passesLevel, recheckProbation, startProbation } from './mastery'
+import { rankForPractice, smoothedErrorRate } from './ranking'
+import { generateContext, generateDiscrimination, generateIsolation } from './generators'
+import { generateWeakKeyPractice, MAX_PRACTICE_KEYS, WEAK_KEY_STEP_NAMES } from './weakKeys'
 import type { KeyLedger, KeyStat } from '@/engine/types'
 
 const key = (over: Partial<KeyStat> = {}): KeyStat => ({
@@ -72,20 +66,6 @@ describe('rankForPractice', () => {
   })
 })
 
-describe('confusionPairFor', () => {
-  it('returns the character most often typed instead', () => {
-    const ledger: KeyLedger = {
-      '[': key({ pressed: 10, missed: 4, confusions: { p: 1, ']': 3 } }),
-    }
-    expect(confusionPairFor(ledger, '[')).toBe(']')
-  })
-
-  it('is undefined with no confusion evidence', () => {
-    const ledger: KeyLedger = { a: key({ pressed: 10, missed: 0 }) }
-    expect(confusionPairFor(ledger, 'a')).toBeUndefined()
-  })
-})
-
 describe('generators', () => {
   it('isolation repeats only the target character', () => {
     const text = generateIsolation('[')
@@ -98,18 +78,6 @@ describe('generators', () => {
     expect(chars).toEqual(new Set(['[', ']']))
   })
 
-  it('interference degrades to one pair when current and previous match', () => {
-    const text = generateInterference(['[', ']'], ['[', ']'])
-    const chars = new Set([...text.replace(/\s/g, '')])
-    expect(chars).toEqual(new Set(['[', ']']))
-  })
-
-  it('interference draws from both pairs when they differ', () => {
-    const text = generateInterference(['[', ']'], [';', "'"])
-    const chars = new Set([...text.replace(/\s/g, '')])
-    expect(chars).toEqual(new Set(['[', ']', ';', "'"]))
-  })
-
   it('context templates actually contain the target character', () => {
     for (const char of ['[', '(', '{', ';']) {
       expect(generateContext(char)).toContain(char)
@@ -119,61 +87,49 @@ describe('generators', () => {
   it('context falls back to a generic shape for an unlisted character', () => {
     expect(generateContext('q')).toContain('q')
   })
+})
 
-  it('transfer drills are real catalogue passages containing the target character', () => {
-    const drills = transferDrills('(')
-    expect(drills.length).toBeGreaterThan(0)
-    for (const drill of drills) expect(drill.code).toContain('(')
-    // Ranked densest-first.
-    for (let i = 1; i < drills.length; i++) {
-      expect(drills[i - 1]!.density).toBeGreaterThanOrEqual(drills[i]!.density)
+describe('generateWeakKeyPractice', () => {
+  it('returns nothing for an empty key set', () => {
+    expect(generateWeakKeyPractice([])).toEqual([])
+  })
+
+  it('returns one passage per named step', () => {
+    const steps = generateWeakKeyPractice(['{', '"', '-'])
+    expect(steps).toHaveLength(WEAK_KEY_STEP_NAMES.length)
+  })
+
+  it('every step contains every practiced key at least once', () => {
+    const keys = ['{', '"', '-']
+    for (const step of generateWeakKeyPractice(keys)) {
+      for (const char of keys) expect(step).toContain(char)
     }
   })
 
-  it('returns nothing for a character absent from the whole catalogue', () => {
-    expect(transferDrills('§')).toEqual([])
-  })
-})
-
-describe('mastery', () => {
-  it('passes a clean, unhesitating attempt', () => {
-    expect(passesLevel({ pressed: 20, missed: 0, meanLatencyMs: 300 }, 300)).toBe(true)
+  it('no line opens on a space — the caret must always have somewhere to land', () => {
+    for (const step of generateWeakKeyPractice(['{', '"', '-'])) {
+      for (const line of step.split('\n')) expect(line.startsWith(' ')).toBe(false)
+    }
   })
 
-  it('fails on accuracy alone, regardless of speed', () => {
-    expect(passesLevel({ pressed: 20, missed: 3, meanLatencyMs: 100 }, 300)).toBe(false)
+  it('degrades gracefully to a solo drill with just one key', () => {
+    const steps = generateWeakKeyPractice(['('])
+    expect(steps).toHaveLength(WEAK_KEY_STEP_NAMES.length)
+    for (const step of steps) expect(step).toContain('(')
   })
 
-  it('fails on hesitation even at perfect accuracy', () => {
-    expect(passesLevel({ pressed: 20, missed: 0, meanLatencyMs: 1000 }, 300)).toBe(false)
+  it('caps the practiced set rather than producing an unreadable passage', () => {
+    // Symbols, not letters — the context step's fallback template ("let X1
+    // = value") is made of ordinary English words, so a letter key would
+    // show up in the output incidentally even when it wasn't practiced.
+    const many = ['!', '@', '#', '$', '%', '^']
+    const steps = generateWeakKeyPractice(many)
+    const used = new Set(steps.join('').replace(/[\s,]/g, ''))
+    for (const extra of many.slice(MAX_PRACTICE_KEYS)) expect(used.has(extra)).toBe(false)
   })
 
-  it('skips the latency bar with no baseline to judge it against', () => {
-    expect(passesLevel({ pressed: 20, missed: 0, meanLatencyMs: 5000 }, null)).toBe(true)
-  })
-
-  it('is not ready to check probation before the press window fills', () => {
-    const ledger: KeyLedger = { '[': key({ pressed: 5, missed: 0 }) }
-    const probation = startProbation('[', ledger, 1000)
-    const later: KeyLedger = { '[': key({ pressed: 20, missed: 0 }) }
-    expect(isReadyToCheck(probation, later, 2000)).toBe(false)
-  })
-
-  it('graduates a probationary key that stays accurate over the window', () => {
-    const ledger: KeyLedger = { '[': key({ pressed: 5, missed: 1 }) }
-    const probation = startProbation('[', ledger, 1000)
-    const after: KeyLedger = { '[': key({ pressed: 40, missed: 2 }) } // 35 new presses, 1 new miss
-    expect(isReadyToCheck(probation, after, 2000)).toBe(true)
-    const result = recheckProbation(probation, after, 2000)
-    expect(result?.status).toBe('graduated')
-    expect(result?.box).toBe(1)
-    expect(result?.nextCheckAt).toBeGreaterThan(2000)
-  })
-
-  it('drops a probationary key that regresses over the window', () => {
-    const ledger: KeyLedger = { '[': key({ pressed: 5, missed: 1 }) }
-    const probation = startProbation('[', ledger, 1000)
-    const after: KeyLedger = { '[': key({ pressed: 40, missed: 10 }) } // 35 new, 9 new missed
-    expect(recheckProbation(probation, after, 2000)).toBeUndefined()
+  it('deduplicates repeated keys instead of drilling the same one twice', () => {
+    const steps = generateWeakKeyPractice(['(', '('])
+    expect(steps).toHaveLength(WEAK_KEY_STEP_NAMES.length)
   })
 })

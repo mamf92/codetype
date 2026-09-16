@@ -5,6 +5,7 @@ import { useTypingSession } from '@/engine/useTypingSession'
 import { recordSession, useProgress } from '@/store/useProgress'
 import { TypingSurface } from '@/components/typing/TypingSurface'
 import { rankForPractice } from '@/engine/practice/ranking'
+import { useResultKeyboardNav } from '@/lib/useResultKeyboardNav'
 import NotFound from './NotFound'
 
 function Readout({
@@ -92,26 +93,12 @@ export default function Drill() {
 
   const finished = state.finishedAt !== null
 
-  useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent): void => {
-      if (event.key === 'Escape') {
-        navigate('/explore')
-        return
-      }
-      // Enter only advances once there is nothing left to type, and never
-      // hijacks Enter on a link or button someone tabbed to on purpose.
-      if (event.key === 'Enter' && finished) {
-        if (event.target instanceof HTMLElement) {
-          const tag = event.target.tagName
-          if (tag === 'A' || tag === 'BUTTON') return
-        }
-        event.preventDefault()
-        navigate(next === undefined ? '/' : `/drill/${trackId}/${next.drill.id}`)
-      }
-    }
-    window.addEventListener('keydown', onKeyDown)
-    return () => window.removeEventListener('keydown', onKeyDown)
-  }, [finished, navigate, next, trackId])
+  useResultKeyboardNav({
+    finished,
+    onBail: () => navigate('/explore'),
+    onNext: () => navigate(next === undefined ? '/' : `/drill/${trackId}/${next.drill.id}`),
+    onRetry: restart,
+  })
 
   // A polite live region for the one AT audience the visual surface leaves
   // out entirely: announce a miss as it happens, and the result once the
@@ -172,7 +159,7 @@ export default function Drill() {
         </div>
         <div className="hidden shrink-0 items-center gap-4.5 text-[10px] tracking-[0.14em] text-faint uppercase sm:flex">
           <span>Esc to bail</span>
-          <span>Alt+R to restart</span>
+          <span>R to restart</span>
         </div>
       </header>
 
@@ -266,7 +253,7 @@ export default function Drill() {
                 onClick={restart}
                 className="border border-ink-edge px-4 py-2 text-[10px] tracking-[0.18em] text-parchment uppercase hover:border-amber hover:text-amber"
               >
-                Again · Alt+R
+                Again · R
               </button>
               <Link
                 to={next === undefined ? '/' : `/drill/${track.id}/${next.drill.id}`}
@@ -284,13 +271,11 @@ export default function Drill() {
             if (worst === undefined || worst.missed === 0) return null
             return (
               <p className="reveal mt-3 w-full text-center text-[11px] text-faint">
-                <Link
-                  to={`/practice/${encodeURIComponent(worst.char)}`}
-                  className="text-amber hover:text-amber-soft"
-                >
-                  Practice &quot;{worst.char === ' ' ? 'space' : worst.char}&quot;
+                <Link to="/practice" className="text-amber hover:text-amber-soft">
+                  Practice weak keys
                 </Link>{' '}
-                — the key that cost you the most this run.
+                — starting with &quot;{worst.char === ' ' ? 'space' : worst.char}&quot;, the key
+                that cost you the most this run.
               </p>
             )
           })()}

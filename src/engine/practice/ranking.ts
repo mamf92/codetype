@@ -59,19 +59,3 @@ export function rankForPractice(ledger: KeyLedger, minimumPresses = 5): Practice
     })
     .sort((a, b) => b.expectedMissesPer1000 - a.expectedMissesPer1000)
 }
-
-/**
- * The character most often typed instead of `char`, if the ledger has real
- * evidence of one — this is what `KeyStat.confusions` exists for. A
- * discrimination or interference drill needs a genuine confusable pair, not
- * an assumed-adjacent key on a keyboard layout that may not even be the
- * user's own (see the Norwegian-keyboard note in `CLAUDE.md`).
- */
-export function confusionPairFor(ledger: KeyLedger, char: string): string | undefined {
-  const confusions = ledger[char]?.confusions
-  if (confusions === undefined) return undefined
-  const ranked = Object.entries(confusions)
-    .filter(([typed]) => typed !== char && typed !== '')
-    .sort((a, b) => b[1] - a[1])
-  return ranked[0]?.[0]
-}
