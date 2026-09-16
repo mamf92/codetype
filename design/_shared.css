@@ -1,0 +1,68 @@
+  *, *::before, *::after { box-sizing: border-box; }
+  body { margin: 0; background: #0c0a08; }
+  .screen {
+    position: relative; width: 1440px; overflow: hidden;
+    background:
+      radial-gradient(120% 90% at 50% -10%, #1b1510 0%, #0c0a08 58%, #060505 100%);
+    color: #e8dccb;
+    font-family: 'Martian Mono', ui-monospace, 'SF Mono', monospace;
+    font-size: 12px; letter-spacing: -0.02em;
+  }
+  /* Scanlines and vignette: atmosphere, never legibility cost. */
+  .screen::before {
+    content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 40;
+    background: repeating-linear-gradient(to bottom,
+      rgba(255, 176, 0, 0.028) 0px, rgba(255, 176, 0, 0.028) 1px,
+      transparent 1px, transparent 3px);
+  }
+  .screen::after {
+    content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 41;
+    background: radial-gradient(75% 60% at 50% 42%, transparent 40%, rgba(0, 0, 0, 0.55) 100%);
+  }
+  .display { font-family: 'Unbounded', 'Trebuchet MS', sans-serif; letter-spacing: -0.03em; }
+  a { color: #ffb000; text-decoration: none; }
+  a:hover { color: #ffd27a; }
+
+  .bar {
+    display: flex; align-items: center; justify-content: space-between;
+    height: 68px; padding: 0 40px; position: relative; z-index: 10;
+    border-bottom: 1px solid #241d15;
+    background: linear-gradient(to bottom, rgba(255, 176, 0, 0.035), transparent);
+  }
+  .nav { display: flex; align-items: center; gap: 28px; }
+  .nav-item { font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: #8f8172; }
+  .nav-item.on { color: #ffb000; }
+  .nav-item.on::after {
+    content: ''; display: block; height: 1px; margin-top: 7px;
+    background: #ffb000; box-shadow: 0 0 8px rgba(255, 176, 0, 0.9);
+  }
+
+  .label {
+    font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: #6f6355; display: flex; align-items: center; gap: 12px;
+  }
+  .label::after { content: ''; flex: 1; height: 1px; background: #201a13; }
+
+  .panel {
+    background: linear-gradient(to bottom, #15120e, #100d0a);
+    border: 1px solid #241d15; padding: 18px 20px;
+  }
+
+  .num { font-family: 'Unbounded', 'Trebuchet MS', sans-serif; font-weight: 300; color: #ffb000; }
+
+  .key {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    width: 36px; height: 38px; border: 1px solid #2c2419; border-radius: 3px;
+    background: linear-gradient(to bottom, #1b1610, #120f0b);
+    font-size: 13px; color: #e8dccb;
+  }
+
+  .reveal { opacity: 0; transform: translateY(10px); animation: rise 0.7s cubic-bezier(0.2, 0.8, 0.3, 1) forwards; }
+  @keyframes rise { to { opacity: 1; transform: none; } }
+
+  /* Phosphor decay: the caret blooms and fades like it is burning the glass. */
+  @keyframes phosphor {
+    0%   { opacity: 1; box-shadow: 0 0 14px 2px rgba(255, 176, 0, 0.85); }
+    55%  { opacity: 0.85; box-shadow: 0 0 6px 0 rgba(255, 176, 0, 0.35); }
+    100% { opacity: 0.32; box-shadow: 0 0 2px 0 rgba(255, 176, 0, 0.12); }
+  }

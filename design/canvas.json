@@ -1,0 +1,25 @@
+{
+  "artboards": [
+    { "file": "Main.dc.html", "title": "Home", "x": 0, "y": 0, "w": 1440, "h": 900 },
+    { "file": "Drill.dc.html", "title": "Drill", "x": 1560, "y": 0, "w": 1440, "h": 900 },
+    { "file": "Explore.dc.html", "title": "Explore", "x": 0, "y": 1080, "w": 1440, "h": 1000 },
+    { "file": "Statistics.dc.html", "title": "Statistics", "x": 1560, "y": 1080, "w": 1440, "h": 1000 }
+  ],
+  "annotations": [
+    {
+      "id": "colour-rules",
+      "x": 0,
+      "y": -210,
+      "w": 620,
+      "text": "Phosphor terminal.\nAmber is the instrument: chrome, carets, your own numbers.\nCyan means you got it right, and is used for nothing else.\nRed means you did not.\nParchment is content.\n\nSyntax colour stays inside the amber family on purpose - a real CRT\nnever had a rainbow, and the typing surface must stay calm."
+    },
+    {
+      "id": "drill-states",
+      "x": 1560,
+      "y": -210,
+      "w": 620,
+      "text": "The Drill artboard shows the exact states the engine produces:\ntyped-correct lit at full brightness, the missed character marked in\nred where it was expected, the caret sitting past it because forgiving\nmode never stalls you, and everything still to come dimmed out.\n\nThe two leading dots are ghosted indentation - shown, never typed."
+    }
+  ],
+  "launch": { "view": "canvas" }
+}

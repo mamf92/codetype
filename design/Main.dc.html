@@ -1,0 +1,297 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@200;300;400;600&family=Martian+Mono:wght@300;400;500;600&display=swap">
+  <style>
+  *, *::before, *::after { box-sizing: border-box; }
+  body { margin: 0; background: #0c0a08; }
+  .screen {
+    position: relative; width: 1440px; overflow: hidden;
+    background:
+      radial-gradient(120% 90% at 50% -10%, #1b1510 0%, #0c0a08 58%, #060505 100%);
+    color: #e8dccb;
+    font-family: 'Martian Mono', ui-monospace, 'SF Mono', monospace;
+    font-size: 12px; letter-spacing: -0.02em;
+  }
+  /* Scanlines and vignette: atmosphere, never legibility cost. */
+  .screen::before {
+    content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 40;
+    background: repeating-linear-gradient(to bottom,
+      rgba(255, 176, 0, 0.028) 0px, rgba(255, 176, 0, 0.028) 1px,
+      transparent 1px, transparent 3px);
+  }
+  .screen::after {
+    content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 41;
+    background: radial-gradient(75% 60% at 50% 42%, transparent 40%, rgba(0, 0, 0, 0.55) 100%);
+  }
+  .display { font-family: 'Unbounded', 'Trebuchet MS', sans-serif; letter-spacing: -0.03em; }
+  a { color: #ffb000; text-decoration: none; }
+  a:hover { color: #ffd27a; }
+
+  .bar {
+    display: flex; align-items: center; justify-content: space-between;
+    height: 68px; padding: 0 40px; position: relative; z-index: 10;
+    border-bottom: 1px solid #241d15;
+    background: linear-gradient(to bottom, rgba(255, 176, 0, 0.035), transparent);
+  }
+  .nav { display: flex; align-items: center; gap: 28px; }
+  .nav-item { font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: #8f8172; }
+  .nav-item.on { color: #ffb000; }
+  .nav-item.on::after {
+    content: ''; display: block; height: 1px; margin-top: 7px;
+    background: #ffb000; box-shadow: 0 0 8px rgba(255, 176, 0, 0.9);
+  }
+
+  .label {
+    font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: #6f6355; display: flex; align-items: center; gap: 12px;
+  }
+  .label::after { content: ''; flex: 1; height: 1px; background: #201a13; }
+
+  .panel {
+    background: linear-gradient(to bottom, #15120e, #100d0a);
+    border: 1px solid #241d15; padding: 18px 20px;
+  }
+
+  .num { font-family: 'Unbounded', 'Trebuchet MS', sans-serif; font-weight: 300; color: #ffb000; }
+
+  .key {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    width: 36px; height: 38px; border: 1px solid #2c2419; border-radius: 3px;
+    background: linear-gradient(to bottom, #1b1610, #120f0b);
+    font-size: 13px; color: #e8dccb;
+  }
+
+  .reveal { opacity: 0; transform: translateY(10px); animation: rise 0.7s cubic-bezier(0.2, 0.8, 0.3, 1) forwards; }
+  @keyframes rise { to { opacity: 1; transform: none; } }
+
+  /* Phosphor decay: the caret blooms and fades like it is burning the glass. */
+  @keyframes phosphor {
+    0%   { opacity: 1; box-shadow: 0 0 14px 2px rgba(255, 176, 0, 0.85); }
+    55%  { opacity: 0.85; box-shadow: 0 0 6px 0 rgba(255, 176, 0, 0.35); }
+    100% { opacity: 0.32; box-shadow: 0 0 2px 0 rgba(255, 176, 0, 0.12); }
+  }
+  </style>
+</helmet>
+<div class="screen" style="height: 900px; display: flex; flex-direction: column;">
+
+  <div class="bar">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <span class="display" style="font-size: 15px; font-weight: 600; color: #ffb000; letter-spacing: 0.02em;">CODETYPE</span>
+      <span style="width: 7px; height: 15px; background: #ffb000; animation: phosphor 1.4s ease-out infinite alternate;"></span>
+    </div>
+    <div class="nav">
+      <span class="nav-item on">Home</span>
+      <span class="nav-item">Explore</span>
+      <span class="nav-item">Statistics</span>
+    </div>
+    <div style="display: flex; align-items: baseline; gap: 14px; font-size: 11px; color: #6f6355;">
+      <span><span class="num" style="font-size: 14px;">68</span> wpm</span>
+      <span style="color: #241d15;">/</span>
+      <span><span class="num" style="font-size: 14px;">94.2</span>%</span>
+    </div>
+  </div>
+
+  <div style="flex: 1; padding: 28px 40px 32px; display: flex; flex-direction: column; gap: 24px; position: relative; z-index: 10;">
+
+    <!-- Where you stand -->
+    <div style="display: grid; grid-template-columns: 1fr 420px; gap: 20px;">
+
+      <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px;">
+
+        <div class="panel reveal" style="animation-delay: 0.05s; display: flex; flex-direction: column; justify-content: space-between; height: 152px;">
+          <div style="font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: #6f6355;">Recent speed</div>
+          <div style="display: flex; align-items: baseline; gap: 6px;">
+            <span class="num" style="font-size: 40px;">68</span>
+            <span style="font-size: 11px; color: #6f6355;">wpm</span>
+          </div>
+          <svg width="100%" height="28" viewBox="0 0 180 28" preserveAspectRatio="none">
+            <polyline points="0,22 20,20 40,23 60,17 80,18 100,13 120,14 140,9 160,10 180,5"
+              fill="none" stroke="#ffb000" stroke-width="1.5" stroke-linejoin="round" opacity="0.85"></polyline>
+          </svg>
+          <div style="font-size: 10px; color: #3ddbd9;">+4 on the ten before</div>
+        </div>
+
+        <div class="panel reveal" style="animation-delay: 0.12s; display: flex; flex-direction: column; justify-content: space-between; height: 152px;">
+          <div style="font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: #6f6355;">Accuracy</div>
+          <div style="display: flex; align-items: baseline; gap: 6px;">
+            <span class="num" style="font-size: 40px;">94.2</span>
+            <span style="font-size: 11px; color: #6f6355;">%</span>
+          </div>
+          <div style="height: 4px; background: #1c1710;">
+            <div style="width: 94.2%; height: 100%; background: #ffb000; box-shadow: 0 0 10px rgba(255, 176, 0, 0.6);"></div>
+          </div>
+          <div style="font-size: 10px; color: #8f8172;">first-press, uncorrected</div>
+        </div>
+
+        <div class="panel reveal" style="animation-delay: 0.19s; display: flex; flex-direction: column; justify-content: space-between; height: 152px;">
+          <div style="font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: #6f6355;">Drills run</div>
+          <div style="display: flex; align-items: baseline; gap: 6px;">
+            <span class="num" style="font-size: 40px;">137</span>
+          </div>
+          <div style="display: flex; gap: 3px;">
+            <div style="flex: 1; height: 4px; background: #ffb000;"></div>
+            <div style="flex: 1; height: 4px; background: #ffb000;"></div>
+            <div style="flex: 1; height: 4px; background: #6b4d17;"></div>
+            <div style="flex: 1; height: 4px; background: #6b4d17;"></div>
+            <div style="flex: 1; height: 4px; background: #241d15;"></div>
+            <div style="flex: 1; height: 4px; background: #241d15;"></div>
+          </div>
+          <div style="font-size: 10px; color: #8f8172;">across 6 tracks</div>
+        </div>
+
+        <div class="panel reveal" style="animation-delay: 0.26s; display: flex; flex-direction: column; justify-content: space-between; height: 152px;">
+          <div style="font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: #6f6355;">Time at keys</div>
+          <div style="display: flex; align-items: baseline; gap: 4px;">
+            <span class="num" style="font-size: 40px;">2</span>
+            <span style="font-size: 11px; color: #6f6355;">h</span>
+            <span class="num" style="font-size: 40px;">14</span>
+            <span style="font-size: 11px; color: #6f6355;">m</span>
+          </div>
+          <svg width="100%" height="28" viewBox="0 0 180 28" preserveAspectRatio="none">
+            <rect x="2"   y="14" width="12" height="14" fill="#6b4d17"></rect>
+            <rect x="24"  y="8"  width="12" height="20" fill="#6b4d17"></rect>
+            <rect x="46"  y="18" width="12" height="10" fill="#6b4d17"></rect>
+            <rect x="68"  y="4"  width="12" height="24" fill="#ffb000"></rect>
+            <rect x="90"  y="12" width="12" height="16" fill="#6b4d17"></rect>
+            <rect x="112" y="20" width="12" height="8"  fill="#6b4d17"></rect>
+            <rect x="134" y="10" width="12" height="18" fill="#ffb000"></rect>
+            <rect x="156" y="16" width="12" height="12" fill="#6b4d17"></rect>
+          </svg>
+          <div style="font-size: 10px; color: #8f8172;">last eight days</div>
+        </div>
+
+      </div>
+
+      <div class="panel reveal" style="animation-delay: 0.33s; height: 152px; display: flex; flex-direction: column; justify-content: space-between;">
+        <div style="display: flex; flex-direction: column; gap: 9px;">
+          <div style="font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: #6f6355;">Favourite keys</div>
+          <div style="display: flex; gap: 8px;">
+            <span class="key" style="color: #3ddbd9; border-color: #1f4a4c;">e</span>
+            <span class="key" style="color: #3ddbd9; border-color: #1f4a4c;">n</span>
+            <span class="key" style="color: #3ddbd9; border-color: #1f4a4c;">t</span>
+            <span class="key" style="color: #3ddbd9; border-color: #1f4a4c;">(</span>
+            <span class="key" style="color: #3ddbd9; border-color: #1f4a4c;">.</span>
+            <span class="key" style="color: #3ddbd9; border-color: #1f4a4c;">=</span>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 9px;">
+          <div style="font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: #6f6355;">Keys that need work</div>
+          <div style="display: flex; gap: 8px;">
+            <span class="key" style="color: #e24b3f; border-color: #4d2019;">&#123;</span>
+            <span class="key" style="color: #e24b3f; border-color: #4d2019;">&#125;</span>
+            <span class="key" style="color: #e24b3f; border-color: #4d2019;">;</span>
+            <span class="key" style="color: #e24b3f; border-color: #4d2019;">_</span>
+            <span class="key" style="color: #e24b3f; border-color: #4d2019;">$</span>
+            <span class="key" style="color: #e24b3f; border-color: #4d2019;">~</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Dispatches -->
+    <div class="reveal" style="animation-delay: 0.4s; display: flex; flex-direction: column; gap: 14px;">
+      <div class="label">Fresh in your stack</div>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px;">
+
+        <div class="panel" style="height: 216px; display: flex; flex-direction: column; justify-content: space-between; border-left: 2px solid #ffb000;">
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <span style="font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: #ffb000;">Dispatch</span>
+              <span style="font-size: 10px; color: #6f6355;">2024-12-05</span>
+            </div>
+            <div class="display" style="font-size: 18px; font-weight: 400; color: #e8dccb; line-height: 1.3;">React 19:<br>The New Hooks</div>
+            <div style="font-size: 11px; line-height: 1.6; color: #8f8172;">use(), useOptimistic and Actions &#8212; typed out until they stop feeling new.</div>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid #241d15; padding-top: 12px;">
+            <span style="font-size: 10px; color: #6f6355;">3 lessons &#183; 9 drills</span>
+            <span style="font-size: 10px; color: #3ddbd9;">in progress &#183; 4/9</span>
+          </div>
+        </div>
+
+        <div class="panel" style="height: 216px; display: flex; flex-direction: column; justify-content: space-between; border-left: 2px solid #ffb000;">
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <span style="font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: #ffb000;">Dispatch</span>
+              <span style="font-size: 10px; color: #6f6355;">2025-01-22</span>
+            </div>
+            <div class="display" style="font-size: 18px; font-weight: 400; color: #e8dccb; line-height: 1.3;">Tailwind v4:<br>CSS-First Config</div>
+            <div style="font-size: 11px; line-height: 1.6; color: #8f8172;">&#64;theme, &#64;utility and the single &#64;import that replaced three directives.</div>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid #241d15; padding-top: 12px;">
+            <span style="font-size: 10px; color: #6f6355;">3 lessons &#183; 12 drills</span>
+            <span style="font-size: 10px; color: #8f8172;">not started</span>
+          </div>
+        </div>
+
+        <div class="panel" style="height: 216px; display: flex; flex-direction: column; justify-content: space-between; border-left: 2px solid #e24b3f;">
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <span style="font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: #ffb000;">Dispatch</span>
+              <span style="font-size: 10px; color: #6f6355;">2024-03-06</span>
+            </div>
+            <div class="display" style="font-size: 18px; font-weight: 400; color: #e8dccb; line-height: 1.3;">TypeScript,<br>Freshly Shipped</div>
+            <div style="font-size: 11px; line-height: 1.6; color: #8f8172;">const type parameters, satisfies in anger, and explicit resource management.</div>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid #241d15; padding-top: 12px;">
+            <span style="font-size: 10px; color: #6f6355;">3 lessons &#183; 9 drills</span>
+            <span style="font-size: 10px; color: #e24b3f;">due for a pass</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Courses -->
+    <div class="reveal" style="animation-delay: 0.48s; display: flex; flex-direction: column; gap: 14px;">
+      <div class="label">Other ground to cover</div>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px;">
+
+        <div class="panel" style="height: 118px; display: flex; align-items: center; gap: 18px;">
+          <span class="display" style="font-size: 20px; font-weight: 200; color: #6b4d17; width: 34px;">TS</span>
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 7px;">
+            <div class="display" style="font-size: 15px; color: #e8dccb;">TypeScript Core</div>
+            <div style="font-size: 10px; color: #8f8172;">5 lessons &#183; 20 drills</div>
+            <div style="height: 3px; background: #1c1710;">
+              <div style="width: 62%; height: 100%; background: #ffb000;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel" style="height: 118px; display: flex; align-items: center; gap: 18px;">
+          <span class="display" style="font-size: 20px; font-weight: 200; color: #6b4d17; width: 34px;">RE</span>
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 7px;">
+            <div class="display" style="font-size: 15px; color: #e8dccb;">React Core</div>
+            <div style="font-size: 10px; color: #8f8172;">5 lessons &#183; 21 drills</div>
+            <div style="height: 3px; background: #1c1710;">
+              <div style="width: 38%; height: 100%; background: #ffb000;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel" style="height: 118px; display: flex; align-items: center; gap: 18px;">
+          <span class="display" style="font-size: 20px; font-weight: 200; color: #6b4d17; width: 34px;">TW</span>
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 7px;">
+            <div class="display" style="font-size: 15px; color: #e8dccb;">Tailwind CSS Core Patterns</div>
+            <div style="font-size: 10px; color: #8f8172;">5 lessons &#183; 25 drills</div>
+            <div style="height: 3px; background: #1c1710;">
+              <div style="width: 12%; height: 100%; background: #ffb000;"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

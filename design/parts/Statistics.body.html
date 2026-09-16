@@ -1,0 +1,145 @@
+<div class="screen" style="height: 1000px; display: flex; flex-direction: column;">
+
+  <div class="bar">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <span class="display" style="font-size: 15px; font-weight: 600; color: #ffb000; letter-spacing: 0.02em;">CODETYPE</span>
+      <span style="width: 7px; height: 15px; background: #ffb000; animation: phosphor 1.4s ease-out infinite alternate;"></span>
+    </div>
+    <div class="nav">
+      <span class="nav-item">Home</span>
+      <span class="nav-item">Explore</span>
+      <span class="nav-item on">Statistics</span>
+    </div>
+    <div style="display: flex; align-items: baseline; gap: 14px; font-size: 11px; color: #6f6355;">
+      <span><span class="num" style="font-size: 14px;">68</span> wpm</span>
+      <span style="color: #241d15;">/</span>
+      <span><span class="num" style="font-size: 14px;">94.2</span>%</span>
+    </div>
+  </div>
+
+  <div style="flex: 1; padding: 32px 40px 30px; display: flex; flex-direction: column; gap: 22px; position: relative; z-index: 10;">
+
+    <div class="reveal" style="animation-delay: 0.05s; display: flex; align-items: flex-end; justify-content: space-between;">
+      <div class="display" style="font-size: 30px; font-weight: 300; color: #e8dccb;">Twenty days at the keys</div>
+      <div style="display: flex; gap: 8px;">
+        <span style="font-size: 10px; color: #e8dccb; border: 1px solid #3a2e1c; padding: 6px 13px;">14 days</span>
+        <span style="font-size: 10px; color: #0c0a08; background: #ffb000; padding: 6px 13px;">20 days</span>
+        <span style="font-size: 10px; color: #e8dccb; border: 1px solid #3a2e1c; padding: 6px 13px;">All time</span>
+      </div>
+    </div>
+
+    <!-- Speed over time: the graph the whole product exists to move. -->
+    <div class="panel reveal" style="animation-delay: 0.12s; height: 284px; display: flex; flex-direction: column; gap: 14px; padding: 20px 24px;">
+      <div style="display: flex; align-items: baseline; justify-content: space-between;">
+        <span style="font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: #6f6355;">Best speed per day</span>
+        <span style="font-size: 10px; color: #3ddbd9;">+19 wpm since you started</span>
+      </div>
+      <div style="flex: 1; display: flex; gap: 14px;">
+        <div style="display: flex; flex-direction: column; justify-content: space-between; font-size: 9px; color: #4a4036; padding: 2px 0;">
+          <span>80</span><span>70</span><span>60</span><span>50</span><span>40</span>
+        </div>
+        <svg width="100%" height="100%" viewBox="0 0 1000 200" preserveAspectRatio="none" style="flex: 1; overflow: visible;">
+          <defs>
+            <linearGradient id="fade" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#ffb000" stop-opacity="0.34"></stop>
+              <stop offset="100%" stop-color="#ffb000" stop-opacity="0"></stop>
+            </linearGradient>
+          </defs>
+          <line x1="0" y1="0"   x2="1000" y2="0"   stroke="#1c1710" stroke-width="1"></line>
+          <line x1="0" y1="50"  x2="1000" y2="50"  stroke="#1c1710" stroke-width="1"></line>
+          <line x1="0" y1="100" x2="1000" y2="100" stroke="#1c1710" stroke-width="1"></line>
+          <line x1="0" y1="150" x2="1000" y2="150" stroke="#1c1710" stroke-width="1"></line>
+          <line x1="0" y1="200" x2="1000" y2="200" stroke="#241d15" stroke-width="1"></line>
+          <polygon fill="url(#fade)" points="0,140 53,130 105,145 158,120 211,110 263,125 316,100 368,105 421,90 474,95 526,80 579,85 632,70 684,75 737,80 789,60 842,65 895,50 947,55 1000,45 1000,200 0,200"></polygon>
+          <polyline fill="none" stroke="#ffb000" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"
+            points="0,140 53,130 105,145 158,120 211,110 263,125 316,100 368,105 421,90 474,95 526,80 579,85 632,70 684,75 737,80 789,60 842,65 895,50 947,55 1000,45"></polyline>
+          <circle cx="1000" cy="45" r="4" fill="#ffb000"></circle>
+        </svg>
+      </div>
+      <div style="display: flex; justify-content: space-between; font-size: 9px; color: #4a4036; padding-left: 32px;">
+        <span>26 Aug</span><span>31 Aug</span><span>05 Sep</span><span>10 Sep</span><span>16 Sep</span>
+      </div>
+    </div>
+
+    <div class="reveal" style="animation-delay: 0.2s; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+
+      <div class="panel" style="height: 208px; display: flex; flex-direction: column; gap: 14px; padding: 20px 24px;">
+        <div style="display: flex; align-items: baseline; justify-content: space-between;">
+          <span style="font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: #6f6355;">Accuracy, first press</span>
+          <span style="font-size: 10px; color: #8f8172;">holding near 94%</span>
+        </div>
+        <svg width="100%" height="100%" viewBox="0 0 480 110" preserveAspectRatio="none" style="flex: 1;">
+          <line x1="0" y1="27" x2="480" y2="27" stroke="#1c1710"></line>
+          <line x1="0" y1="55" x2="480" y2="55" stroke="#1c1710"></line>
+          <line x1="0" y1="83" x2="480" y2="83" stroke="#1c1710"></line>
+          <polyline fill="none" stroke="#3ddbd9" stroke-width="2" stroke-linejoin="round"
+            points="0,86 25,74 51,80 76,62 101,66 126,54 152,58 177,44 202,50 228,38 253,42 278,34 303,40 329,28 354,32 379,24 404,30 430,20 455,26 480,18"></polyline>
+          <circle cx="480" cy="18" r="3.5" fill="#3ddbd9"></circle>
+        </svg>
+      </div>
+
+      <div class="panel" style="height: 208px; display: flex; flex-direction: column; gap: 14px; padding: 20px 24px;">
+        <div style="display: flex; align-items: baseline; justify-content: space-between;">
+          <span style="font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: #6f6355;">Keys that need work</span>
+          <span style="font-size: 10px; color: #8f8172;">miss rate, 12+ presses</span>
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; justify-content: space-between; gap: 8px;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <span class="key" style="width: 26px; height: 24px; font-size: 12px; color: #e24b3f; border-color: #4d2019;">&#123;</span>
+            <div style="flex: 1; height: 8px; background: #1c1710;"><div style="width: 30%; height: 100%; background: #e24b3f;"></div></div>
+            <span style="font-size: 10px; color: #8f8172; width: 34px; text-align: right;">30%</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <span class="key" style="width: 26px; height: 24px; font-size: 12px; color: #e24b3f; border-color: #4d2019;">;</span>
+            <div style="flex: 1; height: 8px; background: #1c1710;"><div style="width: 24%; height: 100%; background: #e24b3f;"></div></div>
+            <span style="font-size: 10px; color: #8f8172; width: 34px; text-align: right;">24%</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <span class="key" style="width: 26px; height: 24px; font-size: 12px; color: #e24b3f; border-color: #4d2019;">_</span>
+            <div style="flex: 1; height: 8px; background: #1c1710;"><div style="width: 19%; height: 100%; background: #e24b3f;"></div></div>
+            <span style="font-size: 10px; color: #8f8172; width: 34px; text-align: right;">19%</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <span class="key" style="width: 26px; height: 24px; font-size: 12px; color: #c98a2f; border-color: #3a2e1c;">$</span>
+            <div style="flex: 1; height: 8px; background: #1c1710;"><div style="width: 16%; height: 100%; background: #c98a2f;"></div></div>
+            <span style="font-size: 10px; color: #8f8172; width: 34px; text-align: right;">16%</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <span class="key" style="width: 26px; height: 24px; font-size: 12px; color: #c98a2f; border-color: #3a2e1c;">~</span>
+            <div style="flex: 1; height: 8px; background: #1c1710;"><div style="width: 14%; height: 100%; background: #c98a2f;"></div></div>
+            <span style="font-size: 10px; color: #8f8172; width: 34px; text-align: right;">14%</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="reveal" style="animation-delay: 0.28s; display: flex; flex-direction: column; gap: 10px;">
+      <div class="label">Track by track</div>
+      <div style="display: flex; flex-direction: column;">
+        <div style="display: grid; grid-template-columns: 2.4fr 1fr 0.8fr 0.8fr 1fr 1.2fr; gap: 12px; padding: 9px 14px; font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase; color: #6f6355; border-bottom: 1px solid #241d15;">
+          <span>Track</span><span>Last run</span><span>Runs</span><span>Best</span><span>Avg accuracy</span><span>Freshness</span>
+        </div>
+        <div style="display: grid; grid-template-columns: 2.4fr 1fr 0.8fr 0.8fr 1fr 1.2fr; gap: 12px; padding: 11px 14px; font-size: 11px; color: #e8dccb; border-bottom: 1px solid #15120e;">
+          <span>React 19: The New Hooks</span><span style="color: #8f8172;">today</span><span>18</span><span class="num">71</span><span>93.4%</span><span style="color: #3ddbd9;">fresh</span>
+        </div>
+        <div style="display: grid; grid-template-columns: 2.4fr 1fr 0.8fr 0.8fr 1fr 1.2fr; gap: 12px; padding: 11px 14px; font-size: 11px; color: #e8dccb; border-bottom: 1px solid #15120e; background: #100d0a;">
+          <span>TypeScript Core</span><span style="color: #8f8172;">2 days ago</span><span>46</span><span class="num">74</span><span>95.1%</span><span style="color: #3ddbd9;">fresh</span>
+        </div>
+        <div style="display: grid; grid-template-columns: 2.4fr 1fr 0.8fr 0.8fr 1fr 1.2fr; gap: 12px; padding: 11px 14px; font-size: 11px; color: #e8dccb; border-bottom: 1px solid #15120e;">
+          <span>React Core</span><span style="color: #8f8172;">5 days ago</span><span>39</span><span class="num">69</span><span>94.0%</span><span style="color: #3ddbd9;">fresh</span>
+        </div>
+        <div style="display: grid; grid-template-columns: 2.4fr 1fr 0.8fr 0.8fr 1fr 1.2fr; gap: 12px; padding: 11px 14px; font-size: 11px; color: #e8dccb; border-bottom: 1px solid #15120e; background: #100d0a;">
+          <span>Tailwind CSS Core Patterns</span><span style="color: #8f8172;">9 days ago</span><span>11</span><span class="num">63</span><span>91.7%</span><span style="color: #c98a2f;">ageing</span>
+        </div>
+        <div style="display: grid; grid-template-columns: 2.4fr 1fr 0.8fr 0.8fr 1fr 1.2fr; gap: 12px; padding: 11px 14px; font-size: 11px; color: #e8dccb; border-bottom: 1px solid #15120e;">
+          <span>TypeScript, Freshly Shipped</span><span style="color: #8f8172;">34 days ago</span><span>23</span><span class="num">66</span><span>92.8%</span><span style="color: #e24b3f;">due for a pass</span>
+        </div>
+        <div style="display: grid; grid-template-columns: 2.4fr 1fr 0.8fr 0.8fr 1fr 1.2fr; gap: 12px; padding: 11px 14px; font-size: 11px; color: #55493c; background: #100d0a;">
+          <span>Tailwind v4: CSS-First Config</span><span>&#8212;</span><span>0</span><span>&#8212;</span><span>&#8212;</span><span>never run</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

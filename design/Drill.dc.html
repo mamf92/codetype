@@ -1,0 +1,159 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@200;300;400;600&family=Martian+Mono:wght@300;400;500;600&display=swap">
+  <style>
+  *, *::before, *::after { box-sizing: border-box; }
+  body { margin: 0; background: #0c0a08; }
+  .screen {
+    position: relative; width: 1440px; overflow: hidden;
+    background:
+      radial-gradient(120% 90% at 50% -10%, #1b1510 0%, #0c0a08 58%, #060505 100%);
+    color: #e8dccb;
+    font-family: 'Martian Mono', ui-monospace, 'SF Mono', monospace;
+    font-size: 12px; letter-spacing: -0.02em;
+  }
+  /* Scanlines and vignette: atmosphere, never legibility cost. */
+  .screen::before {
+    content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 40;
+    background: repeating-linear-gradient(to bottom,
+      rgba(255, 176, 0, 0.028) 0px, rgba(255, 176, 0, 0.028) 1px,
+      transparent 1px, transparent 3px);
+  }
+  .screen::after {
+    content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 41;
+    background: radial-gradient(75% 60% at 50% 42%, transparent 40%, rgba(0, 0, 0, 0.55) 100%);
+  }
+  .display { font-family: 'Unbounded', 'Trebuchet MS', sans-serif; letter-spacing: -0.03em; }
+  a { color: #ffb000; text-decoration: none; }
+  a:hover { color: #ffd27a; }
+
+  .bar {
+    display: flex; align-items: center; justify-content: space-between;
+    height: 68px; padding: 0 40px; position: relative; z-index: 10;
+    border-bottom: 1px solid #241d15;
+    background: linear-gradient(to bottom, rgba(255, 176, 0, 0.035), transparent);
+  }
+  .nav { display: flex; align-items: center; gap: 28px; }
+  .nav-item { font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: #8f8172; }
+  .nav-item.on { color: #ffb000; }
+  .nav-item.on::after {
+    content: ''; display: block; height: 1px; margin-top: 7px;
+    background: #ffb000; box-shadow: 0 0 8px rgba(255, 176, 0, 0.9);
+  }
+
+  .label {
+    font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: #6f6355; display: flex; align-items: center; gap: 12px;
+  }
+  .label::after { content: ''; flex: 1; height: 1px; background: #201a13; }
+
+  .panel {
+    background: linear-gradient(to bottom, #15120e, #100d0a);
+    border: 1px solid #241d15; padding: 18px 20px;
+  }
+
+  .num { font-family: 'Unbounded', 'Trebuchet MS', sans-serif; font-weight: 300; color: #ffb000; }
+
+  .key {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    width: 36px; height: 38px; border: 1px solid #2c2419; border-radius: 3px;
+    background: linear-gradient(to bottom, #1b1610, #120f0b);
+    font-size: 13px; color: #e8dccb;
+  }
+
+  .reveal { opacity: 0; transform: translateY(10px); animation: rise 0.7s cubic-bezier(0.2, 0.8, 0.3, 1) forwards; }
+  @keyframes rise { to { opacity: 1; transform: none; } }
+
+  /* Phosphor decay: the caret blooms and fades like it is burning the glass. */
+  @keyframes phosphor {
+    0%   { opacity: 1; box-shadow: 0 0 14px 2px rgba(255, 176, 0, 0.85); }
+    55%  { opacity: 0.85; box-shadow: 0 0 6px 0 rgba(255, 176, 0, 0.35); }
+    100% { opacity: 0.32; box-shadow: 0 0 2px 0 rgba(255, 176, 0, 0.12); }
+  }
+  </style>
+</helmet>
+<div class="screen" style="height: 900px; display: flex; flex-direction: column;">
+
+  <div class="bar">
+    <div style="display: flex; align-items: center; gap: 14px;">
+      <span class="display" style="font-size: 15px; font-weight: 600; color: #ffb000;">CODETYPE</span>
+      <span style="color: #241d15;">/</span>
+      <span style="font-size: 11px; color: #8f8172;">React 19: The New Hooks</span>
+      <span style="color: #241d15;">/</span>
+      <span style="font-size: 11px; color: #e8dccb;">useOptimistic</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 18px; font-size: 10px; color: #6f6355;">
+      <span style="letter-spacing: 0.14em; text-transform: uppercase;">Esc to bail</span>
+      <span style="letter-spacing: 0.14em; text-transform: uppercase;">Tab to restart</span>
+    </div>
+  </div>
+
+  <div style="flex: 1; display: flex; flex-direction: column; align-items: center; padding: 34px 40px 0; position: relative; z-index: 10;">
+
+    <!-- The concept comes before the keystrokes: you are rehearsing an idea. -->
+    <div class="reveal" style="animation-delay: 0.05s; width: 100%; max-width: 980px; display: flex; flex-direction: column; gap: 10px; text-align: center; align-items: center;">
+      <div style="font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: #6f6355;">Lesson 2 of 3</div>
+      <div class="display" style="font-size: 24px; font-weight: 300; color: #e8dccb;">useOptimistic</div>
+      <div style="font-size: 12px; line-height: 1.7; color: #8f8172; max-width: 640px;">
+        Show the result before the server agrees to it. The hook takes the settled
+        value and a merge function, and hands back a value that already includes
+        what you are about to send.
+      </div>
+    </div>
+
+    <!-- The four variants of this one idea. Repetition is the whole method. -->
+    <div class="reveal" style="animation-delay: 0.14s; display: flex; align-items: center; gap: 10px; margin-top: 26px;">
+      <span style="font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: #6f6355; margin-right: 6px;">Variants</span>
+      <span style="font-size: 10px; color: #3ddbd9; border: 1px solid #1f4a4c; padding: 5px 11px;">optimistic boolean</span>
+      <span style="font-size: 10px; color: #3ddbd9; border: 1px solid #1f4a4c; padding: 5px 11px;">list via merge</span>
+      <span style="font-size: 10px; color: #0c0a08; background: #ffb000; padding: 5px 11px; box-shadow: 0 0 14px rgba(255, 176, 0, 0.35);">merge function</span>
+      <span style="font-size: 10px; color: #55493c; border: 1px solid #241d15; padding: 5px 11px;">inside a form action</span>
+    </div>
+
+    <!-- The typing surface. Calm by design: the only motion here is the caret. -->
+    <div class="reveal" style="animation-delay: 0.22s; margin-top: 34px; width: 100%; max-width: 980px; background: linear-gradient(to bottom, #15120e, #0e0c09); border: 1px solid #241d15; border-top: 1px solid #3a2e1c; padding: 44px 52px; box-shadow: 0 30px 80px -40px rgba(255, 176, 0, 0.25);">
+      <pre style="margin: 0; font-family: 'Martian Mono', ui-monospace, monospace; font-size: 20px; line-height: 2.05; letter-spacing: -0.04em; white-space: pre-wrap; word-break: break-word;"><span style="color: #ffb000;">const</span><span style="color: #8f8172;"> [</span><span style="color: #e8dccb;">optimistic</span><span style="color: #8f8172;">, </span><span style="color: #e8dccb;">addOptimistic</span><span style="color: #8f8172;">] = </span><span style="color: #e8dccb;">useOptimistic</span><span style="color: #8f8172;">(</span>
+<span style="color: #2b241b;">&#183;&#183;</span><span style="color: #e8dccb;">messages</span><span style="color: #8f8172;">,</span>
+<span style="color: #2b241b;">&#183;&#183;</span><span style="color: #8f8172;">(</span><span style="color: #e8dccb;">state</span><span style="color: #8f8172;">, </span><span style="color: #e8dccb;">n</span><span style="color: #e24b3f; background: rgba(226, 75, 63, 0.14); border-bottom: 2px solid #e24b3f;">e</span><span style="display: inline-block; width: 3px; height: 26px; background: #ffb000; vertical-align: -5px; margin: 0 -1.5px; animation: phosphor 1.1s ease-out infinite alternate;"></span><span style="color: #4a4036;">xt) =&gt; [...state, next],</span>
+<span style="color: #4a4036;">)</span></pre>
+    </div>
+
+    <!-- What the fingers just did, while they are still doing it. -->
+    <div class="reveal" style="animation-delay: 0.3s; margin-top: 30px; width: 100%; max-width: 980px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; background: #241d15; border: 1px solid #241d15;">
+
+      <div style="background: #100d0a; padding: 16px 20px; display: flex; flex-direction: column; gap: 6px;">
+        <span style="font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: #6f6355;">Speed</span>
+        <span><span class="num" style="font-size: 26px;">71</span> <span style="font-size: 10px; color: #6f6355;">wpm</span></span>
+      </div>
+
+      <div style="background: #100d0a; padding: 16px 20px; display: flex; flex-direction: column; gap: 6px;">
+        <span style="font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: #6f6355;">Accuracy</span>
+        <span><span class="num" style="font-size: 26px; color: #3ddbd9;">92</span> <span style="font-size: 10px; color: #6f6355;">%</span></span>
+      </div>
+
+      <div style="background: #100d0a; padding: 16px 20px; display: flex; flex-direction: column; gap: 6px;">
+        <span style="font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: #6f6355;">Missed</span>
+        <span><span class="num" style="font-size: 26px; color: #e24b3f;">1</span> <span style="font-size: 10px; color: #6f6355;">on &#8216;e&#8217;</span></span>
+      </div>
+
+      <div style="background: #100d0a; padding: 16px 20px; display: flex; flex-direction: column; gap: 9px;">
+        <span style="font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: #6f6355;">Through this passage</span>
+        <div style="height: 4px; background: #1c1710;">
+          <div style="width: 58%; height: 100%; background: #ffb000; box-shadow: 0 0 10px rgba(255, 176, 0, 0.55);"></div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+</x-dc>
+</body>
+</html>
