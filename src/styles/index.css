@@ -256,6 +256,7 @@
     visibility: visible;
   }
   100% {
+    visibility: visible;
     opacity: 1;
     transform: none;
   }
