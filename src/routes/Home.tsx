@@ -5,6 +5,7 @@ import type { Track } from '@/content/schema'
 import { useProgress } from '@/store/useProgress'
 import { dailySeries, dueForRevisit, headline, lifetimeLedger, standingFor } from '@/store/progress'
 import { favouriteKeys, troubleKeys } from '@/engine/metrics'
+import { rankForPractice } from '@/engine/practice/ranking'
 import {
   Empty,
   KeyCap,
@@ -21,6 +22,7 @@ function KeyLedgerPanel() {
   const ledger = lifetimeLedger(progress)
   const good = favouriteKeys(ledger)
   const bad = troubleKeys(ledger)
+  const worst = rankForPractice(ledger)[0]
 
   if (good.length === 0) {
     return (
@@ -42,14 +44,28 @@ function KeyLedgerPanel() {
         </div>
       </div>
       <div className="flex flex-col gap-2.5">
-        <div className="text-[10px] tracking-[0.18em] text-faint uppercase">
-          Keys that need work
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-[10px] tracking-[0.18em] text-faint uppercase">
+            Keys that need work
+          </span>
+          {worst !== undefined && (
+            <Link
+              to={`/practice/${encodeURIComponent(worst.char)}`}
+              className="text-[10px] tracking-[0.14em] text-amber uppercase hover:text-amber-soft"
+            >
+              Practice worst
+            </Link>
+          )}
         </div>
         <div className="flex gap-2">
           {bad.length === 0 ? (
             <span className="text-[11px] text-muted">Nothing is giving you trouble yet.</span>
           ) : (
-            bad.map((key) => <KeyCap key={key.char} char={key.char} tone="fault" />)
+            bad.map((key) => (
+              <Link key={key.char} to={`/practice/${encodeURIComponent(key.char)}`}>
+                <KeyCap char={key.char} tone="fault" />
+              </Link>
+            ))
           )}
         </div>
       </div>

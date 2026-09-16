@@ -4,14 +4,16 @@ import Home from '@/routes/Home'
 import Explore from '@/routes/Explore'
 import Statistics from '@/routes/Statistics'
 import Drill from '@/routes/Drill'
+import Practice from '@/routes/Practice'
 import NotFound from '@/routes/NotFound'
 
 export default function App() {
   return (
     <Routes>
-      {/* The drill screen owns the whole viewport: no chrome to look away at. */}
+      {/* The drill and practice screens own the whole viewport: no chrome to look away at. */}
       <Route path="/drill/:trackId" element={<Drill />} />
       <Route path="/drill/:trackId/:drillId" element={<Drill />} />
+      <Route path="/practice/:char" element={<Practice />} />
       <Route
         path="*"
         element={

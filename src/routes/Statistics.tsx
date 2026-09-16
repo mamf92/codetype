@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { TRACKS } from '@/content/index'
 import { useNow } from '@/lib/useNow'
 import { useProgress } from '@/store/useProgress'
@@ -115,7 +116,11 @@ export default function Statistics() {
           ) : (
             <div className="flex flex-1 flex-col justify-between gap-2">
               {trouble.map((key) => (
-                <div key={key.char} className="flex items-center gap-3">
+                <Link
+                  key={key.char}
+                  to={`/practice/${encodeURIComponent(key.char)}`}
+                  className="group flex items-center gap-3"
+                >
                   <KeyCap char={key.char} tone={key.errorRate > 0.18 ? 'fault' : 'warn'} small />
                   <div className="h-2 flex-1 bg-[#1c1710]">
                     <div
@@ -126,10 +131,10 @@ export default function Statistics() {
                       }}
                     />
                   </div>
-                  <span className="w-[34px] text-right text-[10px] text-muted">
+                  <span className="w-[34px] text-right text-[10px] text-muted group-hover:text-amber">
                     {(key.errorRate * 100).toFixed(0)}%
                   </span>
-                </div>
+                </Link>
               ))}
             </div>
           )}

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { compileDrill, normalise } from './compile'
 import { initialSession, reduceSession } from './session'
 import { computeMetrics, favouriteKeys, mergeLedgers, troubleKeys } from './metrics'
-import type { Cell, SessionState } from './types'
+import type { Cell, KeyStat, SessionState } from './types'
 
 const compile = (code: string) => compileDrill(code, 'typescript')
 
@@ -13,13 +13,22 @@ function typeAll(cells: readonly Cell[], input: string, startAt = 0): SessionSta
     state = reduceSession(
       state,
       char === '\n'
-        ? { type: 'newline', at: startAt + i }
-        : { type: 'character', char, at: startAt + i },
+        ? { type: 'newline', code: 'Enter', at: startAt + i }
+        : { type: 'character', char, code: `Key${char.toUpperCase()}`, at: startAt + i },
       cells,
     )
   })
   return state
 }
+
+const stat = (over: Partial<KeyStat> = {}): KeyStat => ({
+  pressed: 0,
+  missed: 0,
+  latencyMs: 0,
+  confusions: {},
+  codes: {},
+  ...over,
+})
 
 describe('normalise', () => {
   it('expands tabs, strips trailing whitespace and surrounding blank lines', () => {
@@ -96,24 +105,24 @@ describe('session', () => {
     const { cells } = compile('ab')
     let state = initialSession(cells.length)
     expect(state.startedAt).toBeNull()
-    state = reduceSession(state, { type: 'character', char: 'a', at: 5000 }, cells)
+    state = reduceSession(state, { type: 'character', char: 'a', code: 'KeyA', at: 5000 }, cells)
     expect(state.startedAt).toBe(5000)
   })
 
   it('requires Enter at a line break and does not consume it otherwise', () => {
     const { cells } = compile('a\nb')
     let state = typeAll(cells, 'a')
-    state = reduceSession(state, { type: 'character', char: 'x', at: 10 }, cells)
+    state = reduceSession(state, { type: 'character', char: 'x', code: 'KeyX', at: 10 }, cells)
     expect(state.cursor).toBe(1) // still waiting on Enter
     expect(state.errors).toBe(1)
-    state = reduceSession(state, { type: 'newline', at: 11 }, cells)
+    state = reduceSession(state, { type: 'newline', code: 'Enter', at: 11 }, cells)
     expect(state.cursor).toBe(2)
   })
 
   it('treats a stray Enter mid-line as an error without advancing', () => {
     const { cells } = compile('ab')
     let state = typeAll(cells, 'a')
-    state = reduceSession(state, { type: 'newline', at: 10 }, cells)
+    state = reduceSession(state, { type: 'newline', code: 'Enter', at: 10 }, cells)
     expect(state.cursor).toBe(1)
     expect(state.errors).toBe(1)
   })
@@ -125,7 +134,7 @@ describe('session', () => {
     state = reduceSession(state, { type: 'backspace' }, cells)
     expect(state.cursor).toBe(1)
     expect(state.entries[1]).toBe('pending')
-    state = reduceSession(state, { type: 'character', char: 'b', at: 20 }, cells)
+    state = reduceSession(state, { type: 'character', char: 'b', code: 'KeyB', at: 20 }, cells)
     expect(state.entries[1]).toBe('correct')
     expect(state.errors).toBe(1) // raw accuracy remembers
     expect(state.keystrokes).toBe(3)
@@ -151,7 +160,7 @@ describe('session', () => {
   it('ignores input once finished', () => {
     const { cells } = compile('a')
     const done = typeAll(cells, 'a')
-    const after = reduceSession(done, { type: 'character', char: 'b', at: 99 }, cells)
+    const after = reduceSession(done, { type: 'character', char: 'b', code: 'KeyB', at: 99 }, cells)
     expect(after).toBe(done)
   })
 
@@ -164,8 +173,21 @@ describe('session', () => {
   it('attributes a miss to the character that was expected', () => {
     const { cells } = compile('{}')
     const state = typeAll(cells, '(]')
-    expect(state.keyLedger['{']).toEqual({ pressed: 1, missed: 1 })
-    expect(state.keyLedger['}']).toEqual({ pressed: 1, missed: 1 })
+    expect(state.keyLedger['{']).toEqual(
+      stat({ pressed: 1, missed: 1, confusions: { '(': 1 }, codes: { 'Key(': 1 } }),
+    )
+    expect(state.keyLedger['}']).toEqual(
+      stat({ pressed: 1, missed: 1, latencyMs: 1, confusions: { ']': 1 }, codes: { 'Key]': 1 } }),
+    )
+  })
+
+  it('records latency as the gap since the previous accepted keystroke', () => {
+    const { cells } = compile('ab')
+    let state = initialSession(cells.length)
+    state = reduceSession(state, { type: 'character', char: 'a', code: 'KeyA', at: 1000 }, cells)
+    state = reduceSession(state, { type: 'character', char: 'b', code: 'KeyB', at: 1400 }, cells)
+    expect(state.keyLedger['a']?.latencyMs).toBe(0) // nothing came before it
+    expect(state.keyLedger['b']?.latencyMs).toBe(400)
   })
 })
 
@@ -175,7 +197,11 @@ describe('metrics', () => {
     let state = initialSession(cells.length)
     // Five correct characters spread across exactly one second.
     ;[...'abcde'].forEach((char, i) => {
-      state = reduceSession(state, { type: 'character', char, at: i * 250 }, cells)
+      state = reduceSession(
+        state,
+        { type: 'character', char, code: `Key${char.toUpperCase()}`, at: i * 250 },
+        cells,
+      )
     })
     const metrics = computeMetrics(state, 1000)
     expect(metrics.elapsedMs).toBe(1000)
@@ -187,7 +213,11 @@ describe('metrics', () => {
     const { cells } = compile('abcde')
     let state = initialSession(cells.length)
     ;[...'abcdx'].forEach((char, i) => {
-      state = reduceSession(state, { type: 'character', char, at: i * 250 }, cells)
+      state = reduceSession(
+        state,
+        { type: 'character', char, code: `Key${char.toUpperCase()}`, at: i * 250 },
+        cells,
+      )
     })
     const metrics = computeMetrics(state, 1000)
     expect(metrics.rawWpm).toBeGreaterThan(metrics.wpm)
@@ -204,23 +234,26 @@ describe('metrics', () => {
 
   it('merges ledgers across sessions', () => {
     const merged = mergeLedgers(
-      { a: { pressed: 2, missed: 1 } },
-      { a: { pressed: 3, missed: 0 }, b: { pressed: 1, missed: 1 } },
+      { a: stat({ pressed: 2, missed: 1, confusions: { s: 1 } }) },
+      {
+        a: stat({ pressed: 3, missed: 0 }),
+        b: stat({ pressed: 1, missed: 1, confusions: { n: 1 } }),
+      },
     )
-    expect(merged['a']).toEqual({ pressed: 5, missed: 1 })
-    expect(merged['b']).toEqual({ pressed: 1, missed: 1 })
+    expect(merged['a']).toEqual(stat({ pressed: 5, missed: 1, confusions: { s: 1 } }))
+    expect(merged['b']).toEqual(stat({ pressed: 1, missed: 1, confusions: { n: 1 } }))
   })
 
   it('ignores keys with too little evidence to judge', () => {
-    const ledger = { z: { pressed: 2, missed: 2 }, a: { pressed: 50, missed: 5 } }
+    const ledger = { z: stat({ pressed: 2, missed: 2 }), a: stat({ pressed: 50, missed: 5 }) }
     expect(troubleKeys(ledger).map((k) => k.char)).toEqual(['a'])
   })
 
   it('ranks trouble keys worst-first and favourites cleanest-first', () => {
     const ledger = {
-      a: { pressed: 100, missed: 1 },
-      ';': { pressed: 40, missed: 12 },
-      '{': { pressed: 30, missed: 3 },
+      a: stat({ pressed: 100, missed: 1 }),
+      ';': stat({ pressed: 40, missed: 12 }),
+      '{': stat({ pressed: 30, missed: 3 }),
     }
     expect(troubleKeys(ledger)[0]?.char).toBe(';')
     expect(favouriteKeys(ledger)[0]?.char).toBe('a')
