@@ -159,7 +159,7 @@ export default function Drill() {
         </div>
         <div className="hidden shrink-0 items-center gap-4.5 text-[10px] tracking-[0.14em] text-faint uppercase sm:flex">
           <span>Esc to bail</span>
-          <span>R to restart</span>
+          <span>Alt+R to restart</span>
         </div>
       </header>
 
@@ -274,8 +274,8 @@ export default function Drill() {
                 <Link to="/practice" className="text-amber hover:text-amber-soft">
                   Practice weak keys
                 </Link>{' '}
-                — starting with &quot;{worst.char === ' ' ? 'space' : worst.char}&quot;, the key
-                that cost you the most this run.
+                — &quot;{worst.char === ' ' ? 'space' : worst.char}&quot; cost you the most this
+                run, and it's not the only one worth another look.
               </p>
             )
           })()}
