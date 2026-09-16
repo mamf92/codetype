@@ -3,6 +3,7 @@ import { mergeLedgers } from '@/engine/metrics'
 import type { LanguageId, Track } from '@/content/schema'
 import { isReadyToCheck, recheckProbation, startProbation } from '@/engine/practice/mastery'
 import type { KeyProbation } from '@/engine/practice/mastery'
+import type { ThemeId } from '@/lib/themes'
 
 const STORAGE_KEY = 'codetype.progress.v1'
 /** Plenty of history for the graphs, far short of a localStorage quota. */
@@ -40,6 +41,14 @@ export interface ProgressDocument {
   sessions: SessionRecord[]
   /** Keys that have passed all five practice levels, keyed by character — see mastery.ts. */
   probation: Record<string, KeyProbation>
+  /**
+   * Undefined means "no choice stored yet" — the signal the welcome screen
+   * uses to show itself, including for anyone who used the app before this
+   * field existed. Deliberately not a version bump: an old-shaped v1
+   * document is still a valid v1 document, just one that hasn't answered
+   * this question.
+   */
+  theme?: ThemeId
 }
 
 export const emptyProgress = (): ProgressDocument => ({
@@ -63,6 +72,8 @@ export function readProgress(): ProgressDocument {
     if (typeof parsed !== 'object' || parsed === null) return emptyProgress()
     const doc = parsed as Partial<ProgressDocument>
     if (doc.version !== 1 || !Array.isArray(doc.sessions)) return emptyProgress()
+    const knownThemes: ThemeId[] = ['dark', 'dark-contrast', 'light', 'light-contrast']
+    const theme = knownThemes.includes(doc.theme as ThemeId) ? doc.theme : undefined
     return {
       version: 1,
       favouriteLanguages: Array.isArray(doc.favouriteLanguages)
@@ -74,6 +85,7 @@ export function readProgress(): ProgressDocument {
         kind: session.kind === 'practice' ? 'practice' : 'drill',
       })),
       probation: typeof doc.probation === 'object' && doc.probation !== null ? doc.probation : {},
+      ...(theme !== undefined ? { theme } : {}),
     }
   } catch {
     return emptyProgress()

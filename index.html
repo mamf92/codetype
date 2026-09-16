@@ -10,6 +10,32 @@
     />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>CodeType</title>
+    <script>
+      // Applies the theme before first paint, so there is no flash of the
+      // default amber theme before React mounts and reads the same value
+      // from src/lib/themes.ts's guessInitialTheme(). Mirrors that function
+      // and src/store/progress.ts's storage key deliberately, rather than
+      // importing them: this has to run synchronously, before any module
+      // script, or the flash it exists to prevent happens anyway.
+      ;(function () {
+        try {
+          var known = ['dark', 'dark-contrast', 'light', 'light-contrast']
+          var raw = localStorage.getItem('codetype.progress.v1')
+          var stored = raw ? JSON.parse(raw).theme : undefined
+          var theme = known.indexOf(stored) !== -1 ? stored : null
+          if (theme === null) {
+            var light = matchMedia('(prefers-color-scheme: light)').matches
+            var more = matchMedia('(prefers-contrast: more)').matches
+            theme = light ? (more ? 'light-contrast' : 'light') : more ? 'dark-contrast' : 'dark'
+          }
+          document.documentElement.setAttribute('data-theme', theme)
+        } catch (e) {
+          // localStorage blocked or corrupt: the default @theme values in
+          // src/styles/index.css already are the "dark" theme, so doing
+          // nothing here still renders something coherent.
+        }
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>

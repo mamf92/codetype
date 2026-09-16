@@ -72,7 +72,10 @@ export default function Practice() {
     }
   }, [char, level, pair, transferOptions, transferIndex])
 
-  const { compiled, state, metrics, restart } = useTypingSession(passage, 'typescript')
+  const { compiled, state, metrics, restart, surfaceRef, onSurfaceKeyDown } = useTypingSession(
+    passage,
+    'typescript',
+  )
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent): void => {
@@ -186,7 +189,13 @@ export default function Practice() {
         </div>
 
         <div className="reveal mt-8 w-full">
-          <TypingSurface compiled={compiled} entries={state.entries} cursor={state.cursor} />
+          <TypingSurface
+            ref={surfaceRef}
+            compiled={compiled}
+            entries={state.entries}
+            cursor={state.cursor}
+            onKeyDown={onSurfaceKeyDown}
+          />
         </div>
 
         {finished && (
