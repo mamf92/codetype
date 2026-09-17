@@ -1,5 +1,4 @@
 import type { KeyLedger, KeyStat } from '@/engine/types'
-import { meanLatency } from '@/engine/metrics'
 import { frequencyPer1000 } from './corpusFrequency'
 
 /**
@@ -31,7 +30,6 @@ export interface PracticeCandidate {
    * "what is my worst percentage" (see #6).
    */
   expectedMissesPer1000: number
-  meanLatencyMs: number | null
 }
 
 /**
@@ -54,7 +52,6 @@ export function rankForPractice(ledger: KeyLedger, minimumPresses = 5): Practice
         smoothedRate,
         frequencyPer1000: freq,
         expectedMissesPer1000: smoothedRate * freq,
-        meanLatencyMs: meanLatency(stat),
       }
     })
     .sort((a, b) => b.expectedMissesPer1000 - a.expectedMissesPer1000)

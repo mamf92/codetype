@@ -56,10 +56,6 @@ export function mergeLedgers(base: KeyLedger, addition: KeyLedger): KeyLedger {
   return merged
 }
 
-/** Mean latency in ms for a key, or null if it has never been pressed. */
-export const meanLatency = (entry: { pressed: number; latencyMs: number }): number | null =>
-  entry.pressed > 0 ? entry.latencyMs / entry.pressed : null
-
 export interface KeyStanding {
   char: string
   pressed: number
