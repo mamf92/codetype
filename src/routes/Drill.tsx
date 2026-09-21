@@ -241,7 +241,7 @@ export default function Drill() {
                     }`}
                   >
                     {closer && (
-                      <span className="mr-1.5 text-[8px] tracking-[0.16em] uppercase opacity-70">
+                      <span className="mr-1.5 text-[8px] tracking-[0.16em] uppercase">
                         Capstone
                       </span>
                     )}
@@ -272,8 +272,15 @@ export default function Drill() {
           // contents and painted over by the readouts below it. Here it stops
           // the shrink instead, so a screen too small to hold everything
           // overflows downwards and scrolls, which is survivable.
+          // Once the run is over the passage is reference material, not
+          // something you are still typing into, so it gives up most of its
+          // floor and lets the result panel take the room instead. Without
+          // that, a short screen finishes a capstone with the score below the
+          // fold.
           className={`reveal w-full ${
-            long ? 'mt-5 sm:flex sm:min-h-[224px] sm:flex-1 sm:flex-col' : 'mt-8'
+            long
+              ? `mt-5 sm:flex sm:flex-1 sm:flex-col ${finished ? 'sm:min-h-24' : 'sm:min-h-[224px]'}`
+              : 'mt-8'
           }`}
           style={{ animationDelay: '0.22s' }}
         >

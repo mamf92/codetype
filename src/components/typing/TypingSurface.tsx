@@ -41,8 +41,8 @@ function Caret() {
  * itself: `scrollIntoView` would scroll the page as well and drag the surface
  * out from under the caret it was trying to reveal.
  *
- * Below `sm` none of that applies. A phone has no room to spare for a
- * 180-pixel window onto the passage, and pairing one with the page scroll it
+ * Below `sm` none of that applies. A phone has no room to give up to a
+ * shrunken window onto the passage, and pairing one with the page scroll it
  * would still need is worse than letting the passage run and the page scroll
  * once.
  */

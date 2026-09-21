@@ -340,7 +340,7 @@ useEffect(() => {
           kind: 'capstone',
           label: 'three hooks stacked into a draft editor',
           brief:
-            'A note editor whose entire behaviour lives in hooks the component never has to know about. One hook debounces any value, a second builds on it to persist a draft, a third tracks connectivity, and the component that uses all three is three lines long.',
+            'A note editor whose entire behaviour lives in hooks the component never has to know about. One hook debounces any value, a second builds on it to persist a draft, a third tracks connectivity, and the component using all three is three lines long. Watch what the draft hook debounces: the key travels with the text, so a note switched mid-keystroke cannot write one draft over another.',
           code: `function useDebounced<T>(value: T, delay: number): T {
   const [settled, setSettled] = useState(value)
   useEffect(() => {
@@ -351,12 +351,13 @@ useEffect(() => {
 }
 
 function useLocalDraft(key: string) {
-  const [text, setText] = useState(() => localStorage.getItem(key) ?? '')
-  const settled = useDebounced(text, 400)
+  const [draft, setDraft] = useState(() => ({ key, text: localStorage.getItem(key) ?? '' }))
+  if (draft.key !== key) setDraft({ key, text: localStorage.getItem(key) ?? '' })
+  const settled = useDebounced(draft, 400)
   useEffect(() => {
-    localStorage.setItem(key, settled)
-  }, [key, settled])
-  return [text, setText] as const
+    localStorage.setItem(settled.key, settled.text)
+  }, [settled])
+  return [draft.text, (text: string) => setDraft({ key, text })] as const
 }
 
 function useOnlineStatus() {
@@ -372,8 +373,7 @@ function useOnlineStatus() {
 export function DraftEditor({ noteId }: { noteId: string }) {
   const [text, setText] = useLocalDraft(\`draft:\${noteId}\`)
   const online = useOnlineStatus()
-  const onChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => setText(e.target.value)
-  return <textarea value={text} disabled={!online} onChange={onChange} />
+  return <textarea value={text} disabled={!online} onChange={(e) => setText(e.target.value)} />
 }`,
           grammar: 'tsx',
         },
@@ -448,7 +448,7 @@ function List<T>({ items, renderItem }: ListProps<T>) {
           kind: 'capstone',
           label: 'a generic table component',
           brief:
-            'The component every app eventually writes. Its props are declared as an interface, not inline; a generic parameter ties the columns to the rows; optional fields carry a default and an optional-call; and children arrive as ReactNode rather than a string.',
+            'The component every app eventually writes. Its props are declared as an interface, not inline; a generic parameter ties the columns to the rows; a cell renderer is typed as ReactNode rather than a string; and the two optional props carry, respectively, a default in the destructure and an optional call at the site that uses it.',
           code: `interface Column<T> {
   key: keyof T & string
   render?: (row: T) => React.ReactNode
@@ -457,7 +457,6 @@ function List<T>({ items, renderItem }: ListProps<T>) {
 interface TableProps<T> {
   rows: T[]
   columns: Column<T>[]
-  caption: React.ReactNode
   emptyMessage?: string
   onRowClick?: (row: T) => void
 }
@@ -465,21 +464,21 @@ interface TableProps<T> {
 export function Table<T extends { id: string }>({
   rows,
   columns,
-  caption,
   emptyMessage = 'Nothing here yet',
   onRowClick,
 }: TableProps<T>) {
   if (rows.length === 0) return <p>{emptyMessage}</p>
   return (
     <table>
-      <caption>{caption}</caption>
-      {rows.map((row) => (
-        <tr key={row.id} onClick={() => onRowClick?.(row)}>
-          {columns.map((col) => (
-            <td key={col.key}>{col.render?.(row) ?? String(row[col.key])}</td>
-          ))}
-        </tr>
-      ))}
+      <tbody>
+        {rows.map((row) => (
+          <tr key={row.id} onClick={() => onRowClick?.(row)}>
+            {columns.map((col) => (
+              <td key={col.key}>{col.render?.(row) ?? String(row[col.key])}</td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
     </table>
   )
 }`,
@@ -677,33 +676,38 @@ export const reactFrontier: Track = {
           kind: 'capstone',
           label: 'a product page that reads promises in render',
           brief:
-            'A product page with no useEffect and no loading state of its own. use reads a context at the top of one component, unwraps a promise in another, and is called after an early return in a third, which no other hook is allowed to do.',
+            'A product page with no useEffect and no loading state of its own. use reads a context at the top of one component, unwraps a promise in two more, and in StockLine is called after an early return, which no other hook is allowed to do. Note that every promise arrives as a prop: one created during render would be a different promise each render, and the component would suspend forever.',
           code: `const LocaleContext = createContext('en')
 
-interface Review {
-  id: string
-  body: string
+interface PageProps {
+  product: Promise<{ title: string }>
+  reviews: Promise<{ id: string; body: string }[]>
+  stock: Promise<number>
+  inStock: boolean
 }
 
-function ReviewList({ reviews }: { reviews: Promise<Review[]> }) {
+function ReviewList({ reviews }: { reviews: PageProps['reviews'] }) {
   const locale = use(LocaleContext)
   const list = use(reviews)
   return (
     <ul lang={locale}>
-      {list.map((review) => (
-        <li key={review.id}>{review.body}</li>
-      ))}
+      {list.map((r) => <li key={r.id}>{r.body}</li>)}
     </ul>
   )
 }
 
-export function ProductPage({ id, showReviews }: { id: string; showReviews: boolean }) {
-  const product = use(fetchProduct(id))
-  if (!showReviews) return <h1>{product.title}</h1>
-  const reviews = fetchReviews(id)
+function StockLine({ show, stock }: { show: boolean; stock: Promise<number> }) {
+  if (!show) return null
+  const left = use(stock)
+  return <p>{left} left</p>
+}
+
+export function ProductPage({ product, reviews, stock, inStock }: PageProps) {
+  const info = use(product)
   return (
-    <Suspense fallback={<p>Loading reviews</p>}>
-      <h1>{product.title}</h1>
+    <Suspense fallback={<p>Loading</p>}>
+      <h1>{info.title}</h1>
+      <StockLine show={inStock} stock={stock} />
       <ReviewList reviews={reviews} />
     </Suspense>
   )
@@ -929,7 +933,7 @@ export function CartSummary({ cart }: { cart: Promise<CartLine[]> }) {
           kind: 'capstone',
           label: 'QuantityStepper.tsx',
           brief:
-            'The write side, shown before it is true. The merge function replaces one line in the list, the stepper reads the optimistic copy rather than the prop, and the real request is awaited afterwards so a rejection simply reverts the number.',
+            'The write side, shown before it is true. The merge function replaces one line in the list and the stepper reads the optimistic copy rather than the prop. The transition is not decoration: an optimistic update made outside an action or a transition is thrown away, so a plain click handler would render nothing.',
           code: `interface StepperProps {
   line: CartLine
   lines: CartLine[]
@@ -943,10 +947,12 @@ export function QuantityStepper({ line, lines }: StepperProps) {
   )
   const shown = optimistic.find((row) => row.sku === line.sku) ?? line
 
-  async function change(delta: number) {
+  function change(delta: number) {
     const next = { ...shown, qty: Math.max(0, shown.qty + delta) }
-    setOptimistic(next)
-    await updateCartLine(next.sku, next.qty)
+    startTransition(async () => {
+      setOptimistic(next)
+      await updateCartLine(next.sku, next.qty)
+    })
   }
 
   return (

@@ -90,9 +90,10 @@ a test.
 - **The drill screen has two layouts, and the long one only exists from
   `sm` up.** A passage over 12 lines pins the page to the viewport height
   and gives the text a flex-sized scrolling window with the caret kept
-  inside it (`isLongPassage` in `components/typing/TypingSurface.tsx`).
-  Below `sm` none of that applies — a phone has no room for a 180-pixel
-  window onto the passage, so it runs full length and the page scrolls once.
+  inside it (`isLongPassage` in `src/lib/passage.ts`, read by both ends of
+  the flex chain). Below `sm` none of that applies — a phone has no room to
+  give up to a shrunken window onto the passage, so it runs full length and
+  the page scrolls once.
 - **`SessionRecord` will eventually need `kind: 'drill' | 'practice'`** once
   targeted key-practice sessions land (see the open issue for it) — practice
   reps must never reach the speed graphs the same way a real drill does.

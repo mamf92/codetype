@@ -61,8 +61,8 @@ lesson had before this is still the correct way to write the common case.
   fit under a title, a concept, a chip row and a brief, so from `sm` up a long
   drill pins the page to the viewport height and gives the passage a flex-
   sized scrolling window with the caret kept inside it. Below `sm` it does
-  not: a phone has no room for a 180-pixel window onto the passage, and the
-  page simply scrolls, once.
+  not: a phone has no room to give up to a shrunken window onto the
+  passage, and the page simply scrolls, once.
 - A capstone no longer repeats its lesson's `concept` above the passage. It
   has been on screen for every variant of the lesson already, and the brief
   is the more specific thing to read. A review is the exception — its concept
