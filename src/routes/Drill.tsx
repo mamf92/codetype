@@ -348,8 +348,8 @@ export default function Drill() {
                 <Link to="/practice" className="text-amber hover:text-amber-soft">
                   Practice weak keys
                 </Link>{' '}
-                — &quot;{worst.char === ' ' ? 'space' : worst.char}&quot; cost you the most this
-                run, and it's not the only one worth another look.
+                — &quot;{worst.char}&quot; cost you the most this run, and it's not the only one
+                worth another look.
               </p>
             )
           })()}
