@@ -30,6 +30,13 @@ export type Grammar =
  */
 export type Level = 'foundation' | 'working' | 'frontier'
 
+/**
+ * `variant`  — one short call site of the concept. Most drills are these.
+ * `capstone` — the concept put to work in a fictional but plausible
+ *              codebase, long enough to feel like real writing.
+ */
+export type DrillKind = 'variant' | 'capstone'
+
 /** A single typeable passage. */
 export interface Drill {
   id: string
@@ -40,7 +47,24 @@ export interface Drill {
   grammar: Grammar
   /** One sentence on what makes *this* variant different from its siblings. */
   note?: string
+  /** Absent means `variant` — the shape every drill had before capstones. */
+  kind?: DrillKind
+  /**
+   * Capstones only, and required on them: the scenario, shown *above* the
+   * passage rather than below it. A `note` explains how a variant differs
+   * from its siblings; a `brief` sets up the fictional situation you are
+   * about to type your way through, which you need before you start, not
+   * after.
+   */
+  brief?: string
 }
+
+/**
+ * `concept` — one idea, several variants, one capstone.
+ * `review`  — no new idea of its own: a single project that puts the
+ *             preceding block of concepts back to work together.
+ */
+export type LessonKind = 'concept' | 'review'
 
 /** A concept, expressed several ways. */
 export interface Lesson {
@@ -51,6 +75,15 @@ export interface Lesson {
   /** The thing you are supposed to walk away knowing. 1-3 sentences. */
   concept: string
   sourceUrl?: string
+  /** Absent means `concept`. */
+  kind?: LessonKind
+  /**
+   * Reviews only, and required on them: the ids of the concept lessons this
+   * review pulls together, in the order they appear in the track. Kept as a
+   * list rather than a count so the link is checkable — `content.test.ts`
+   * holds every concept lesson to being reviewed exactly once.
+   */
+  covers?: string[]
   drills: Drill[]
 }
 
@@ -78,6 +111,43 @@ export const isDispatch = (track: Track): boolean => track.kind === 'dispatch'
 
 export const drillCount = (track: Track): number =>
   track.lessons.reduce((total, lesson) => total + lesson.drills.length, 0)
+
+// ---------------------------------------------------------------------------
+// Kinds
+//
+// Both kind fields are optional so that the shape every lesson and drill had
+// before capstones existed is still the correct way to write the common case.
+// Read them through these helpers rather than comparing to `undefined` at the
+// call site.
+// ---------------------------------------------------------------------------
+
+export const drillKind = (drill: Drill): DrillKind => drill.kind ?? 'variant'
+
+export const lessonKind = (lesson: Lesson): LessonKind => lesson.kind ?? 'concept'
+
+export const isCapstone = (drill: Drill): boolean => drillKind(drill) === 'capstone'
+
+export const isReview = (lesson: Lesson): boolean => lessonKind(lesson) === 'review'
+
+/** The variants of a lesson, in order, without its capstone. */
+export const variantsOf = (lesson: Lesson): Drill[] => lesson.drills.filter((d) => !isCapstone(d))
+
+/** A concept lesson's closing capstone, or undefined if it has none yet. */
+export const capstoneOf = (lesson: Lesson): Drill | undefined =>
+  lesson.drills.find((drill) => isCapstone(drill))
+
+export const conceptLessons = (track: Track): Lesson[] => track.lessons.filter((l) => !isReview(l))
+
+export const reviewLessons = (track: Track): Lesson[] => track.lessons.filter((l) => isReview(l))
+
+export const capstoneCount = (track: Track): number =>
+  track.lessons.reduce((total, lesson) => total + lesson.drills.filter(isCapstone).length, 0)
+
+/** The lessons a review pulls together, resolved against its own track. */
+export const coveredLessons = (track: Track, review: Lesson): Lesson[] =>
+  (review.covers ?? [])
+    .map((id) => track.lessons.find((lesson) => lesson.id === id))
+    .filter((lesson): lesson is Lesson => lesson !== undefined)
 
 /** Characters a drill will actually ask you to type, ignoring ghosted indent. */
 export const typedLength = (code: string): number =>

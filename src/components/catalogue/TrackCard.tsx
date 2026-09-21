@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { LANGUAGES, drillCount } from '@/content/schema'
+import { LANGUAGES, capstoneCount, drillCount, isReview } from '@/content/schema'
 import type { Track } from '@/content/schema'
 import type { TrackStanding } from '@/store/progress'
 import { Meter, Panel } from '@/components/ui/primitives'
@@ -65,11 +65,21 @@ export function TrackCard({
 
           {showLessons ? (
             <div className="flex flex-col gap-1.5 text-[10px] text-muted">
-              {track.lessons.map((lesson, i) => (
-                <span key={lesson.id}>
-                  {String(i + 1).padStart(2, '0')} — {lesson.title}
-                </span>
-              ))}
+              {/* Reviews sit outside the numbering rather than continuing it:
+                  the sequence a learner sees is 01 02 03 04 05 REVIEW, and a
+                  review numbered 06 would read as a sixth concept. */}
+              {track.lessons.map((lesson) => {
+                const numbered = track.lessons.filter((l) => !isReview(l)).indexOf(lesson)
+                return isReview(lesson) ? (
+                  <span key={lesson.id} className="text-amber-soft">
+                    REVIEW — {lesson.title.replace(/^Review: /, '')}
+                  </span>
+                ) : (
+                  <span key={lesson.id}>
+                    {String(numbered + 1).padStart(2, '0')} — {lesson.title}
+                  </span>
+                )
+              })}
             </div>
           ) : (
             <p className="text-[11px] leading-relaxed text-muted">{track.blurb}</p>
@@ -82,7 +92,8 @@ export function TrackCard({
           )}
           <div className="flex items-center justify-between text-[10px]">
             <span className="text-faint">
-              {track.lessons.length} lessons · {drillCount(track)} drills
+              {track.lessons.length} lessons · {drillCount(track)} drills · {capstoneCount(track)}{' '}
+              capstones
             </span>
             <Status track={track} standing={standing} stale={stale} />
           </div>

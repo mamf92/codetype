@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { TRACKS } from '@/content/index'
 import { useNow } from '@/lib/useNow'
-import { LANGUAGES, drillCount } from '@/content/schema'
+import { LANGUAGES, capstoneCount, drillCount } from '@/content/schema'
 import type { LanguageId, Level, Track } from '@/content/schema'
 import { useProgress } from '@/store/useProgress'
 import { dueForRevisit, standingFor } from '@/store/progress'
@@ -48,12 +48,13 @@ export default function Explore() {
   const visible = TRACKS.filter(matches)
   const lessons = TRACKS.reduce((sum, track) => sum + track.lessons.length, 0)
   const drills = TRACKS.reduce((sum, track) => sum + drillCount(track), 0)
+  const capstones = TRACKS.reduce((sum, track) => sum + capstoneCount(track), 0)
 
   return (
     <div className="flex flex-col gap-6">
       <PageHead
         title="Everything typeable"
-        blurb={`${TRACKS.length} tracks, ${lessons} lessons, ${drills} passages. Every lesson says one thing several ways, because that is the only way it sticks.`}
+        blurb={`${TRACKS.length} tracks, ${lessons} lessons, ${drills} passages, ${capstones} of them capstones. Every lesson says one thing several ways and then puts it to work in a real codebase, because that is the only way it sticks.`}
         aside={
           <span className="text-[10px] tracking-[0.2em] text-faint uppercase">
             {visible.length} of {TRACKS.length} shown

@@ -1,10 +1,27 @@
 import { describe, expect, it } from 'vitest'
 import { TRACKS, drillSequence, locateDrill } from './index'
 import { compileDrill } from '@/engine/compile'
-import { LANGUAGES, typedLength } from './schema'
+import {
+  LANGUAGES,
+  capstoneOf,
+  conceptLessons,
+  coveredLessons,
+  isCapstone,
+  isReview,
+  reviewLessons,
+  typedLength,
+  variantsOf,
+} from './schema'
+import type { Drill, Lesson } from './schema'
 
 const allLessons = TRACKS.flatMap((track) => track.lessons)
 const allDrills = allLessons.flatMap((lesson) => lesson.drills)
+const variantDrills = allDrills.filter((drill) => !isCapstone(drill))
+const capstoneDrills = allDrills.filter(isCapstone)
+
+/** Which lesson a drill belongs to, for error messages that name both. */
+const lessonOf = (drill: Drill): Lesson =>
+  allLessons.find((lesson) => lesson.drills.includes(drill)) as Lesson
 
 describe('catalogue integrity', () => {
   it('has content', () => {
@@ -47,6 +64,16 @@ describe('lesson shape', () => {
     }
   })
 
+  it('gives a concept lesson at least three variants before its capstone', () => {
+    // The capstone is the pay-off, not one of the several-ways-of-saying-it.
+    // Counting it towards the three would let a lesson ship two variants and
+    // a summary and still pass, which is the flat lesson this rule exists to
+    // prevent.
+    for (const lesson of allLessons.filter((l) => !isReview(l))) {
+      expect(variantsOf(lesson).length, lesson.id).toBeGreaterThanOrEqual(3)
+    }
+  })
+
   it('states a concept and a summary worth reading', () => {
     for (const lesson of allLessons) {
       expect(lesson.summary.length, lesson.id).toBeGreaterThan(10)
@@ -71,11 +98,24 @@ describe('drill hygiene', () => {
     }
   })
 
-  it('is short enough to finish in one sitting', () => {
-    for (const drill of allDrills) {
+  it('keeps a variant short enough to finish in one sitting', () => {
+    for (const drill of variantDrills) {
       expect(drill.code.split('\n').length, drill.id).toBeLessThanOrEqual(10)
       expect(typedLength(drill.code), drill.id).toBeLessThanOrEqual(400)
       expect(typedLength(drill.code), drill.id).toBeGreaterThan(5)
+    }
+  })
+
+  it('keeps a capstone long enough to be a project and short enough to finish', () => {
+    // Deliberately a different budget from a variant, not a relaxed one: a
+    // capstone that fits in ten lines is a variant wearing a label, and one
+    // past thirty-five is a sitting nobody finishes.
+    for (const drill of capstoneDrills) {
+      const lines = drill.code.split('\n').length
+      expect(lines, drill.id).toBeGreaterThanOrEqual(15)
+      expect(lines, drill.id).toBeLessThanOrEqual(35)
+      expect(typedLength(drill.code), drill.id).toBeGreaterThan(300)
+      expect(typedLength(drill.code), drill.id).toBeLessThanOrEqual(1600)
     }
   })
 
@@ -96,6 +136,106 @@ describe('drill hygiene', () => {
     for (const drill of allDrills) {
       for (const line of compileDrill(drill.code, drill.grammar).lines) {
         if (line.cells.length > 0) expect(line.cells[0]?.char).not.toBe(' ')
+      }
+    }
+  })
+})
+
+describe('capstones', () => {
+  it('closes every concept lesson with exactly one capstone, last', () => {
+    for (const lesson of allLessons.filter((l) => !isReview(l))) {
+      const capstones = lesson.drills.filter(isCapstone)
+      expect(capstones.length, lesson.id).toBe(1)
+      expect(lesson.drills.at(-1)?.id, lesson.id).toBe(capstones[0]?.id)
+    }
+  })
+
+  it('briefs every capstone — the scenario has to arrive before the typing does', () => {
+    for (const drill of capstoneDrills) {
+      expect(drill.brief, drill.id).toBeDefined()
+      expect((drill.brief as string).length, drill.id).toBeGreaterThan(40)
+    }
+  })
+
+  it('never briefs a variant, whose note says the same thing in the right place', () => {
+    for (const drill of variantDrills) {
+      expect(drill.brief, drill.id).toBeUndefined()
+    }
+  })
+
+  it('does not simply retype a variant — a capstone is longer than every sibling', () => {
+    // Reviews are all capstone and have no variants to be longer than, so
+    // this one only has something to say about a concept lesson's closer.
+    for (const drill of capstoneDrills.filter((d) => !isReview(lessonOf(d)))) {
+      const siblings = variantsOf(lessonOf(drill))
+      const longest = Math.max(...siblings.map((sibling) => typedLength(sibling.code)))
+      expect(typedLength(drill.code), drill.id).toBeGreaterThan(longest)
+    }
+  })
+})
+
+describe('reviews', () => {
+  it('marks a review lesson and fills in what it covers', () => {
+    for (const lesson of allLessons.filter(isReview)) {
+      expect(lesson.covers, lesson.id).toBeDefined()
+      expect((lesson.covers as string[]).length, lesson.id).toBeGreaterThanOrEqual(2)
+    }
+  })
+
+  it('leaves covers off a concept lesson, which reviews nothing', () => {
+    for (const lesson of allLessons.filter((l) => !isReview(l))) {
+      expect(lesson.covers, lesson.id).toBeUndefined()
+    }
+  })
+
+  it('builds a review entirely out of capstones — no new variants sneak in', () => {
+    for (const lesson of allLessons.filter(isReview)) {
+      for (const drill of lesson.drills) {
+        expect(isCapstone(drill), drill.id).toBe(true)
+      }
+    }
+  })
+
+  it('reviews the block of concept lessons that precedes it, in order', () => {
+    // The cadence is 01 02 03 04 05 -> REVIEW: a review closes the run of
+    // concept lessons since the last one, naming every member of that run and
+    // nothing else. Checking the exact list rather than a count is what keeps
+    // a review honest when lessons get reordered or inserted later.
+    for (const track of TRACKS) {
+      let block: string[] = []
+      for (const lesson of track.lessons) {
+        if (!isReview(lesson)) {
+          block.push(lesson.id)
+          continue
+        }
+        expect(lesson.covers, lesson.id).toEqual(block)
+        block = []
+      }
+      expect(block, `${track.id} ends on an unreviewed block`).toEqual([])
+    }
+  })
+
+  it('never lets a run of concepts grow past five without a review', () => {
+    for (const track of TRACKS) {
+      for (const review of reviewLessons(track)) {
+        expect(coveredLessons(track, review).length, review.id).toBeLessThanOrEqual(5)
+      }
+    }
+  })
+
+  it('resolves every covered id to a real lesson in the same track', () => {
+    for (const track of TRACKS) {
+      for (const review of reviewLessons(track)) {
+        expect(coveredLessons(track, review).length, review.id).toBe(review.covers?.length)
+      }
+    }
+  })
+
+  it('gives every track at least one review, and every concept lesson a capstone', () => {
+    for (const track of TRACKS) {
+      expect(reviewLessons(track).length, track.id).toBeGreaterThanOrEqual(1)
+      for (const lesson of conceptLessons(track)) {
+        expect(capstoneOf(lesson), lesson.id).toBeDefined()
       }
     }
   })
