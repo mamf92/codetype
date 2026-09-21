@@ -249,6 +249,14 @@ describe('metrics', () => {
     expect(troubleKeys(ledger).map((k) => k.char)).toEqual(['a'])
   })
 
+  it('leaves the line break out of the keyboard panels entirely', () => {
+    // A line break is structural, not a key you drill — and every keycap it
+    // would appear on links to a practice session that cannot practice it.
+    const ledger = { '\n': stat({ pressed: 80, missed: 40 }), a: stat({ pressed: 50, missed: 5 }) }
+    expect(troubleKeys(ledger).map((k) => k.char)).toEqual(['a'])
+    expect(favouriteKeys(ledger).map((k) => k.char)).toEqual(['a'])
+  })
+
   it('ranks trouble keys worst-first and favourites cleanest-first', () => {
     const ledger = {
       a: stat({ pressed: 100, missed: 1 }),

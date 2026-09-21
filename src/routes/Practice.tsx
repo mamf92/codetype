@@ -25,12 +25,11 @@ export default function Practice() {
   // 'drill'` sessions, see src/store/progress.ts).
   const [ledger] = useState<KeyLedger>(() => lifetimeLedger(progress))
 
+  // `rankForPractice` has already dropped the keys a generated passage can't
+  // drill — the space and the line break (see src/engine/keys.ts).
   const chars = useMemo(
     () =>
       rankForPractice(ledger)
-        // A line of nothing but spaces has no reachable caret — see the
-        // indentation invariant in CLAUDE.md. Space isn't practicable here.
-        .filter((key) => key.char !== ' ')
         .slice(0, MAX_PRACTICE_KEYS)
         .map((key) => key.char),
     [ledger],

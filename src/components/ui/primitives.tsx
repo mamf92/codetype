@@ -64,8 +64,10 @@ export function KeyCap({
     <span
       className={`flex items-center justify-center rounded-[3px] border bg-gradient-to-b from-ink-raised to-ink-sunk ${tones[tone]} ${size}`}
     >
-      {/* A space is a real key with a real miss rate; give it a visible face. */}
-      {char === ' ' ? '␣' : char === '\n' ? '⏎' : char}
+      {/* A space is a real key with a real miss rate; give it a visible face.
+          The line break is not a key at all — `isKeyboardKey` keeps it out of
+          every ranking that feeds a keycap. */}
+      {char === ' ' ? '␣' : char}
     </span>
   )
 }

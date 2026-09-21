@@ -68,6 +68,23 @@ a test.
   `correctness`, the original mistake stays in `accuracy`). A line break is
   structural: the wrong key at a line break, or Enter pressed mid-line,
   is recorded as an error but does **not** advance. See `src/engine/session.ts`.
+- **The line break is recorded, but it is not a key.** The session ledger
+  holds `'\n'` like any other expected character, because that is the honest
+  record of what happened at a line break. Every ranking that feeds a keycap
+  or a practice session drops it again (`src/engine/keys.ts`): a line break is
+  structural, and a generated practice passage made of them is untypable —
+  Enter would be both the character being drilled and the key that moves past
+  it. The space is kept on the keyboard panels but is not practicable either,
+  for the same reason a line cannot open on one.
+- **Every line that ends in a line break shows `⏎`, always, not just under
+  the caret.** Lines wrap rather than scroll sideways, so the marker is what
+  tells you whether the row below needs Enter or is the same line still
+  going, and wrapped rows are given a hanging indent to say the same thing a
+  second way. It is drawn on every such line rather than only on the one the
+  caret has reached because a marker that appears on arrival changes the
+  line's width, and on a line that already fills the surface that wraps it
+  onto a row of its own — the passage appears to grow a blank line and lose
+  it again when Enter is pressed.
 - **Progress has no stored counters.** Everything on Home, Statistics and
   Explore — best WPM, streaks, per-key accuracy, due-for-revisit — is derived
   fresh from `ProgressDocument.sessions` (`src/store/progress.ts`) on every
