@@ -22,6 +22,13 @@ idea applies and when it doesn't. If every drill in a lesson is a trivial
 rename of the others (`a`, `b`, `c` swapped for different variable names),
 you have not written variation, you have written one drill five times.
 
+Then the lesson **closes with a capstone**, and every run of up to five
+lessons **closes with a review**. Variation teaches when an idea applies;
+these are where the reader finds out they can write with it. Neither is
+optional and `content.test.ts` enforces both — see "Capstones" and "Reviews"
+below before you start, because they change how you plan a track, not just
+what you add at the end of one.
+
 ## Shape
 
 ```
@@ -30,9 +37,14 @@ Track
   freshnessDays, (publishedAt + sourceUrl if kind is 'dispatch')
   lessons: Lesson[]
     id, title, summary, concept, sourceUrl?
+    kind? ('concept' | 'review'), covers? (review only)
     drills: Drill[]
       id, label, code, grammar, note?
+      kind? ('variant' | 'capstone'), brief? (capstone only)
 ```
+
+Both `kind` fields are optional and default to the ordinary case, so a plain
+variant in a plain lesson is written exactly as it always was.
 
 Full types: `src/content/schema.ts`. Real example to pattern-match against:
 `src/content/tracks/react.ts`.
@@ -52,18 +64,69 @@ Full types: `src/content/schema.ts`. Real example to pattern-match against:
 - **`note`** (optional, per drill) is one sentence on what makes *this*
   variant different from its siblings — not a caption repeating the code.
 
+## Capstones
+
+Every **concept lesson ends with exactly one capstone**: the same idea, this
+time doing real work in a fictional but plausible codebase.
+
+- `kind: 'capstone'`, last in the `drills` array, id `{lesson-id}-capstone`.
+- **15–35 lines.** The minimum matters as much as the maximum: a twelve-line
+  capstone is a variant wearing a label, and CI will say so.
+- A `brief` is required — two or three sentences setting up the scenario,
+  rendered *above* the passage because it is context the reader needs before
+  they start typing. Don't caption the code ("this component uses useState");
+  say what the thing is and point at what to watch.
+- No `note`. A note explains how a variant differs from its siblings, which
+  is not a question a capstone answers.
+- Write a whole small artefact — a module, a component, a config file — not a
+  snippet with the edges sawn off. The concept should appear several times
+  inside it, at genuinely different call sites, so the capstone is a lesson
+  in miniature rather than one long variant.
+- Keep lines under about 90 characters. They wrap on the typing surface, and
+  a 130-character line is a long way to go without a break.
+
+## Reviews
+
+Every run of **up to five concept lessons is closed by a review lesson**.
+
+- `kind: 'review'`, `covers: [...]` naming exactly the lessons of that run in
+  order, id `{track-id}-review`. Place it last in the run. A track whose
+  lessons end without one fails CI, and so does a run of six.
+- A review teaches **nothing new**. It is one project in which the covered
+  concepts turn up where they are genuinely the right tool. You do not have
+  to revisit every variant — reach for the ones the project actually wants.
+- **Three drills, all capstones**, which are three *stages of the same
+  project*: `settings/types.ts`, `settings/guards.ts`, `settings/service.ts`,
+  or the three components a feature splits into. This is how a review stays
+  inside the several-ways-of-saying-it rule instead of becoming an exception
+  to it — the stages are different shapes of one case. Label each drill with
+  its file or stage name.
+- The lesson's `concept` is the only place the project is described, so
+  write it as the brief for the whole thing; each drill's own `brief` then
+  covers its stage.
+- Title it `Review: a saved-search panel` — the surfaces strip the
+  `Review: ` prefix and render the rest after a `REVIEW` marker.
+
 ## Rules `content.test.ts` enforces — a drill that breaks these fails CI
 
 - Every id (track, lesson, drill) is **globally unique** across the whole
   catalogue and **kebab-case** (`^[a-z0-9]+(-[a-z0-9]+)*$`). Convention:
   `{track-id}-{lesson-slug}` for lessons, `{lesson-id}-{n}` for drills — see
   the example above.
-- Every lesson has **at least 3 drills**.
+- Every lesson has at least 3 drills, and a concept lesson has **at least 3
+  variants** — the capstone does not count towards them.
 - No lesson repeats the exact same `code` string across its own drills.
-- A drill is **at most 10 lines** (`code.split('\n').length`), and its typed
-  length (leading indentation excluded) is more than 5 and at most 400
+- A **variant** is **at most 10 lines** (`code.split('\n').length`), and its
+  typed length (leading indentation excluded) is more than 5 and at most 400
   characters — long enough to be worth typing, short enough to finish in one
   sitting.
+- A **capstone** is **15–35 lines**, typed length over 300 and at most 1600,
+  carries a `brief` of more than 40 characters, and is longer than every
+  variant in its lesson. Only capstones may carry a `brief`.
+- Every concept lesson has **exactly one capstone, last**. Every run of
+  concept lessons is closed by a **review** whose `covers` equals that run
+  exactly, in order, with **no run longer than five**. A review's drills are
+  all capstones; a concept lesson never has `covers`.
 - **No tabs.** Indent with spaces.
 - **No trailing whitespace** on any line, and `code` must equal its own
   `.trim()` — no leading/trailing blank lines.
@@ -81,14 +144,19 @@ Full types: `src/content/schema.ts`. Real example to pattern-match against:
    grammar for it is registered in `src/lib/highlight.ts`. If neither
    exists yet, that's a bigger change than one track — flag it rather than
    guessing.
-2. Write 1 lesson at a time: state the concept in a sentence, then write
-   3–6 drills that are genuinely different call sites or shapes of that one
-   concept, ordered roughly simplest-first.
-3. Check every rule above against what you wrote, per drill, before calling
+2. Plan the run first: up to five concept lessons, then the review that
+   closes them. Knowing the review's project up front is what stops it
+   turning into a bag of unrelated snippets at the end.
+3. Write 1 lesson at a time: state the concept in a sentence, write 3–6
+   variants that are genuinely different call sites or shapes of that one
+   concept, ordered roughly simplest-first, then the capstone that puts it to
+   work.
+4. Write the review last: one project, three stages, each a capstone.
+5. Check every rule above against what you wrote, per drill, before calling
    it done — don't wait for CI to find a 90-character indent or a duplicate
-   passage.
-4. Register the track in `src/content/index.ts`.
-5. Run `npm test`. Fix whatever it flags; don't relax a test to make content
+   passage. Line counts are the usual thing to get wrong; count them.
+6. Register the track in `src/content/index.ts`.
+7. Run `npm test`. Fix whatever it flags; don't relax a test to make content
    pass.
 
 ## Licence

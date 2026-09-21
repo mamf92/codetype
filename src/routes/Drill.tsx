@@ -1,9 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { drillSequence, trackById } from '@/content/index'
+import { coveredLessons, isCapstone, isReview } from '@/content/schema'
 import { useTypingSession } from '@/engine/useTypingSession'
 import { recordSession, useProgress } from '@/store/useProgress'
 import { TypingSurface } from '@/components/typing/TypingSurface'
+import { isLongPassage } from '@/lib/passage'
 import { rankForPractice } from '@/engine/practice/ranking'
 import { useResultKeyboardNav } from '@/lib/useResultKeyboardNav'
 import NotFound from './NotFound'
@@ -132,10 +134,20 @@ export default function Drill() {
   if (track === undefined || current === undefined) return <NotFound />
 
   const { lesson, drill } = current
-  const lessonIndex = track.lessons.findIndex((entry) => entry.id === lesson.id)
+  const review = isReview(lesson)
+  // Reviews are not lessons you are `n of m` through, so they are left out of
+  // the count rather than inflating it.
+  const lessonIndex = track.lessons.filter((l) => !isReview(l)).findIndex((l) => l.id === lesson.id)
+  const conceptTotal = track.lessons.length - track.lessons.filter(isReview).length
+  const long = isLongPassage(compiled)
 
   return (
-    <div className="crt flex min-h-dvh flex-col">
+    // `min-h-dvh` only sets a floor, so a stretching surface inside it would
+    // grow the page instead of scrolling. From `sm` up a long passage pins the
+    // screen to the viewport height, giving the flex chain below a ceiling to
+    // divide up; if the chrome ever leaves less than the surface's minimum,
+    // the page simply scrolls as it did before.
+    <div className={`crt flex flex-col ${long ? 'min-h-dvh sm:h-dvh' : 'min-h-dvh'}`}>
       <a
         href="#drill-main"
         className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[60] focus:bg-amber focus:px-4 focus:py-2 focus:text-[11px] focus:tracking-[0.14em] focus:text-ink focus:uppercase"
@@ -166,19 +178,35 @@ export default function Drill() {
       <main
         id="drill-main"
         tabIndex={-1}
-        className="relative z-10 mx-auto flex w-full max-w-[1040px] flex-1 flex-col items-center justify-center px-6 py-10 md:px-10 focus:outline-none"
+        className={`relative z-10 mx-auto flex w-full max-w-[1040px] flex-1 flex-col items-center px-6 md:px-10 focus:outline-none ${
+          long ? 'justify-start py-6 sm:min-h-0' : 'justify-center py-10'
+        }`}
       >
         <div
           className="reveal flex flex-col items-center gap-2.5 text-center"
           style={{ animationDelay: '0.05s' }}
         >
           <span className="text-[10px] tracking-[0.22em] text-faint uppercase">
-            Lesson {lessonIndex + 1} of {track.lessons.length}
+            {review ? (
+              <span className="text-amber">
+                Review · {coveredLessons(track, lesson).length} concepts
+              </span>
+            ) : (
+              <>
+                Lesson {lessonIndex + 1} of {conceptTotal}
+              </>
+            )}
           </span>
           <h1 className="font-display text-xl font-light text-parchment md:text-2xl">
             {lesson.title}
           </h1>
-          <p className="max-w-xl text-xs leading-relaxed text-muted">{lesson.concept}</p>
+          {/* On a capstone the concept has already been on screen for every
+              variant of this lesson, and the brief below says the more useful,
+              more specific thing. A review is the exception: its concept is
+              the only place the whole project is described. */}
+          {(review || drill.brief === undefined) && (
+            <p className="max-w-xl text-xs leading-relaxed text-muted">{lesson.concept}</p>
+          )}
         </div>
 
         <div
@@ -186,30 +214,69 @@ export default function Drill() {
           style={{ animationDelay: '0.14s' }}
         >
           <span className="mr-1.5 text-[10px] tracking-[0.18em] text-faint uppercase">
-            Variants
+            {review ? 'Stages' : 'Variants'}
           </span>
-          {lesson.drills.map((variant) => {
-            const isCurrent = variant.id === drill.id
-            const done = completed.has(variant.id)
+          {lesson.drills.map((sibling) => {
+            const isCurrent = sibling.id === drill.id
+            const done = completed.has(sibling.id)
+            // A concept lesson's capstone is the one chip that is not a
+            // variant of the others, so it is not dressed like one: it keeps
+            // an amber edge even while untouched, and a rule sets it apart
+            // from the run it closes. A review is all capstone, so there is
+            // nothing there to set apart.
+            const closer = !review && isCapstone(sibling)
             return (
-              <Link key={variant.id} to={`/drill/${track.id}/${variant.id}`}>
-                <span
-                  className={`block px-3 py-1.5 text-[10px] ${
-                    isCurrent
-                      ? 'bg-amber text-ink shadow-[0_0_14px_rgba(255,176,0,0.35)]'
-                      : done
-                        ? 'border border-signal-line text-signal'
-                        : 'border border-ink-line text-ghost hover:border-ink-edge'
-                  }`}
-                >
-                  {variant.label}
-                </span>
-              </Link>
+              <Fragment key={sibling.id}>
+                {closer && <span className="mx-0.5 h-px w-5 bg-ink-line" aria-hidden="true" />}
+                <Link to={`/drill/${track.id}/${sibling.id}`}>
+                  <span
+                    className={`block px-3 py-1.5 text-[10px] ${
+                      isCurrent
+                        ? 'bg-amber text-ink shadow-[0_0_14px_rgba(255,176,0,0.35)]'
+                        : done
+                          ? 'border border-signal-line text-signal'
+                          : closer
+                            ? 'border border-amber-soft/40 text-amber-soft hover:border-amber'
+                            : 'border border-ink-line text-ghost hover:border-ink-edge'
+                    }`}
+                  >
+                    {closer && (
+                      <span className="mr-1.5 text-[8px] tracking-[0.16em] uppercase opacity-70">
+                        Capstone
+                      </span>
+                    )}
+                    {sibling.label}
+                  </span>
+                </Link>
+              </Fragment>
             )
           })}
         </div>
 
-        <div className="reveal mt-8 w-full" style={{ animationDelay: '0.22s' }}>
+        {drill.brief !== undefined && (
+          <div
+            className="reveal mt-6 w-full border-l-2 border-amber-soft/40 bg-ink-sunk px-5 py-3.5"
+            style={{ animationDelay: '0.18s' }}
+          >
+            <span className="text-[9px] tracking-[0.2em] text-amber-soft uppercase">
+              {review ? `The brief · ${drill.label}` : 'The brief'}
+            </span>
+            <p className="mt-2 text-[11px] leading-relaxed text-muted">{drill.brief}</p>
+          </div>
+        )}
+
+        <div
+          // The floor belongs on this flex item rather than inside the panel:
+          // a minimum set further down cannot stop flexbox shrinking its
+          // ancestors, and the surface would end up shorter than its own
+          // contents and painted over by the readouts below it. Here it stops
+          // the shrink instead, so a screen too small to hold everything
+          // overflows downwards and scrolls, which is survivable.
+          className={`reveal w-full ${
+            long ? 'mt-5 sm:flex sm:min-h-[224px] sm:flex-1 sm:flex-col' : 'mt-8'
+          }`}
+          style={{ animationDelay: '0.22s' }}
+        >
           <TypingSurface
             ref={surfaceRef}
             compiled={compiled}

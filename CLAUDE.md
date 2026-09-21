@@ -14,6 +14,14 @@ That is the one idea everything else here serves. A change that makes a
 lesson faster to add but flatter to type (e.g. dropping the "several
 variants" requirement) is fighting the product, not improving it.
 
+Each lesson then **closes with a capstone**: 15–35 lines of a fictional
+codebase in which that concept is doing real work, introduced by a `brief`
+shown above the passage. And each run of up to five lessons closes with a
+**review** — one project, split into three stages, pulling those concepts
+back together. Variation teaches when an idea applies; the capstone and the
+review are where you find out you can actually write with it. See
+`docs/decisions/0005-capstones-and-reviews.md`.
+
 ## Layout
 
 ```
@@ -66,6 +74,25 @@ a test.
   read. There is nowhere for a denormalised total to drift out of sync with
   reality, because there's no denormalised total. Don't add one; add a
   derivation.
+- **A capstone is not a long variant, and the length rule says so.** The
+  10-line cap applies to `kind: 'variant'` drills; a capstone has its own
+  budget of 15–35 lines, with a *minimum* precisely so a variant cannot be
+  relabelled into one. A review lesson's drills are all capstones — three
+  stages of one project, which is how a review stays inside the
+  several-ways-of-saying-it rule rather than becoming an exception to it.
+- **Reviews are never numbered.** Everywhere lessons are listed, the
+  sequence reads `01 02 03 04 05 REVIEW`. A review numbered `06` reads as a
+  sixth concept, which is the one thing it is not.
+- **A capstone does not repeat its lesson's `concept` above the passage.**
+  It has been on screen for every variant of that lesson already, and the
+  drill's own `brief` is the more specific thing to read. A review is the
+  exception: its `concept` is the only place the whole project is described.
+- **The drill screen has two layouts, and the long one only exists from
+  `sm` up.** A passage over 12 lines pins the page to the viewport height
+  and gives the text a flex-sized scrolling window with the caret kept
+  inside it (`isLongPassage` in `components/typing/TypingSurface.tsx`).
+  Below `sm` none of that applies — a phone has no room for a 180-pixel
+  window onto the passage, so it runs full length and the page scrolls once.
 - **`SessionRecord` will eventually need `kind: 'drill' | 'practice'`** once
   targeted key-practice sessions land (see the open issue for it) — practice
   reps must never reach the speed graphs the same way a real drill does.
@@ -85,12 +112,19 @@ a test.
 Anything added to `src/content/tracks/` is checked automatically — read the
 tests (`src/content/content.test.ts`) for the exact assertions, but in
 summary: globally unique kebab-case ids at every level; every lesson carries
-**at least 3 drills**; no lesson repeats the same passage verbatim across its
-own drills; a drill is **at most 10 lines** and long enough to be worth
-typing but short enough to finish in one sitting; no tabs, no trailing
-whitespace, no stray blank edges; no line opens with a space (see the
-indentation invariant above); every dispatch carries a real `publishedAt`
-date and `sourceUrl`.
+**at least 3 variants** before its capstone; no lesson repeats the same
+passage verbatim across its own drills; a variant is **at most 10 lines** and
+long enough to be worth typing but short enough to finish in one sitting; no
+tabs, no trailing whitespace, no stray blank edges; no line opens with a
+space (see the indentation invariant above); every dispatch carries a real
+`publishedAt` date and `sourceUrl`.
+
+On top of that, the capstone-and-review cadence is enforced rather than
+merely encouraged: every concept lesson ends with **exactly one capstone**,
+last in its list, **15–35 lines**, carrying a `brief` and longer than every
+variant beside it; every run of concept lessons is closed by a **review**
+whose `covers` names exactly that run, in order; **no run exceeds five**; and
+a review's drills are all capstones.
 
 ## Licensing — this matters for what you write, not just how
 

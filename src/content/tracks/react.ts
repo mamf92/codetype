@@ -61,6 +61,47 @@ setItems((prev) => [...prev, 'new item'])`,
           grammar: 'tsx',
           note: 'The same idea applied to arrays: build the next array from the previous one.',
         },
+        {
+          id: 'react-core-state-capstone',
+          kind: 'capstone',
+          label: 'a cart with three kinds of state',
+          brief:
+            'A shopping cart drawer holding a list, a string and a boolean at once. Every setter that reads what was there before takes the updater form, because add, remove and toggle all run from handlers that outlive the render they were created in.',
+          code: `interface Line {
+  sku: string
+  qty: number
+}
+
+export function Cart() {
+  const [lines, setLines] = useState<Line[]>([])
+  const [coupon, setCoupon] = useState('')
+  const [open, setOpen] = useState(false)
+
+  function add(sku: string) {
+    setLines((prev) => {
+      const hit = prev.find((line) => line.sku === sku)
+      if (hit === undefined) return [...prev, { sku, qty: 1 }]
+      return prev.map((line) =>
+        line.sku === sku ? { ...line, qty: line.qty + 1 } : line,
+      )
+    })
+  }
+
+  function remove(sku: string) {
+    setLines((prev) => prev.filter((line) => line.sku !== sku))
+  }
+
+  return (
+    <aside hidden={!open}>
+      <input value={coupon} onChange={(e) => setCoupon(e.target.value)} />
+      <button onClick={() => add('tee-01')}>Add tee</button>
+      <button onClick={() => remove('tee-01')}>Remove tee</button>
+      <button onClick={() => setOpen((prev) => !prev)}>Toggle</button>
+    </aside>
+  )
+}`,
+          grammar: 'tsx',
+        },
       ],
     },
     {
@@ -110,6 +151,48 @@ setItems((prev) => [...prev, 'new item'])`,
           grammar: 'tsx',
           note: 'Cleanup here cancels an in-flight request instead of clearing a timer.',
         },
+        {
+          id: 'react-core-effect-capstone',
+          kind: 'capstone',
+          label: 'a presence panel with four effects',
+          brief:
+            'A live "who is in this room" panel, where every effect in the component has a different reason to re-run. A socket keyed on the room, an aborted fetch keyed on the same, two window listeners that never re-subscribe, and a title write keyed on nothing but the count.',
+          code: `export function PresencePanel({ roomId }: { roomId: string }) {
+  const [peers, setPeers] = useState<string[]>([])
+  const [online, setOnline] = useState(navigator.onLine)
+
+  useEffect(() => {
+    const socket = new WebSocket(\`wss://rooms.example.com/\${roomId}\`)
+    socket.onmessage = (event) => setPeers(JSON.parse(event.data))
+    return () => socket.close()
+  }, [roomId])
+
+  useEffect(() => {
+    const controller = new AbortController()
+    fetch(\`/api/rooms/\${roomId}/peers\`, { signal: controller.signal })
+      .then((res) => res.json())
+      .then(setPeers)
+    return () => controller.abort()
+  }, [roomId])
+
+  useEffect(() => {
+    const update = () => setOnline(navigator.onLine)
+    window.addEventListener('online', update)
+    window.addEventListener('offline', update)
+    return () => {
+      window.removeEventListener('online', update)
+      window.removeEventListener('offline', update)
+    }
+  }, [])
+
+  useEffect(() => {
+    document.title = \`\${peers.length} in room\`
+  }, [peers.length])
+
+  return <ul>{peers.map((peer) => <li key={peer}>{peer}</li>)}</ul>
+}`,
+          grammar: 'tsx',
+        },
       ],
     },
     {
@@ -154,6 +237,48 @@ setItems((prev) => [...prev, 'new item'])`,
 }, [onSubmit, draftId])`,
           grammar: 'tsx',
           note: 'Here the dependency array must include everything the closure reads, unlike the empty one above.',
+        },
+        {
+          id: 'react-core-memo-capstone',
+          kind: 'capstone',
+          label: 'a filtered log table',
+          brief:
+            'A log viewer where the filtering is genuinely expensive and the child is genuinely memoized. One useMemo derives the visible rows, a second derives counts from the first, and useCallback keeps the row handler stable so the virtualized child is not thrown away on every keystroke.',
+          code: `interface Row {
+  id: string
+  level: 'info' | 'warn' | 'error'
+  message: string
+}
+
+interface LogTableProps {
+  rows: Row[]
+  onPick: (id: string) => void
+}
+
+export function LogTable({ rows, onPick }: LogTableProps) {
+  const [query, setQuery] = useState('')
+  const [level, setLevel] = useState<Row['level'] | 'all'>('all')
+
+  const visible = useMemo(() => {
+    const needle = query.toLowerCase()
+    return rows.filter(
+      (row) =>
+        (level === 'all' || row.level === level) &&
+        row.message.toLowerCase().includes(needle),
+    )
+  }, [rows, level, query])
+
+  const counts = useMemo(() => {
+    const tally: Record<string, number> = {}
+    for (const row of visible) tally[row.level] = (tally[row.level] ?? 0) + 1
+    return tally
+  }, [visible])
+
+  const handlePick = useCallback((id: string) => onPick(id), [onPick])
+
+  return <VirtualRows rows={visible} counts={counts} onPick={handlePick} />
+}`,
+          grammar: 'tsx',
         },
       ],
     },
@@ -209,6 +334,48 @@ useEffect(() => {
 }`,
           grammar: 'tsx',
           note: 'Generalizes the pattern further by taking the target and event type as arguments.',
+        },
+        {
+          id: 'react-core-custom-hooks-capstone',
+          kind: 'capstone',
+          label: 'three hooks stacked into a draft editor',
+          brief:
+            'A note editor whose entire behaviour lives in hooks the component never has to know about. One hook debounces any value, a second builds on it to persist a draft, a third tracks connectivity, and the component that uses all three is three lines long.',
+          code: `function useDebounced<T>(value: T, delay: number): T {
+  const [settled, setSettled] = useState(value)
+  useEffect(() => {
+    const id = setTimeout(() => setSettled(value), delay)
+    return () => clearTimeout(id)
+  }, [value, delay])
+  return settled
+}
+
+function useLocalDraft(key: string) {
+  const [text, setText] = useState(() => localStorage.getItem(key) ?? '')
+  const settled = useDebounced(text, 400)
+  useEffect(() => {
+    localStorage.setItem(key, settled)
+  }, [key, settled])
+  return [text, setText] as const
+}
+
+function useOnlineStatus() {
+  const [online, setOnline] = useState(true)
+  useEffect(() => {
+    const update = () => setOnline(navigator.onLine)
+    window.addEventListener('online', update)
+    return () => window.removeEventListener('online', update)
+  }, [])
+  return online
+}
+
+export function DraftEditor({ noteId }: { noteId: string }) {
+  const [text, setText] = useLocalDraft(\`draft:\${noteId}\`)
+  const online = useOnlineStatus()
+  const onChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => setText(e.target.value)
+  return <textarea value={text} disabled={!online} onChange={onChange} />
+}`,
+          grammar: 'tsx',
         },
       ],
     },
@@ -276,6 +443,178 @@ function List<T>({ items, renderItem }: ListProps<T>) {
           grammar: 'tsx',
           note: 'A generic parameter lets the same component stay type-safe across different item types.',
         },
+        {
+          id: 'react-core-props-capstone',
+          kind: 'capstone',
+          label: 'a generic table component',
+          brief:
+            'The component every app eventually writes. Its props are declared as an interface, not inline; a generic parameter ties the columns to the rows; optional fields carry a default and an optional-call; and children arrive as ReactNode rather than a string.',
+          code: `interface Column<T> {
+  key: keyof T & string
+  render?: (row: T) => React.ReactNode
+}
+
+interface TableProps<T> {
+  rows: T[]
+  columns: Column<T>[]
+  caption: React.ReactNode
+  emptyMessage?: string
+  onRowClick?: (row: T) => void
+}
+
+export function Table<T extends { id: string }>({
+  rows,
+  columns,
+  caption,
+  emptyMessage = 'Nothing here yet',
+  onRowClick,
+}: TableProps<T>) {
+  if (rows.length === 0) return <p>{emptyMessage}</p>
+  return (
+    <table>
+      <caption>{caption}</caption>
+      {rows.map((row) => (
+        <tr key={row.id} onClick={() => onRowClick?.(row)}>
+          {columns.map((col) => (
+            <td key={col.key}>{col.render?.(row) ?? String(row[col.key])}</td>
+          ))}
+        </tr>
+      ))}
+    </table>
+  )
+}`,
+          grammar: 'tsx',
+        },
+      ],
+    },
+    {
+      id: 'react-core-review',
+      kind: 'review',
+      title: 'Review: a saved-search panel',
+      summary:
+        'One feature that needs typed props, updater state, effects, memoization and a custom hook at once.',
+      concept:
+        'No new hook here. This is the saved-search panel of a log viewer, in the three files it would really be split across: the presentational list with its typed props, the custom hook that owns fetching and saving, and the panel that memoizes, runs an effect on what you picked, and wires the other two together.',
+      covers: [
+        'react-core-state',
+        'react-core-effect',
+        'react-core-memo',
+        'react-core-custom-hooks',
+        'react-core-props',
+      ],
+      drills: [
+        {
+          id: 'react-core-review-1',
+          kind: 'capstone',
+          label: 'SearchList.tsx',
+          brief:
+            'The presentational half. Props are an exported interface rather than an inline annotation, the optional message carries a default in the destructure, children are typed as ReactNode, and the component holds no state of its own.',
+          code: `export interface SavedSearch {
+  id: string
+  label: string
+  query: string
+  level: 'info' | 'warn' | 'error' | 'all'
+}
+
+export interface SearchListProps {
+  searches: SavedSearch[]
+  onRun: (search: SavedSearch) => void
+  emptyMessage?: string
+  children?: React.ReactNode
+}
+
+export function SearchList({
+  searches,
+  onRun,
+  emptyMessage = 'No saved searches',
+  children,
+}: SearchListProps) {
+  if (searches.length === 0) return <p>{emptyMessage}</p>
+  return (
+    <ul>
+      {children}
+      {searches.map((search) => (
+        <li key={search.id}>
+          <button onClick={() => onRun(search)}>{search.label}</button>
+        </li>
+      ))}
+    </ul>
+  )
+}`,
+          grammar: 'tsx',
+        },
+        {
+          id: 'react-core-review-2',
+          kind: 'capstone',
+          label: 'useSavedSearches.ts',
+          brief:
+            'The stateful half, extracted so the panel never sees a fetch. A generic debounce hook composes into the feature hook, the effect aborts on a changed user, and saving appends through the updater form rather than the array it captured.',
+          code: `function useDebounced<T>(value: T, delay: number): T {
+  const [settled, setSettled] = useState(value)
+  useEffect(() => {
+    const id = setTimeout(() => setSettled(value), delay)
+    return () => clearTimeout(id)
+  }, [value, delay])
+  return settled
+}
+
+export function useSavedSearches(userId: string) {
+  const [searches, setSearches] = useState<SavedSearch[]>([])
+  const [draft, setDraft] = useState('')
+  const debounced = useDebounced(draft, 300)
+
+  useEffect(() => {
+    const controller = new AbortController()
+    fetch(\`/api/users/\${userId}/searches\`, { signal: controller.signal })
+      .then((res) => res.json())
+      .then(setSearches)
+    return () => controller.abort()
+  }, [userId])
+
+  const save = useCallback((label: string, query: string) => {
+    const id = crypto.randomUUID()
+    setSearches((prev) => [...prev, { id, label, query, level: 'all' }])
+  }, [])
+
+  return { searches, draft, setDraft, debounced, save }
+}`,
+          grammar: 'tsx',
+        },
+        {
+          id: 'react-core-review-3',
+          kind: 'capstone',
+          label: 'SearchPanel.tsx',
+          brief:
+            'Where the two halves meet. The hook supplies the data, a memo filters it against the debounced query, an effect writes and restores the document title when a search is run, and a stable callback is handed down to the list from the first file.',
+          code: `export function SearchPanel({ userId }: { userId: string }) {
+  const { searches, draft, setDraft, debounced, save } = useSavedSearches(userId)
+  const [ran, setRan] = useState<SavedSearch | null>(null)
+
+  const matches = useMemo(() => {
+    const needle = debounced.toLowerCase()
+    return searches.filter((s) => s.label.toLowerCase().includes(needle))
+  }, [searches, debounced])
+
+  useEffect(() => {
+    if (ran === null) return
+    document.title = \`Search: \${ran.label}\`
+    return () => {
+      document.title = 'CodeType'
+    }
+  }, [ran])
+
+  const onRun = useCallback((search: SavedSearch) => setRan(search), [])
+
+  return (
+    <section>
+      <input value={draft} onChange={(e) => setDraft(e.target.value)} />
+      <SearchList searches={matches} onRun={onRun} />
+      <button onClick={() => save(draft, draft)}>Save this search</button>
+    </section>
+  )
+}`,
+          grammar: 'tsx',
+        },
       ],
     },
   ],
@@ -333,6 +672,44 @@ export const reactFrontier: Track = {
           grammar: 'tsx',
           note: 'Unlike other hooks, use() is allowed after an early return or inside an if.',
         },
+        {
+          id: 'react-frontier-use-capstone',
+          kind: 'capstone',
+          label: 'a product page that reads promises in render',
+          brief:
+            'A product page with no useEffect and no loading state of its own. use reads a context at the top of one component, unwraps a promise in another, and is called after an early return in a third, which no other hook is allowed to do.',
+          code: `const LocaleContext = createContext('en')
+
+interface Review {
+  id: string
+  body: string
+}
+
+function ReviewList({ reviews }: { reviews: Promise<Review[]> }) {
+  const locale = use(LocaleContext)
+  const list = use(reviews)
+  return (
+    <ul lang={locale}>
+      {list.map((review) => (
+        <li key={review.id}>{review.body}</li>
+      ))}
+    </ul>
+  )
+}
+
+export function ProductPage({ id, showReviews }: { id: string; showReviews: boolean }) {
+  const product = use(fetchProduct(id))
+  if (!showReviews) return <h1>{product.title}</h1>
+  const reviews = fetchReviews(id)
+  return (
+    <Suspense fallback={<p>Loading reviews</p>}>
+      <h1>{product.title}</h1>
+      <ReviewList reviews={reviews} />
+    </Suspense>
+  )
+}`,
+          grammar: 'tsx',
+        },
       ],
     },
     {
@@ -375,6 +752,47 @@ async function like() {
 }`,
           grammar: 'tsx',
           note: 'Same addOptimistic call as above, this time wired to a form action instead of a click handler.',
+        },
+        {
+          id: 'react-frontier-optimistic-capstone',
+          kind: 'capstone',
+          label: 'a comment thread that never waits',
+          brief:
+            'A thread where the new comment appears the instant you submit it, marked as in flight, and is replaced by the real one when the server answers. The merge function does the predicting; the form action does the sending; nothing in between needs a spinner.',
+          code: `interface Comment {
+  id: string
+  text: string
+  sending?: boolean
+}
+
+export function Thread({ postId, comments }: { postId: string; comments: Comment[] }) {
+  const [optimistic, addOptimistic] = useOptimistic(
+    comments,
+    (state, text: string) => [...state, { id: 'pending', text, sending: true }],
+  )
+  const [draft, setDraft] = useState('')
+
+  async function submit(formData: FormData) {
+    const text = formData.get('comment') as string
+    addOptimistic(text)
+    setDraft('')
+    await postComment(postId, text)
+  }
+
+  return (
+    <form action={submit}>
+      <ul>
+        {optimistic.map((comment) => (
+          <li key={comment.id} aria-busy={comment.sending}>
+            {comment.text}
+          </li>
+        ))}
+      </ul>
+      <input name="comment" value={draft} onChange={(e) => setDraft(e.target.value)} />
+    </form>
+  )
+}`,
+          grammar: 'tsx',
         },
       ],
     },
@@ -419,6 +837,165 @@ async function like() {
 </form>`,
           grammar: 'tsx',
           note: 'Consumes the isPending and error values that useActionState returned above.',
+        },
+        {
+          id: 'react-frontier-actions-capstone',
+          kind: 'capstone',
+          label: 'an invite form with validation and pending state',
+          brief:
+            'A team invite form that keeps no useState at all. useActionState owns the returned result and the pending flag, the action validates before it sends and returns an error instead of throwing, and a child button reads the same submission through useFormStatus.',
+          code: `interface InviteResult {
+  error: string | null
+  sent: number
+}
+
+function SubmitButton() {
+  const { pending } = useFormStatus()
+  return (
+    <button type="submit" disabled={pending}>
+      {pending ? 'Sending' : 'Send invite'}
+    </button>
+  )
+}
+
+export function InviteForm({ teamId }: { teamId: string }) {
+  const [result, submitAction, isPending] = useActionState(
+    async (prev: InviteResult, formData: FormData): Promise<InviteResult> => {
+      const email = formData.get('email') as string
+      if (!email.includes('@')) return { ...prev, error: 'That is not an email' }
+      await sendInvite(teamId, email)
+      return { error: null, sent: prev.sent + 1 }
+    },
+    { error: null, sent: 0 },
+  )
+
+  return (
+    <form action={submitAction}>
+      <input name="email" type="email" disabled={isPending} />
+      {result.error !== null && <p role="alert">{result.error}</p>}
+      <p>{result.sent} invites sent</p>
+      <SubmitButton />
+    </form>
+  )
+}`,
+          grammar: 'tsx',
+        },
+      ],
+    },
+    {
+      id: 'react-frontier-review',
+      kind: 'review',
+      title: 'Review: a React 19 checkout',
+      summary:
+        'A checkout flow built from use, useOptimistic and useActionState in the same three files.',
+      concept:
+        'The three new hooks from this dispatch, meeting in one checkout. The summary reads its data with use and no effect, the quantity stepper predicts the server with useOptimistic, and the order form owns its error and pending state through useActionState and useFormStatus.',
+      covers: ['react-frontier-use', 'react-frontier-optimistic', 'react-frontier-actions'],
+      drills: [
+        {
+          id: 'react-frontier-review-1',
+          kind: 'capstone',
+          label: 'CartSummary.tsx',
+          brief:
+            'The read side, with no useEffect and no loading flag. One use call pulls the currency out of context, another unwraps the cart promise the parent passed down, and the component suspends by itself until the data lands.',
+          code: `const CurrencyContext = createContext('NOK')
+
+export interface CartLine {
+  sku: string
+  title: string
+  qty: number
+  price: number
+}
+
+export function CartSummary({ cart }: { cart: Promise<CartLine[]> }) {
+  const currency = use(CurrencyContext)
+  const lines = use(cart)
+  const total = lines.reduce((sum, line) => sum + line.qty * line.price, 0)
+  return (
+    <ul>
+      {lines.map((line) => (
+        <li key={line.sku}>
+          {line.title} x{line.qty} at {line.price} {currency}
+        </li>
+      ))}
+      <li>Total {total} {currency}</li>
+    </ul>
+  )
+}`,
+          grammar: 'tsx',
+        },
+        {
+          id: 'react-frontier-review-2',
+          kind: 'capstone',
+          label: 'QuantityStepper.tsx',
+          brief:
+            'The write side, shown before it is true. The merge function replaces one line in the list, the stepper reads the optimistic copy rather than the prop, and the real request is awaited afterwards so a rejection simply reverts the number.',
+          code: `interface StepperProps {
+  line: CartLine
+  lines: CartLine[]
+}
+
+export function QuantityStepper({ line, lines }: StepperProps) {
+  const [optimistic, setOptimistic] = useOptimistic(
+    lines,
+    (state, next: CartLine) =>
+      state.map((row) => (row.sku === next.sku ? next : row)),
+  )
+  const shown = optimistic.find((row) => row.sku === line.sku) ?? line
+
+  async function change(delta: number) {
+    const next = { ...shown, qty: Math.max(0, shown.qty + delta) }
+    setOptimistic(next)
+    await updateCartLine(next.sku, next.qty)
+  }
+
+  return (
+    <span>
+      <button onClick={() => change(-1)}>-</button>
+      <output>{shown.qty}</output>
+      <button onClick={() => change(1)}>+</button>
+    </span>
+  )
+}`,
+          grammar: 'tsx',
+        },
+        {
+          id: 'react-frontier-review-3',
+          kind: 'capstone',
+          label: 'Checkout.tsx',
+          brief:
+            'The submit. The action validates first and returns an error object rather than throwing, useActionState keeps that result between submissions, the button reads the same pending state through useFormStatus, and the summary from the first file renders inside the form.',
+          code: `interface OrderResult {
+  error: string | null
+  orderId: string | null
+}
+
+function PlaceButton() {
+  const { pending } = useFormStatus()
+  return <button disabled={pending}>{pending ? 'Placing' : 'Place order'}</button>
+}
+
+export function Checkout({ cart }: { cart: Promise<CartLine[]> }) {
+  const [result, placeAction] = useActionState(
+    async (prev: OrderResult, formData: FormData): Promise<OrderResult> => {
+      const address = formData.get('address') as string
+      if (address.length < 5) return { ...prev, error: 'Address looks short' }
+      const orderId = await placeOrder(address)
+      return { error: null, orderId }
+    },
+    { error: null, orderId: null },
+  )
+
+  return (
+    <form action={placeAction}>
+      <CartSummary cart={cart} />
+      <input name="address" />
+      {result.error !== null && <p role="alert">{result.error}</p>}
+      <PlaceButton />
+    </form>
+  )
+}`,
+          grammar: 'tsx',
         },
       ],
     },
