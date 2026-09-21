@@ -1,3 +1,4 @@
+import { isKeyboardKey } from './keys'
 import type { KeyLedger, Metrics, SessionState } from './types'
 
 /** Words-per-minute is characters-per-minute over five. The usual convention. */
@@ -66,11 +67,13 @@ export interface KeyStanding {
 
 /**
  * Rank keys by miss rate. Keys you have barely touched are excluded — one typo
- * on a character you have typed twice says nothing worth showing.
+ * on a character you have typed twice says nothing worth showing — and so is
+ * the line break, which the ledger records but is not a key you drill (see
+ * `isKeyboardKey`).
  */
 export function rankKeys(ledger: KeyLedger, minimumPresses = 12): KeyStanding[] {
   return Object.entries(ledger)
-    .filter(([, entry]) => entry.pressed >= minimumPresses)
+    .filter(([char, entry]) => isKeyboardKey(char) && entry.pressed >= minimumPresses)
     .map(([char, entry]) => ({
       char,
       pressed: entry.pressed,

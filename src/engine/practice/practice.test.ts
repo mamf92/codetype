@@ -64,6 +64,26 @@ describe('rankForPractice', () => {
     const ledger: KeyLedger = { a: key({ pressed: 2, missed: 1 }) }
     expect(rankForPractice(ledger, 5)).toEqual([])
   })
+
+  it('never offers the line break, however badly it scores', () => {
+    // The ledger records every line break, and `compileDrill` emits one per
+    // line, so '\n' would otherwise rank at the very top on frequency alone
+    // — and a passage generated from it is untypable: Enter would be both
+    // the character being drilled and the key that moves past it.
+    const ledger: KeyLedger = {
+      '\n': key({ pressed: 200, missed: 100 }),
+      '(': key({ pressed: 20, missed: 1 }),
+    }
+    expect(rankForPractice(ledger, 1).map((candidate) => candidate.char)).toEqual(['('])
+  })
+
+  it('never offers the space — a line of spaces has no reachable caret', () => {
+    const ledger: KeyLedger = {
+      ' ': key({ pressed: 200, missed: 100 }),
+      '(': key({ pressed: 20, missed: 1 }),
+    }
+    expect(rankForPractice(ledger, 1).map((candidate) => candidate.char)).toEqual(['('])
+  })
 })
 
 describe('generators', () => {

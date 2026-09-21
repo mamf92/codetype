@@ -1,3 +1,4 @@
+import { isPracticableKey } from '@/engine/keys'
 import type { KeyLedger, KeyStat } from '@/engine/types'
 import { frequencyPer1000 } from './corpusFrequency'
 
@@ -38,10 +39,16 @@ export interface PracticeCandidate {
  * the same way `troubleKeys` excludes them, just at a lower bar: smoothing
  * already guards against a one-off miss swinging the rate, so this only
  * needs enough presses to trust the corpus-frequency multiplication.
+ *
+ * Keys a generated passage cannot drill — the line break and the space — are
+ * excluded here rather than at each call site, so every caller (the Practice
+ * route, the nudge at the end of a drill) gets the same answer. The line
+ * break would otherwise rank near the top on frequency alone: `compileDrill`
+ * emits one per line.
  */
 export function rankForPractice(ledger: KeyLedger, minimumPresses = 5): PracticeCandidate[] {
   return Object.entries(ledger)
-    .filter(([, stat]) => stat.pressed >= minimumPresses)
+    .filter(([char, stat]) => isPracticableKey(char) && stat.pressed >= minimumPresses)
     .map(([char, stat]) => {
       const smoothedRate = smoothedErrorRate(stat)
       const freq = frequencyPer1000(char)

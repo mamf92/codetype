@@ -9,12 +9,56 @@ const PENDING = 'var(--color-ghost)'
 /** Lines of context to keep visible either side of the caret while scrolling. */
 const SCROLL_MARGIN_LINES = 2
 
+/**
+ * How far a wrapped row is inset from the line it continues. Enough to read
+ * as "this is the same line", not so much that the code stops lining up.
+ *
+ * It hangs off the line's own code column rather than the edge of the
+ * surface: the ghosted indentation is its own flex item, so a wrapped row of
+ * an indented line sits in from that line's first real character instead of
+ * starting to the left of it and reading as a dedent.
+ */
+const WRAP_INDENT = '1.6em'
+
 function Caret() {
   return (
     <span
       className="caret -mx-[1.5px] inline-block w-[3px] bg-amber align-[-0.22em]"
       style={{ height: '1.25em' }}
     />
+  )
+}
+
+/**
+ * The line break at the end of a line, shown on every line that has one —
+ * dim as untyped text, lit when the caret reaches it, and in the colour of
+ * typed punctuation once it has been. Not as faint as the indentation dots:
+ * those are texture you can ignore, this is the answer to "does the next row
+ * need Enter?".
+ *
+ * Always present, for two reasons. A line wider than the surface wraps, and a
+ * wrapped row otherwise looks exactly like the next line: the marker is how
+ * you know which rows actually want Enter, before you get to the end of one.
+ * And a marker that appears only under the caret changes the line's width on
+ * arrival, which on a line that already fills the surface wraps the marker
+ * onto a row of its own — the passage appears to grow a blank line, and lose
+ * it again when Enter is pressed.
+ *
+ * It is attached to the preceding character with a margin rather than a
+ * space, so there is no break opportunity in front of it: if the end of the
+ * line wraps, the marker wraps with the word it belongs to.
+ */
+function Return({ lit, typed }: { lit: boolean; typed: boolean }) {
+  // Typed: the colour typed punctuation takes, since that is what it is.
+  const colour = lit ? 'var(--color-amber)' : typed ? 'var(--color-muted)' : PENDING
+  return (
+    <span
+      aria-hidden="true"
+      className="ml-[0.4em] text-[0.7em] select-none"
+      style={{ color: colour }}
+    >
+      ⏎
+    </span>
   )
 }
 
@@ -45,6 +89,11 @@ function Caret() {
  * shrunken window onto the passage, and pairing one with the page scroll it
  * would still need is worse than letting the passage run and the page scroll
  * once.
+ *
+ * Lines wrap rather than scroll sideways, and every line is set with a
+ * hanging indent so a wrapped row sits in from the line it continues. That,
+ * plus the `⏎` on every line that ends in one, is what tells you whether the
+ * row below needs Enter or is the same line still going.
  */
 export const TypingSurface = forwardRef<
   HTMLDivElement,
@@ -109,45 +158,59 @@ export const TypingSurface = forwardRef<
             const isLast = line.index === compiled.lines.length - 1
 
             return (
-              <div key={line.index} ref={line.index === caretLine ? caretRowRef : undefined}>
+              <div
+                key={line.index}
+                ref={line.index === caretLine ? caretRowRef : undefined}
+                className="flex"
+              >
                 {line.indent.length > 0 && (
-                  <span style={{ color: GHOST }}>{'·'.repeat(line.indent.length)}</span>
+                  <span className="shrink-0" style={{ color: GHOST }}>
+                    {'·'.repeat(line.indent.length)}
+                  </span>
                 )}
 
-                {line.cells.map((cell, i) => {
-                  const index = line.offset + i
-                  const state = entries[index] ?? 'pending'
+                <span
+                  className="min-w-0 flex-1"
+                  style={{ paddingLeft: WRAP_INDENT, textIndent: `-${WRAP_INDENT}` }}
+                >
+                  {line.cells.map((cell, i) => {
+                    const index = line.offset + i
+                    const state = entries[index] ?? 'pending'
 
-                  return (
-                    <span key={index}>
-                      {cursor === index && <Caret />}
-                      <span
-                        style={
-                          state === 'correct'
-                            ? { color: colourForScope(cell.scope) }
-                            : state === 'wrong'
-                              ? {
-                                  color: 'var(--color-fault)',
-                                  background:
-                                    'color-mix(in srgb, var(--color-fault) 14%, transparent)',
-                                  borderBottom: '2px solid var(--color-fault)',
-                                }
-                              : { color: PENDING }
-                        }
-                      >
-                        {cell.char}
+                    return (
+                      <span key={index}>
+                        {cursor === index && <Caret />}
+                        <span
+                          style={
+                            state === 'correct'
+                              ? { color: colourForScope(cell.scope) }
+                              : state === 'wrong'
+                                ? {
+                                    color: 'var(--color-fault)',
+                                    background:
+                                      'color-mix(in srgb, var(--color-fault) 14%, transparent)',
+                                    borderBottom: '2px solid var(--color-fault)',
+                                  }
+                                : { color: PENDING }
+                          }
+                        >
+                          {cell.char}
+                        </span>
                       </span>
-                    </span>
-                  )
-                })}
+                    )
+                  })}
 
-                {!isLast && cursor === newlineIndex && (
-                  <>
-                    <Caret />
-                    <span className="text-[0.6em] text-ghost"> ⏎</span>
-                  </>
-                )}
-                {isLast && cursor >= compiled.cells.length && <Caret />}
+                  {!isLast && (
+                    <>
+                      {cursor === newlineIndex && <Caret />}
+                      <Return
+                        lit={cursor === newlineIndex}
+                        typed={entries[newlineIndex] === 'correct'}
+                      />
+                    </>
+                  )}
+                  {isLast && cursor >= compiled.cells.length && <Caret />}
+                </span>
               </div>
             )
           })}
