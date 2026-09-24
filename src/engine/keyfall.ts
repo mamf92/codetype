@@ -27,6 +27,15 @@ export const GLYPH_LABELS: Record<GlyphKind, string> = {
   token: 'Operator',
 }
 
+/** One glyph of each kind, for a legend. */
+export const GLYPH_EXAMPLES: Record<GlyphKind, string> = {
+  lower: 'a',
+  upper: 'A',
+  digit: '7',
+  symbol: '{',
+  token: '=>',
+}
+
 export const STARTING_LIVES = 3
 
 /** Hits per level. */

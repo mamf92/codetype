@@ -8,6 +8,7 @@ const press = (over: Partial<KeyInput>): KeyInput => ({
   altKey: false,
   metaKey: false,
   altGraph: false,
+  altComposes: false,
   ...over,
 })
 
@@ -34,15 +35,22 @@ describe('typedCharacter', () => {
   })
 
   it('types a Norwegian bracket behind Option on a Mac (reported as Alt)', () => {
-    expect(typedCharacter(press({ key: '[', code: 'Digit8', altKey: true }))).toBe('[')
+    const option8 = press({ key: '[', code: 'Digit8', altKey: true, altComposes: true })
+    expect(typedCharacter(option8)).toBe('[')
   })
 
-  it('treats Alt+letter that still reports its own letter as a shortcut', () => {
+  it('treats plain Alt as a shortcut where Alt does not compose characters', () => {
     expect(typedCharacter(press({ key: 'r', code: 'KeyR', altKey: true }))).toBeNull()
-    expect(typedCharacter(press({ key: 'R', code: 'KeyR', altKey: true }))).toBeNull()
-    expect(
-      typedCharacter(press({ key: '1', code: 'Digit1', altKey: true, ctrlKey: true })),
-    ).toBeNull()
+    // Windows Alt+Shift+1 reports the shifted character, not a composed one.
+    expect(typedCharacter(press({ key: '!', code: 'Digit1', altKey: true }))).toBeNull()
+    // A Russian layout's Alt+D (the address bar) reports 'в'.
+    expect(typedCharacter(press({ key: 'в', code: 'KeyD', altKey: true }))).toBeNull()
+  })
+
+  it('treats Ctrl+Alt that still reports its own letter or digit as a shortcut', () => {
+    const ctrlAlt = { altKey: true, ctrlKey: true }
+    expect(typedCharacter(press({ key: '1', code: 'Digit1', ...ctrlAlt }))).toBeNull()
+    expect(typedCharacter(press({ key: 'R', code: 'KeyR', ...ctrlAlt }))).toBeNull()
   })
 })
 

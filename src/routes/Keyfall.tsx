@@ -1,7 +1,8 @@
-import { useEffect, useLayoutEffect, useReducer, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   EFFECT_MS,
+  GLYPH_EXAMPLES,
   GLYPH_LABELS,
   initialKeyfall,
   keyfallAccuracy,
@@ -23,13 +24,6 @@ import { KeyCap } from '@/components/ui/primitives'
 import { BASICS_PATH } from '@/lib/paths'
 
 const KINDS: GlyphKind[] = ['lower', 'upper', 'digit', 'symbol', 'token']
-const EXAMPLES: Record<GlyphKind, string> = {
-  lower: 'a',
-  upper: 'A',
-  digit: '7',
-  symbol: '{',
-  token: '=>',
-}
 
 /**
  * Glyph colours stay inside the phosphor palette: parchment and the amber
@@ -95,7 +89,7 @@ function ScoreTable() {
         {KINDS.map((kind) => (
           <tr key={kind} className="border-b border-ink-line last:border-b-0">
             <td className="py-1.5 pr-4 font-mono text-base" style={{ color: GLYPH_TONES[kind] }}>
-              {EXAMPLES[kind]}
+              {GLYPH_EXAMPLES[kind]}
             </td>
             <td className="py-1.5 pr-4 text-muted">{GLYPH_LABELS[kind]}</td>
             <td className="py-1.5 pr-4 text-faint">
@@ -133,7 +127,9 @@ export default function Keyfall() {
   )
   const [useWeakKeys, setUseWeakKeys] = useState(false)
 
-  const leaders = bestGames(progress, 5)
+  // Memoised: the game re-renders every animation frame, and the list only
+  // changes when a game is saved.
+  const leaders = useMemo(() => bestGames(progress, 5), [progress])
   // The best before this game started, so the end screen can say "new best"
   // about the game it is showing rather than the game it just saved.
   const [bestBefore, setBestBefore] = useState(0)
@@ -201,7 +197,9 @@ export default function Keyfall() {
         else handlers.current.start()
         return
       }
-      if (status !== 'running') return
+      // Holding a key down is not typing it again: auto-repeat would clear
+      // every matching glyph as it spawned.
+      if (status !== 'running' || event.repeat) return
       const char = typedCharacter(keyInputFrom(event))
       if (char === null) return
       // Space would scroll the page; Firefox opens quick find on / and '.

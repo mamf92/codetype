@@ -163,12 +163,14 @@ only way a key leaves the list is by being typed well in real code.
 - **Keys behind AltGr or Option were dropped.** The typing surface ignored
   any keystroke with Alt held, which on a Norwegian layout (Windows AltGr,
   reported as Ctrl+Alt; macOS Option) made `[ ] { }` untypable.
-  `typedCharacter` (`src/engine/keys.ts`) now treats a modifier as a
-  shortcut only when it did not change the character.
+  `typedCharacter` (`src/engine/keys.ts`) now accepts AltGr, Ctrl+Alt that
+  changed the character, and plain Alt only on a Mac, where Option composes.
+  Alt+R restarts by physical key, since Option+R reports `®`.
 - **The typing surface never had focus on arrival.** It sits inside a
   staggered `.reveal`, which is `visibility: hidden` until its animation
   starts, and a hidden element refuses `focus()` silently. Focus is now
-  retried each frame until it lands, and only while nothing else holds it.
+  retried the moment the reveal's animation starts, and only while nothing
+  else holds it.
 
 ## Consequences
 

@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import type { KeyTrack } from '@/content/basics/schema'
 import { STAGE_TITLES } from '@/content/basics/schema'
-import { POINTS, type GlyphKind } from '@/engine/keyfall'
+import { GLYPH_EXAMPLES, POINTS, type GlyphKind } from '@/engine/keyfall'
 import type { PracticeTarget, WeakKeyMode } from '@/engine/practice/weakKeys'
 import { WEAK_KEY_MODES } from '@/engine/practice/weakKeys'
 import type { GameRecord, StageStanding } from '@/store/progress'
@@ -125,13 +125,7 @@ export function KeyTrackCard({
   )
 }
 
-const SCORING: Array<{ kind: GlyphKind; face: string }> = [
-  { kind: 'lower', face: 'a' },
-  { kind: 'upper', face: 'A' },
-  { kind: 'digit', face: '7' },
-  { kind: 'symbol', face: '{' },
-  { kind: 'token', face: '=>' },
-]
+const SCORING: GlyphKind[] = ['lower', 'upper', 'digit', 'symbol', 'token']
 
 /** A handful of glyphs mid-fall, for the look of the thing. */
 const RAIN = [
@@ -157,12 +151,12 @@ export function KeyfallCard({ leaders }: { leaders: GameRecord[] }) {
           </p>
         </div>
         <ul className="flex flex-wrap gap-2" aria-label="Points">
-          {SCORING.map(({ kind, face }) => (
+          {SCORING.map((kind) => (
             <li
               key={kind}
               className="flex items-center gap-2 border border-ink-line px-2.5 py-1.5 text-[10px]"
             >
-              <span className="font-mono text-sm text-parchment">{face}</span>
+              <span className="font-mono text-sm text-parchment">{GLYPH_EXAMPLES[kind]}</span>
               <span className="text-amber">{POINTS[kind]}</span>
             </li>
           ))}

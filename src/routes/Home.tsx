@@ -89,7 +89,8 @@ export default function Home() {
   )
   const elsewhere = TRACKS.filter((t) => !dispatches.includes(t))
 
-  const hasHistory = progress.sessions.length > 0
+  // Drills only, like every number above it — practice runs aren't history here.
+  const hasHistory = stats.sessionCount > 0
 
   return (
     <div className="flex flex-col gap-7">

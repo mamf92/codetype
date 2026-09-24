@@ -38,7 +38,9 @@ export default function Statistics() {
   const trouble = troubleKeys(ledger, 5)
   const stale = new Set(dueForRevisit(progress, TRACKS, now).map((track) => track.id))
 
-  if (progress.sessions.length === 0) {
+  // Drills, not sessions: a practice run alone would otherwise skip this and
+  // render charts with nothing in them, since every derivation reads drills.
+  if (stats.sessionCount === 0) {
     return (
       <div className="flex flex-col gap-6">
         <PageHead

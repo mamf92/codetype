@@ -58,30 +58,35 @@ export function useTypingSession(code: string, grammar: Grammar): TypingSession 
   // A surface inside a `.reveal` is `visibility: hidden` until its staggered
   // animation starts, and a hidden element refuses focus without a word — so
   // one `focus()` at mount silently left focus on <body>, and nothing typed
-  // landed until the surface was clicked. Keep trying each frame until the
-  // reveal lets it land, but only while nothing else holds focus: someone who
-  // has already tabbed somewhere keeps it.
+  // landed until the surface was clicked. If the first try doesn't land, try
+  // again the moment the reveal's own animation starts, which is the moment
+  // it becomes visible. Only while nothing else holds focus, though: someone
+  // who has already tabbed somewhere keeps it.
   useEffect(() => {
     const surface = surfaceRef.current
     if (surface === null) return
-    const giveUpAt = performance.now() + 2000
-    let frame = 0
     const attempt = (): void => {
       const free = document.activeElement === null || document.activeElement === document.body
-      if (document.activeElement === surface || !free) return
-      surface.focus()
-      if (document.activeElement !== surface && performance.now() < giveUpAt) {
-        frame = requestAnimationFrame(attempt)
-      }
+      if (free) surface.focus()
     }
     attempt()
-    return () => cancelAnimationFrame(frame)
+    const reveal = surface.closest('.reveal')
+    if (document.activeElement === surface || reveal === null) return
+    // The caret's own animation bubbles up through here too; only the
+    // reveal's start means the surface is visible.
+    const onStart = (event: Event): void => {
+      if (event.target === reveal) attempt()
+    }
+    reveal.addEventListener('animationstart', onStart)
+    return () => reveal.removeEventListener('animationstart', onStart)
   }, [compiled])
 
   const onSurfaceKeyDown = useCallback((event: ReactKeyboardEvent<HTMLDivElement>) => {
     // Restart shortcut lives behind Alt so a bare letter can still be typed —
     // Tab is deliberately left alone; it is how you leave the surface.
-    if (event.altKey && !event.ctrlKey && !event.metaKey && event.key.toLowerCase() === 'r') {
+    // Matched on the physical key as well: Option+R on a Mac reports `®`.
+    const isR = event.key.toLowerCase() === 'r' || event.code === 'KeyR'
+    if (event.altKey && !event.ctrlKey && !event.metaKey && isR) {
       event.preventDefault()
       dispatch({ type: 'reset' })
       return

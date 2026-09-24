@@ -9,6 +9,7 @@ import { useResultKeyboardNav } from '@/lib/useResultKeyboardNav'
 import { TypingSurface } from '@/components/typing/TypingSurface'
 import { FocusHeader } from '@/components/layout/FocusHeader'
 import { KeyCap } from '@/components/ui/primitives'
+import { accuracyOf } from '@/components/basics/keyStanding'
 
 /** How long a finished rep stays on screen before a streak moves on by itself. */
 const STREAK_PAUSE_MS = 750
@@ -39,9 +40,9 @@ export interface PracticeRunnerProps {
   lifetime?: KeyLedger
 }
 
-const accuracyOf = (ledger: KeyLedger, char: string): number | null => {
+const accuracyIn = (ledger: KeyLedger, char: string): number | null => {
   const stat = ledger[char]
-  return stat === undefined || stat.pressed === 0 ? null : 1 - stat.missed / stat.pressed
+  return stat === undefined || stat.pressed === 0 ? null : accuracyOf(stat)
 }
 
 const percent = (value: number | null): string =>
@@ -142,9 +143,15 @@ export function PracticeRunner({
     restart()
   }
 
+  // A finished rep waiting on the streak's pause is kept; a half-typed one is
+  // dropped, the way a retried attempt is — counting its untyped remainder
+  // would book every cell you never reached as a mistake.
   const skip = (): void => {
-    setReps((r) => r + (state.startedAt === null ? 0 : 1))
-    nextStep(state.startedAt === null ? totals : addRun(totals, state, metrics))
+    if (finished) setReps((r) => r + 1)
+    nextStep(finished ? addRun(totals, state, metrics) : totals)
+    // The button keeps focus otherwise, and the next line's surface never
+    // gets it: Space would press Skip again instead of typing.
+    surfaceRef.current?.focus()
   }
 
   const again = (): void => {
@@ -268,8 +275,8 @@ export function PracticeRunner({
               </span>
               <div className="flex flex-col gap-2">
                 {targets.map((char) => {
-                  const now = accuracyOf(summary.ledger, char)
-                  const before = accuracyOf(lifetime, char)
+                  const now = accuracyIn(summary.ledger, char)
+                  const before = accuracyIn(lifetime, char)
                   const better = now !== null && before !== null && now > before
                   return (
                     <div key={char} className="flex items-center gap-3 text-[11px]">

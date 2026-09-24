@@ -130,7 +130,10 @@ export function ladderSteps(targets: PracticeTarget[]): PracticeStep[] {
     { name: 'Mix-ups', passage: mixUps, grammar: 'plain' },
     { name: 'Interleave', passage: interleave, grammar: 'plain' },
     { name: 'Fuse', passage: fuse, grammar: 'plain' },
-    { name: 'In code', passage: inCode, grammar: 'typescript' },
+    // Plain too: the fragments mix TypeScript, Python, shell and CSS, and
+    // colouring the lot by one grammar's rules would mis-colour the rest —
+    // `it's` would open a TypeScript string that never closes.
+    { name: 'In code', passage: inCode, grammar: 'plain' },
   ]
 }
 

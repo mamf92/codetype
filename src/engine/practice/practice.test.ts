@@ -230,9 +230,8 @@ describe('ladderSteps', () => {
     expectTypable(steps)
   })
 
-  it('only the in-code rung is highlighted as code', () => {
-    const grammars = ladderSteps(targets(['('])).map((s) => s.grammar)
-    expect(grammars).toEqual(['plain', 'plain', 'plain', 'plain', 'typescript'])
+  it('is never highlighted — even the in-code rung mixes languages', () => {
+    for (const step of ladderSteps(targets(['(', "'"]))) expect(step.grammar).toBe('plain')
   })
 })
 
