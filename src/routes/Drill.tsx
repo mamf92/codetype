@@ -8,6 +8,7 @@ import { TypingSurface } from '@/components/typing/TypingSurface'
 import { isLongPassage } from '@/lib/passage'
 import { rankForPractice } from '@/engine/practice/ranking'
 import { useResultKeyboardNav } from '@/lib/useResultKeyboardNav'
+import { weakKeyPath } from '@/lib/paths'
 import NotFound from './NotFound'
 
 function Readout({
@@ -345,7 +346,7 @@ export default function Drill() {
             if (worst === undefined || worst.missed === 0) return null
             return (
               <p className="reveal mt-3 w-full text-center text-[11px] text-faint">
-                <Link to="/practice" className="text-amber hover:text-amber-soft">
+                <Link to={weakKeyPath('ladder')} className="text-amber hover:text-amber-soft">
                   Practice weak keys
                 </Link>{' '}
                 — &quot;{worst.char}&quot; cost you the most this run, and it's not the only one

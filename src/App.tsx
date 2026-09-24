@@ -1,16 +1,28 @@
-import { useEffect } from 'react'
-import { Route, Routes } from 'react-router-dom'
+import { lazy, Suspense, useEffect } from 'react'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import { Shell } from '@/components/layout/Shell'
 import Home from '@/routes/Home'
 import Explore from '@/routes/Explore'
 import Statistics from '@/routes/Statistics'
 import Settings from '@/routes/Settings'
 import Drill from '@/routes/Drill'
-import Practice from '@/routes/Practice'
 import NotFound from '@/routes/NotFound'
 import Welcome from '@/routes/Welcome'
 import { useProgress } from '@/store/useProgress'
 import { applyTheme } from '@/lib/themes'
+
+/*
+ * Basics is its own chunk: the practice runner, the game and the key tracks
+ * are only needed once someone goes there, and loading them up front pushed
+ * the main bundle past Vite's size warning for everyone who never does.
+ */
+const Basics = lazy(() => import('@/routes/Basics'))
+const WeakKeyPractice = lazy(() => import('@/routes/WeakKeyPractice'))
+const KeyStage = lazy(() => import('@/routes/KeyStage'))
+const Keyfall = lazy(() => import('@/routes/Keyfall'))
+
+/** Holds the page's own background while a chunk loads, rather than flashing blank. */
+const FullScreenLoading = () => <div className="crt min-h-dvh" />
 
 export default function App() {
   const progress = useProgress()
@@ -30,7 +42,32 @@ export default function App() {
       {/* The drill and practice screens own the whole viewport: no chrome to look away at. */}
       <Route path="/drill/:trackId" element={<Drill />} />
       <Route path="/drill/:trackId/:drillId" element={<Drill />} />
-      <Route path="/practice" element={<Practice />} />
+      <Route
+        path="/basics/weak/:mode"
+        element={
+          <Suspense fallback={<FullScreenLoading />}>
+            <WeakKeyPractice />
+          </Suspense>
+        }
+      />
+      <Route
+        path="/basics/keys/:trackId/:stageId"
+        element={
+          <Suspense fallback={<FullScreenLoading />}>
+            <KeyStage />
+          </Suspense>
+        }
+      />
+      <Route
+        path="/basics/keyfall"
+        element={
+          <Suspense fallback={<FullScreenLoading />}>
+            <Keyfall />
+          </Suspense>
+        }
+      />
+      {/* Where weak-key practice lived before Basics; kept so old links still land. */}
+      <Route path="/practice" element={<Navigate to="/basics/weak/ladder" replace />} />
       <Route
         path="*"
         element={
@@ -38,6 +75,14 @@ export default function App() {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/explore" element={<Explore />} />
+              <Route
+                path="/basics"
+                element={
+                  <Suspense fallback={null}>
+                    <Basics />
+                  </Suspense>
+                }
+              />
               <Route path="/statistics" element={<Statistics />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="*" element={<NotFound />} />

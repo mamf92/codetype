@@ -16,6 +16,7 @@ import {
   StatTile,
 } from '@/components/ui/primitives'
 import { TrackCard } from '@/components/catalogue/TrackCard'
+import { weakKeyPath } from '@/lib/paths'
 
 function KeyLedgerPanel() {
   const progress = useProgress()
@@ -50,7 +51,7 @@ function KeyLedgerPanel() {
           </span>
           {worst !== undefined && (
             <Link
-              to="/practice"
+              to={weakKeyPath('ladder')}
               className="text-[10px] tracking-[0.14em] text-amber uppercase hover:text-amber-soft"
             >
               Practice weak keys
@@ -62,7 +63,7 @@ function KeyLedgerPanel() {
             <span className="text-[11px] text-muted">Nothing is giving you trouble yet.</span>
           ) : (
             bad.map((key) => (
-              <Link key={key.char} to="/practice">
+              <Link key={key.char} to={weakKeyPath('ladder', [key.char])}>
                 <KeyCap char={key.char} tone="fault" />
               </Link>
             ))
@@ -88,7 +89,8 @@ export default function Home() {
   )
   const elsewhere = TRACKS.filter((t) => !dispatches.includes(t))
 
-  const hasHistory = progress.sessions.length > 0
+  // Drills only, like every number above it — practice runs aren't history here.
+  const hasHistory = stats.sessionCount > 0
 
   return (
     <div className="flex flex-col gap-7">

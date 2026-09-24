@@ -7,6 +7,7 @@ import { troubleKeys } from '@/engine/metrics'
 import { PageHead } from '@/components/layout/Shell'
 import { Empty, KeyCap, Panel, SectionLabel } from '@/components/ui/primitives'
 import { AreaChart } from '@/components/ui/AreaChart'
+import { weakKeyPath } from '@/lib/paths'
 
 const DAY_MS = 86_400_000
 
@@ -37,7 +38,9 @@ export default function Statistics() {
   const trouble = troubleKeys(ledger, 5)
   const stale = new Set(dueForRevisit(progress, TRACKS, now).map((track) => track.id))
 
-  if (progress.sessions.length === 0) {
+  // Drills, not sessions: a practice run alone would otherwise skip this and
+  // render charts with nothing in them, since every derivation reads drills.
+  if (stats.sessionCount === 0) {
     return (
       <div className="flex flex-col gap-6">
         <PageHead
@@ -116,7 +119,11 @@ export default function Statistics() {
           ) : (
             <div className="flex flex-1 flex-col justify-between gap-2">
               {trouble.map((key) => (
-                <Link key={key.char} to="/practice" className="group flex items-center gap-3">
+                <Link
+                  key={key.char}
+                  to={weakKeyPath('ladder', [key.char])}
+                  className="group flex items-center gap-3"
+                >
                   <KeyCap char={key.char} tone={key.errorRate > 0.18 ? 'fault' : 'warn'} small />
                   <div className="h-2 flex-1 bg-ink-line">
                     <div

@@ -7,9 +7,10 @@ import json from 'refractor/json'
 import python from 'refractor/python'
 import kotlin from 'refractor/kotlin'
 import java from 'refractor/java'
+import bash from 'refractor/bash'
 import type { Grammar } from '@/content/schema'
 
-for (const language of [tsx, typescript, javascript, css, json, python, kotlin, java]) {
+for (const language of [tsx, typescript, javascript, css, json, python, kotlin, java, bash]) {
   refractor.register(language)
 }
 
@@ -47,6 +48,8 @@ function scopeOf(node: ElementNode): string | null {
  * fails for any reason every character falls back to `null` (plain text).
  */
 export function scopesPerCharacter(code: string, grammar: Grammar): (string | null)[] {
+  if (grammar === 'plain') return Array.from({ length: code.length }, () => null)
+
   let tree: RootNode
   try {
     tree = refractor.highlight(code, grammar) as unknown as RootNode
