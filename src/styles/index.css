@@ -289,6 +289,22 @@
   animation: phosphor 1.1s ease-out infinite alternate;
 }
 
+/* Keyfall: points rise off a hit glyph and burn out. */
+@keyframes keyfall-pop {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-2.5rem);
+  }
+}
+
+.keyfall-pop {
+  animation: keyfall-pop 0.7s ease-out forwards;
+}
+
 /*
  * A theme switch recolours the whole page at once (see `useTheme`). Without
  * a transition every token snaps instantly, which reads as a flash rather
@@ -316,6 +332,11 @@
   .caret {
     animation: none;
     opacity: 1;
+  }
+
+  /* Still shown, just not flown: the score is information, the motion isn't. */
+  .keyfall-pop {
+    animation: none;
   }
 
   .theme-transition,

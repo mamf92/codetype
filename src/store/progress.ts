@@ -6,6 +6,8 @@ import type { ThemeId } from '@/lib/themes'
 const STORAGE_KEY = 'codetype.progress.v1'
 /** Plenty of history for the graphs, far short of a localStorage quota. */
 const MAX_SESSIONS = 2000
+/** Games are tiny records; this is a long high-score table, not a quota risk. */
+const MAX_GAMES = 500
 
 /** The outcome of one completed drill. Everything else is derived from these. */
 export interface SessionRecord {
@@ -33,10 +35,37 @@ export interface SessionRecord {
   kind: 'drill' | 'practice'
 }
 
+/**
+ * One finished game of Keyfall. Stored raw, like a session, so the high
+ * score is a derivation (`bestGames`) rather than a counter that could
+ * drift. Not a `SessionRecord`: a game has no passage, no wpm and no key
+ * ledger worth feeding anywhere — it is scored on points, not speed.
+ */
+export interface GameRecord {
+  id: string
+  game: 'keyfall'
+  /** Epoch milliseconds. */
+  at: number
+  score: number
+  level: number
+  hits: number
+  /** Glyphs that reached the ground. */
+  fallen: number
+  keys: number
+  wrong: number
+  durationMs: number
+}
+
 export interface ProgressDocument {
   version: 1
   favouriteLanguages: LanguageId[]
   sessions: SessionRecord[]
+  /**
+   * Added after v1 shipped, and deliberately not a version bump: a document
+   * written before games existed reads back with an empty list, the same
+   * way a session written before `kind` existed reads back as a drill.
+   */
+  games: GameRecord[]
   /**
    * Undefined means "no choice stored yet" — the signal the welcome screen
    * uses to show itself, including for anyone who used the app before this
@@ -51,7 +80,27 @@ export const emptyProgress = (): ProgressDocument => ({
   version: 1,
   favouriteLanguages: ['typescript', 'react', 'tailwind'],
   sessions: [],
+  games: [],
 })
+
+const isGameRecord = (value: unknown): value is GameRecord => {
+  if (typeof value !== 'object' || value === null) return false
+  const game = value as Partial<GameRecord>
+  return (
+    game.game === 'keyfall' &&
+    typeof game.id === 'string' &&
+    [
+      game.at,
+      game.score,
+      game.level,
+      game.hits,
+      game.fallen,
+      game.keys,
+      game.wrong,
+      game.durationMs,
+    ].every((n) => typeof n === 'number' && Number.isFinite(n))
+  )
+}
 
 /**
  * Read the document, tolerating anything at all in storage. A corrupt or
@@ -79,6 +128,7 @@ export function readProgress(): ProgressDocument {
         ...session,
         kind: session.kind === 'practice' ? 'practice' : 'drill',
       })),
+      games: Array.isArray(doc.games) ? doc.games.filter(isGameRecord) : [],
       ...(theme !== undefined ? { theme } : {}),
     }
   } catch {
@@ -98,6 +148,11 @@ export function writeProgress(doc: ProgressDocument): void {
 export const appendSession = (doc: ProgressDocument, record: SessionRecord): ProgressDocument => ({
   ...doc,
   sessions: [...doc.sessions, record].slice(-MAX_SESSIONS),
+})
+
+export const appendGame = (doc: ProgressDocument, record: GameRecord): ProgressDocument => ({
+  ...doc,
+  games: [...doc.games, record].slice(-MAX_GAMES),
 })
 
 // ---------------------------------------------------------------------------
@@ -220,3 +275,64 @@ export function dailySeries(doc: ProgressDocument): DailyPoint[] {
       sessions: sessions.length,
     }))
 }
+
+// ---------------------------------------------------------------------------
+// Basics
+// ---------------------------------------------------------------------------
+
+/** Key practice only: weak-key runs and key-track stages alike. */
+const practiceSessions = (doc: ProgressDocument): SessionRecord[] =>
+  doc.sessions.filter((session) => session.kind === 'practice')
+
+/** First-press accuracy a key-track stage has to be run at to count as cleared. */
+export const STAGE_CLEAR_ACCURACY = 0.95
+
+export interface StageStanding {
+  runs: number
+  lastAt: number | null
+  bestWpm: number
+  bestAccuracy: number
+  /** Run at least once at `STAGE_CLEAR_ACCURACY` or better. */
+  cleared: boolean
+}
+
+/**
+ * How a key-track stage has gone. A stage run is recorded as a practice
+ * session whose `drillId` is the stage id — ids that `basics.test.ts` holds
+ * unique against the catalogue, so nothing else can match.
+ */
+export function stageStanding(doc: ProgressDocument, stageId: string): StageStanding {
+  const runs = practiceSessions(doc).filter((session) => session.drillId === stageId)
+  if (runs.length === 0) {
+    return { runs: 0, lastAt: null, bestWpm: 0, bestAccuracy: 0, cleared: false }
+  }
+  const bestAccuracy = Math.max(...runs.map((s) => s.accuracy))
+  return {
+    runs: runs.length,
+    lastAt: Math.max(...runs.map((s) => s.at)),
+    bestWpm: Math.max(...runs.map((s) => s.wpm)),
+    bestAccuracy,
+    cleared: bestAccuracy >= STAGE_CLEAR_ACCURACY,
+  }
+}
+
+export interface PracticeSummary {
+  sessions: number
+  minutes: number
+}
+
+/** Everything done on the Basics page's typing surfaces, as a total. */
+export function practiceSummary(doc: ProgressDocument): PracticeSummary {
+  const sessions = practiceSessions(doc)
+  return {
+    sessions: sessions.length,
+    minutes: sessions.reduce((sum, s) => sum + s.durationMs, 0) / 60_000,
+  }
+}
+
+/** Highest scores first; the earlier game wins a tie, since it got there first. */
+export const bestGames = (doc: ProgressDocument, count = 5): GameRecord[] =>
+  doc.games
+    .slice()
+    .sort((a, b) => b.score - a.score || a.at - b.at)
+    .slice(0, count)

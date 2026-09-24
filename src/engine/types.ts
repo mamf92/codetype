@@ -38,7 +38,7 @@ export type EntryState = 'pending' | 'correct' | 'wrong'
  * typed on a miss and the physical key (`event.code`) that produced it —
  * this is what lets a discrimination pair or a layout be learned from real
  * typing instead of assumed. `latencyMs` is a running sum; divide by
- * `pressed` for the mean. See `docs/decisions/0005-key-practice-ledger.md`.
+ * `pressed` for the mean. See `docs/PRACTICE.md` §2.
  */
 export interface KeyStat {
   pressed: number

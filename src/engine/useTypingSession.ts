@@ -10,6 +10,7 @@ import {
 } from 'react'
 import type { Grammar } from '@/content/schema'
 import { compileDrill } from './compile'
+import { keyInputFrom, typedCharacter } from './keys'
 import { initialSession, reduceSession } from './session'
 import type { SessionAction } from './session'
 import { computeMetrics } from './metrics'
@@ -54,8 +55,27 @@ export function useTypingSession(code: string, grammar: Grammar): TypingSession 
 
   const surfaceRef = useRef<HTMLDivElement>(null)
 
+  // A surface inside a `.reveal` is `visibility: hidden` until its staggered
+  // animation starts, and a hidden element refuses focus without a word — so
+  // one `focus()` at mount silently left focus on <body>, and nothing typed
+  // landed until the surface was clicked. Keep trying each frame until the
+  // reveal lets it land, but only while nothing else holds focus: someone who
+  // has already tabbed somewhere keeps it.
   useEffect(() => {
-    surfaceRef.current?.focus()
+    const surface = surfaceRef.current
+    if (surface === null) return
+    const giveUpAt = performance.now() + 2000
+    let frame = 0
+    const attempt = (): void => {
+      const free = document.activeElement === null || document.activeElement === document.body
+      if (document.activeElement === surface || !free) return
+      surface.focus()
+      if (document.activeElement !== surface && performance.now() < giveUpAt) {
+        frame = requestAnimationFrame(attempt)
+      }
+    }
+    attempt()
+    return () => cancelAnimationFrame(frame)
   }, [compiled])
 
   const onSurfaceKeyDown = useCallback((event: ReactKeyboardEvent<HTMLDivElement>) => {
@@ -66,23 +86,25 @@ export function useTypingSession(code: string, grammar: Grammar): TypingSession 
       dispatch({ type: 'reset' })
       return
     }
-    if (event.ctrlKey || event.metaKey || event.altKey) return
+    if (event.key === 'Backspace' || event.key === 'Enter') {
+      if (event.ctrlKey || event.metaKey || event.altKey) return
+      event.preventDefault()
+      dispatch(
+        event.key === 'Enter'
+          ? { type: 'newline', code: event.code, at: Date.now() }
+          : { type: 'backspace' },
+      )
+      return
+    }
 
-    if (event.key === 'Backspace') {
-      event.preventDefault()
-      dispatch({ type: 'backspace' })
-      return
-    }
-    if (event.key === 'Enter') {
-      event.preventDefault()
-      dispatch({ type: 'newline', code: event.code, at: Date.now() })
-      return
-    }
-    if (event.key.length === 1) {
-      // Space would scroll the page out from under the passage.
-      if (event.key === ' ') event.preventDefault()
-      dispatch({ type: 'character', char: event.key, code: event.code, at: Date.now() })
-    }
+    // Not "no modifiers": AltGr and Option are how a non-US layout types
+    // the brackets at all (see `typedCharacter`).
+    const char = typedCharacter(keyInputFrom(event))
+    if (char === null) return
+    // Space would scroll the page out from under the passage, and Firefox
+    // opens quick find on `/` and `'`.
+    event.preventDefault()
+    dispatch({ type: 'character', char, code: event.code, at: Date.now() })
   }, [])
 
   // The clock only ticks while a drill is genuinely in flight.

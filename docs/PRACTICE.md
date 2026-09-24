@@ -1,5 +1,13 @@
 # Key practice sessions
 
+> **Superseded as a methodology by
+> [`decisions/0006-basics-page.md`](decisions/0006-basics-page.md).** Practice
+> now lives on the Basics page, with two weak-key methods (the ladder and the
+> clean streak), key tracks, and Keyfall. The ranking (§3), the ledger (§2,
+> §10) and the rule that practice never reaches the speed graphs still stand
+> exactly as described here; the five-level single-key ladder, the pairing
+> order and the mastery/probation design below are the historical record.
+
 Targeted remediation for the keys you actually miss: five levels from a single
 repeated motion up to real code, generated from your own error record.
 

@@ -39,7 +39,7 @@ src/
   engine/      the typing core — pure, framework-free, heavily tested
   content/     the catalogue: schema plus authored tracks
   store/       localStorage progress and everything derived from it
-  routes/      Home, Explore, Statistics, Drill
+  routes/      Home, Explore, Basics, Statistics, Drill
   components/  layout, the typing surface, cards, primitives
 ```
 

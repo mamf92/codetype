@@ -1,7 +1,15 @@
 import { describe, expect, it } from 'vitest'
 import { compileDrill, normalise } from './compile'
 import { initialSession, reduceSession } from './session'
-import { computeMetrics, favouriteKeys, mergeLedgers, troubleKeys } from './metrics'
+import {
+  addRun,
+  computeMetrics,
+  emptyTotals,
+  favouriteKeys,
+  mergeLedgers,
+  totalsMetrics,
+  troubleKeys,
+} from './metrics'
 import type { Cell, KeyStat, SessionState } from './types'
 
 const compile = (code: string) => compileDrill(code, 'typescript')
@@ -265,5 +273,34 @@ describe('metrics', () => {
     }
     expect(troubleKeys(ledger)[0]?.char).toBe(';')
     expect(favouriteKeys(ledger)[0]?.char).toBe('a')
+  })
+})
+
+describe('run totals', () => {
+  it('describes every passage of a run, not just the last one', () => {
+    const first = compile('ab')
+    const slow = typeAll(first.cells, 'ab', 0)
+    // 'ab' in 60 s, then 'cd' in 60 s with one miss: 3 correct chars over 2 minutes.
+    const firstState = { ...slow, startedAt: 0, finishedAt: 60_000 }
+    const second = compile('cd')
+    const missed = typeAll(second.cells, 'xd', 0)
+    const secondState = { ...missed, startedAt: 0, finishedAt: 60_000 }
+
+    let totals = emptyTotals()
+    totals = addRun(totals, firstState, computeMetrics(firstState, 0))
+    totals = addRun(totals, secondState, computeMetrics(secondState, 0))
+    const metrics = totalsMetrics(totals)
+
+    expect(metrics.elapsedMs).toBe(120_000)
+    expect(metrics.keystrokes).toBe(4)
+    expect(metrics.errors).toBe(1)
+    expect(metrics.accuracy).toBe(0.75)
+    expect(metrics.correctness).toBe(0.75)
+    expect(totals.ledger['c']?.missed).toBe(1)
+    expect(totals.ledger['a']?.pressed).toBe(1)
+  })
+
+  it('is a clean, empty record before anything is typed', () => {
+    expect(totalsMetrics(emptyTotals())).toMatchObject({ wpm: 0, accuracy: 1, correctness: 1 })
   })
 })

@@ -17,4 +17,6 @@ explains the current state of the system.
   Left in place as reference rather than deleted or moved, since they're
   already merged history and still accurate about what they describe; new
   planning belongs in an issue, and a decision that came out of one of these
-  and is still load-bearing today has its own ADR in `decisions/`.
+  and is still load-bearing today has its own ADR in `decisions/`. The
+  practice methodology in `PRACTICE.md` has been superseded by
+  `decisions/0006-basics-page.md`.

@@ -7,7 +7,7 @@ export function Panel({
 }: {
   children: ReactNode
   className?: string
-  accent?: 'amber' | 'fault'
+  accent?: 'amber' | 'fault' | undefined
 }) {
   const edge =
     accent === 'amber'

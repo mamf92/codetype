@@ -95,3 +95,54 @@ export const favouriteKeys = (ledger: KeyLedger, count = 6): KeyStanding[] =>
     .slice()
     .sort((a, b) => a.errorRate - b.errorRate || b.pressed - a.pressed)
     .slice(0, count)
+
+/**
+ * Several typed passages rolled into one record — a practice run is a
+ * sequence of short passages, each its own session, and what gets saved has
+ * to describe all of them rather than whichever came last.
+ */
+export interface RunTotals {
+  ledger: KeyLedger
+  durationMs: number
+  correctChars: number
+  keystrokes: number
+  errors: number
+  /** Cells asked for, across every passage. */
+  cells: number
+}
+
+export const emptyTotals = (): RunTotals => ({
+  ledger: {},
+  durationMs: 0,
+  correctChars: 0,
+  keystrokes: 0,
+  errors: 0,
+  cells: 0,
+})
+
+/** Fold one finished passage into the totals. */
+export const addRun = (totals: RunTotals, state: SessionState, metrics: Metrics): RunTotals => ({
+  ledger: mergeLedgers(totals.ledger, state.keyLedger),
+  durationMs: totals.durationMs + metrics.elapsedMs,
+  correctChars: totals.correctChars + metrics.correctChars,
+  keystrokes: totals.keystrokes + metrics.keystrokes,
+  errors: totals.errors + metrics.errors,
+  cells: totals.cells + state.entries.length,
+})
+
+/** The same numbers `computeMetrics` gives one passage, over the whole run. */
+export function totalsMetrics(totals: RunTotals): Metrics {
+  const minutes = totals.durationMs / 60_000
+  const perMinute = (chars: number): number =>
+    minutes > 0 ? Math.round(chars / CHARS_PER_WORD / minutes) : 0
+  return {
+    elapsedMs: totals.durationMs,
+    wpm: perMinute(totals.correctChars),
+    rawWpm: perMinute(totals.keystrokes),
+    accuracy: totals.keystrokes > 0 ? (totals.keystrokes - totals.errors) / totals.keystrokes : 1,
+    correctness: totals.cells > 0 ? totals.correctChars / totals.cells : 1,
+    keystrokes: totals.keystrokes,
+    errors: totals.errors,
+    correctChars: totals.correctChars,
+  }
+}

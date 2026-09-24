@@ -1,8 +1,8 @@
 import { useSyncExternalStore } from 'react'
 import type { LanguageId } from '@/content/schema'
 import type { ThemeId } from '@/lib/themes'
-import { appendSession, readProgress, writeProgress } from './progress'
-import type { ProgressDocument, SessionRecord } from './progress'
+import { appendGame, appendSession, readProgress, writeProgress } from './progress'
+import type { GameRecord, ProgressDocument, SessionRecord } from './progress'
 
 /**
  * A single module-level document, published through `useSyncExternalStore` so
@@ -32,10 +32,12 @@ export const useProgress = (): ProgressDocument =>
 export const recordSession = (record: SessionRecord): void =>
   commit(appendSession(document_, record))
 
+export const recordGame = (record: GameRecord): void => commit(appendGame(document_, record))
+
 export const setFavouriteLanguages = (languages: LanguageId[]): void =>
   commit({ ...document_, favouriteLanguages: languages })
 
 export const setTheme = (theme: ThemeId): void => commit({ ...document_, theme })
 
-/** Used by the settings affordance on Statistics. */
-export const clearHistory = (): void => commit({ ...document_, sessions: [] })
+/** Used by the Data panel in Settings. Games are history too. */
+export const clearHistory = (): void => commit({ ...document_, sessions: [], games: [] })

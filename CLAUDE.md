@@ -27,9 +27,11 @@ review are where you find out you can actually write with it. See
 ```
 src/
   engine/      the typing core — pure, framework-free, heavily tested
-  content/     the catalogue: schema plus authored tracks
+  content/     the catalogue: schema plus authored tracks; basics/ holds
+                the key tracks, which are not catalogue tracks
   store/       localStorage progress and everything derived from it
-  routes/      Home, Explore, Statistics, Drill, Settings
+  routes/      Home, Explore, Basics, Statistics, Drill, Settings, plus the
+                full-screen practice surfaces and Keyfall
   components/  layout, the typing surface, cards, primitives
   lib/         small framework-free helpers (highlighting, theming, etc.)
 design/        canvas sources for screen mockups and theme explorations
@@ -111,9 +113,22 @@ a test.
   the flex chain). Below `sm` none of that applies — a phone has no room to
   give up to a shrunken window onto the passage, so it runs full length and
   the page scrolls once.
-- **`SessionRecord` will eventually need `kind: 'drill' | 'practice'`** once
-  targeted key-practice sessions land (see the open issue for it) — practice
-  reps must never reach the speed graphs the same way a real drill does.
+- **Practice never reaches the speed graphs, and never certifies itself.**
+  Every Basics surface saves one `SessionRecord` with `kind: 'practice'` for
+  the whole run. `headline()`, `dailySeries()` and `lifetimeLedger()` read
+  drills only, so the weak-key ranking moves only when a key is typed well in
+  real code. See `docs/decisions/0006-basics-page.md`.
+- **Key tracks are not catalogue tracks.** `src/content/basics/` has its own
+  schema and its own test (`basics.test.ts`), and stays out of `TRACKS`. That
+  keeps a stage made of nothing but digits out of the corpus frequency table
+  the weak-key ranking is weighted by.
+- **Keyfall games are raw records, not a high score.** `ProgressDocument.games`
+  holds every finished game, and the high-score table is derived from them, by
+  the same no-stored-counters rule as everything else.
+- **A modifier is not automatically a shortcut.** `typedCharacter` in
+  `src/engine/keys.ts` accepts AltGr, and Alt/Option when it changed the
+  character, because that is how a Norwegian layout types `[ ] { }`. Every
+  keyboard handler that accepts text goes through it.
 - **`event.code`, not just `event.key`, matters for keyboard logic.** This
   codebase is used on non-US keyboards — a Norwegian layout puts `[ ] { }`
   behind AltGr on the digit row, so anything that reasons about "adjacent
@@ -143,6 +158,12 @@ last in its list, **15–35 lines**, carrying a `brief` and longer than every
 variant beside it; every run of concept lessons is closed by a **review**
 whose `covers` names exactly that run, in order; **no run exceeds five**; and
 a review's drills are all capstones.
+
+Key tracks (`src/content/basics/`) have their own rules, in `basics.test.ts`:
+four stages per track in order (reps, patterns, code, load), at least three
+passages each, the same whitespace and ten-line rules as a variant, printable
+ASCII only, and a minimum **density of the track's own keys** per stage kind,
+which rises from code to load and is highest in reps.
 
 ## Licensing — this matters for what you write, not just how
 

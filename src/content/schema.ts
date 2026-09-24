@@ -19,9 +19,24 @@ export const LANGUAGES = {
 
 export type LanguageId = keyof typeof LANGUAGES
 
-/** Grammars registered with refractor. Keep in sync with `lib/highlight.ts`. */
+/**
+ * Grammars registered with refractor. Keep in sync with `lib/highlight.ts`.
+ *
+ * `plain` is the one that is not: it is for generated key practice like
+ * `[[[ [[[`, which is not code in any language, and colouring it as if it
+ * were would be a lie.
+ */
 export type Grammar =
-  'tsx' | 'typescript' | 'javascript' | 'css' | 'json' | 'python' | 'kotlin' | 'java'
+  | 'tsx'
+  | 'typescript'
+  | 'javascript'
+  | 'css'
+  | 'json'
+  | 'python'
+  | 'kotlin'
+  | 'java'
+  | 'bash'
+  | 'plain'
 
 /**
  * `foundation` — syntax you should never have to think about.
