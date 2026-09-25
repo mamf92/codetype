@@ -35,7 +35,10 @@ function KeyLedgerPanel() {
   }
 
   return (
-    <Panel className="flex h-[152px] flex-col justify-between">
+    // Not a fixed height: two rows of full-size keycaps and a button don't fit
+    // in the stat tiles' 152px, and forcing them to left no space at all
+    // between the favourite keys and the label under them.
+    <Panel className="flex h-full min-h-[152px] flex-col gap-6">
       <div className="flex flex-col gap-2.5">
         <div className="text-[10px] tracking-[0.18em] text-faint uppercase">Favourite keys</div>
         <div className="flex gap-2">
@@ -45,14 +48,14 @@ function KeyLedgerPanel() {
         </div>
       </div>
       <div className="flex flex-col gap-2.5">
-        <div className="flex items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
           <span className="text-[10px] tracking-[0.18em] text-faint uppercase">
             Keys that need work
           </span>
           {worst !== undefined && (
             <Link
               to={weakKeyPath('ladder')}
-              className="text-[10px] tracking-[0.14em] text-amber uppercase hover:text-amber-soft"
+              className="bg-amber px-3 py-1.5 text-[10px] tracking-[0.16em] text-ink uppercase hover:bg-amber-soft"
             >
               Practice weak keys
             </Link>
