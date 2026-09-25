@@ -86,7 +86,9 @@ export function StatTile({
   children?: ReactNode
 }) {
   return (
-    <Panel className="flex h-[152px] flex-col justify-between">
+    // A floor, not a fixed height, so a row of tiles stretches to match
+    // whatever sits beside it (the key panel on Home) instead of ending short.
+    <Panel className="flex h-full min-h-[152px] flex-col justify-between">
       <div className="text-[10px] tracking-[0.18em] text-faint uppercase">{label}</div>
       <div className="flex items-baseline gap-1.5">
         <span className="font-display text-[40px] leading-none font-light text-amber">{value}</span>
