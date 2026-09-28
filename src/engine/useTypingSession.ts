@@ -54,62 +54,11 @@ export function useTypingSession(code: string, grammar: Grammar): TypingSession 
   }, [compiled])
 
   const surfaceRef = useRef<HTMLDivElement>(null)
-
-  // A surface inside a `.reveal` is `visibility: hidden` until its staggered
-  // animation starts, and a hidden element refuses focus without a word — so
-  // one `focus()` at mount silently left focus on <body>, and nothing typed
-  // landed until the surface was clicked. If the first try doesn't land, try
-  // again the moment the reveal's own animation starts, which is the moment
-  // it becomes visible. Only while nothing else holds focus, though: someone
-  // who has already tabbed somewhere keeps it.
-  useEffect(() => {
-    const surface = surfaceRef.current
-    if (surface === null) return
-    const attempt = (): void => {
-      const free = document.activeElement === null || document.activeElement === document.body
-      if (free) surface.focus()
-    }
-    attempt()
-    const reveal = surface.closest('.reveal')
-    if (document.activeElement === surface || reveal === null) return
-    // The caret's own animation bubbles up through here too; only the
-    // reveal's start means the surface is visible.
-    const onStart = (event: Event): void => {
-      if (event.target === reveal) attempt()
-    }
-    reveal.addEventListener('animationstart', onStart)
-    return () => reveal.removeEventListener('animationstart', onStart)
-  }, [compiled])
+  useSurfaceFocus(surfaceRef, compiled)
 
   const onSurfaceKeyDown = useCallback((event: ReactKeyboardEvent<HTMLDivElement>) => {
-    // Restart shortcut lives behind Alt so a bare letter can still be typed —
-    // Tab is deliberately left alone; it is how you leave the surface.
-    // Matched on the physical key as well: Option+R on a Mac reports `®`.
-    const isR = event.key.toLowerCase() === 'r' || event.code === 'KeyR'
-    if (event.altKey && !event.ctrlKey && !event.metaKey && isR) {
-      event.preventDefault()
-      dispatch({ type: 'reset' })
-      return
-    }
-    if (event.key === 'Backspace' || event.key === 'Enter') {
-      if (event.ctrlKey || event.metaKey || event.altKey) return
-      event.preventDefault()
-      dispatch(
-        event.key === 'Enter'
-          ? { type: 'newline', code: event.code, at: Date.now() }
-          : { type: 'backspace' },
-      )
-      return
-    }
-
-    // Not "no modifiers": AltGr and Option are how a non-US layout types
-    // the brackets at all (see `typedCharacter`).
-    const char = typedCharacter(keyInputFrom(event))
-    if (char === null) return
-    // Space would scroll the page out from under the passage, and Firefox
-    // opens quick find on `/` and `'`.
-    event.preventDefault()
-    dispatch({ type: 'character', char, code: event.code, at: Date.now() })
+    const action = surfaceAction(event)
+    if (action !== null) dispatch(action)
   }, [])
 
   // The clock only ticks while a drill is genuinely in flight.
@@ -128,4 +77,71 @@ export function useTypingSession(code: string, grammar: Grammar): TypingSession 
   }, [])
 
   return { compiled, state, metrics, restart, surfaceRef, onSurfaceKeyDown }
+}
+
+/**
+ * What a keystroke on a typing surface asks for, or null when it is not the
+ * surface's to claim. Anything it claims has its default prevented.
+ *
+ * Shared by every surface that types a passage, so the rules for what counts
+ * as typing a character — AltGr and Option included — live in one place.
+ */
+export function surfaceAction(event: ReactKeyboardEvent<HTMLElement>): SessionAction | null {
+  // Restart shortcut lives behind Alt so a bare letter can still be typed —
+  // Tab is deliberately left alone; it is how you leave the surface.
+  // Matched on the physical key as well: Option+R on a Mac reports `®`.
+  const isR = event.key.toLowerCase() === 'r' || event.code === 'KeyR'
+  if (event.altKey && !event.ctrlKey && !event.metaKey && isR) {
+    event.preventDefault()
+    return { type: 'reset' }
+  }
+  if (event.key === 'Backspace' || event.key === 'Enter') {
+    if (event.ctrlKey || event.metaKey || event.altKey) return null
+    event.preventDefault()
+    return event.key === 'Enter'
+      ? { type: 'newline', code: event.code, at: Date.now() }
+      : { type: 'backspace' }
+  }
+
+  // Not "no modifiers": AltGr and Option are how a non-US layout types
+  // the brackets at all (see `typedCharacter`).
+  const char = typedCharacter(keyInputFrom(event))
+  if (char === null) return null
+  // Space would scroll the page out from under the passage, and Firefox
+  // opens quick find on `/` and `'`.
+  event.preventDefault()
+  return { type: 'character', char, code: event.code, at: Date.now() }
+}
+
+/**
+ * Put focus on a typing surface when it arrives, and again whenever `key`
+ * changes.
+ *
+ * A surface inside a `.reveal` is `visibility: hidden` until its staggered
+ * animation starts, and a hidden element refuses focus without a word — so
+ * one `focus()` at mount silently left focus on <body>, and nothing typed
+ * landed until the surface was clicked. If the first try doesn't land, try
+ * again the moment the reveal's own animation starts, which is the moment
+ * it becomes visible. Only while nothing else holds focus, though: someone
+ * who has already tabbed somewhere keeps it.
+ */
+export function useSurfaceFocus(surfaceRef: RefObject<HTMLElement | null>, key: unknown): void {
+  useEffect(() => {
+    const surface = surfaceRef.current
+    if (surface === null) return
+    const attempt = (): void => {
+      const free = document.activeElement === null || document.activeElement === document.body
+      if (free) surface.focus()
+    }
+    attempt()
+    const reveal = surface.closest('.reveal')
+    if (document.activeElement === surface || reveal === null) return
+    // The caret's own animation bubbles up through here too; only the
+    // reveal's start means the surface is visible.
+    const onStart = (event: Event): void => {
+      if (event.target === reveal) attempt()
+    }
+    reveal.addEventListener('animationstart', onStart)
+    return () => reveal.removeEventListener('animationstart', onStart)
+  }, [surfaceRef, key])
 }

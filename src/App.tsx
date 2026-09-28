@@ -20,6 +20,7 @@ const Basics = lazy(() => import('@/routes/Basics'))
 const WeakKeyPractice = lazy(() => import('@/routes/WeakKeyPractice'))
 const KeyStage = lazy(() => import('@/routes/KeyStage'))
 const Keyfall = lazy(() => import('@/routes/Keyfall'))
+const SpeedTest = lazy(() => import('@/routes/SpeedTest'))
 
 /** Holds the page's own background while a chunk loads, rather than flashing blank. */
 const FullScreenLoading = () => <div className="crt min-h-dvh" />
@@ -63,6 +64,14 @@ export default function App() {
         element={
           <Suspense fallback={<FullScreenLoading />}>
             <Keyfall />
+          </Suspense>
+        }
+      />
+      <Route
+        path="/basics/speed/:testId"
+        element={
+          <Suspense fallback={<FullScreenLoading />}>
+            <SpeedTest />
           </Suspense>
         }
       />

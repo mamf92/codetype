@@ -28,10 +28,11 @@ review are where you find out you can actually write with it. See
 src/
   engine/      the typing core — pure, framework-free, heavily tested
   content/     the catalogue: schema plus authored tracks; basics/ holds
-                the key tracks, which are not catalogue tracks
+                the key tracks and speed/ the speed tests, neither of
+                which are catalogue tracks
   store/       localStorage progress and everything derived from it
   routes/      Home, Explore, Basics, Statistics, Drill, Settings, plus the
-                full-screen practice surfaces and Keyfall
+                full-screen practice surfaces, speed tests and Keyfall
   components/  layout, the typing surface, cards, primitives
   lib/         small framework-free helpers (highlighting, theming, etc.)
 design/        canvas sources for screen mockups and theme explorations
@@ -118,6 +119,13 @@ a test.
   the whole run. `headline()`, `dailySeries()` and `lifetimeLedger()` read
   drills only, so the weak-key ranking moves only when a key is typed well in
   real code. See `docs/decisions/0006-basics-page.md`.
+- **Speed tests are measured, not graphed.** A run is a `SessionRecord` with
+  `kind: 'test'`, kept off the drill graphs and the key ledger for the same
+  reason practice is, and ranked by `speedTestStanding` on its own terms: a
+  sprint on its fastest *clean* time, a timed test on wpm. The clock starts
+  on the first key, and when it runs out only what was reached counts. Code
+  tests draw on the catalogue's own variants, so they are never authored by
+  hand. See `docs/decisions/0007-speed-tests.md`.
 - **Key tracks are not catalogue tracks.** `src/content/basics/` has its own
   schema and its own test (`basics.test.ts`), and stays out of `TRACKS`. That
   keeps a stage made of nothing but digits out of the corpus frequency table

@@ -7,13 +7,16 @@ export default function Settings() {
   const progress = useProgress()
   const theme = progress.theme ?? 'dark'
   const drills = progress.sessions.filter((s) => s.kind === 'drill').length
-  const practice = progress.sessions.length - drills
+  const practice = progress.sessions.filter((s) => s.kind === 'practice').length
+  const tests = progress.sessions.filter((s) => s.kind === 'test').length
   const games = progress.games.length
   const nothing = progress.sessions.length === 0 && games === 0
 
   const onClearHistory = (): void => {
     if (
-      !window.confirm('Clear every recorded drill, practice run and game? This cannot be undone.')
+      !window.confirm(
+        'Clear every recorded drill, practice run, speed test and game? This cannot be undone.',
+      )
     )
       return
     clearHistory()
@@ -37,8 +40,9 @@ export default function Settings() {
           <p className="max-w-lg text-[11px] leading-relaxed text-muted">
             Progress lives only in this browser's local storage — {drills}{' '}
             {drills === 1 ? 'drill' : 'drills'}, {practice} practice{' '}
-            {practice === 1 ? 'run' : 'runs'} and {games} {games === 1 ? 'game' : 'games'} so far.
-            Clearing it is permanent and cannot be undone.
+            {practice === 1 ? 'run' : 'runs'}, {tests} speed {tests === 1 ? 'test' : 'tests'} and{' '}
+            {games} {games === 1 ? 'game' : 'games'} so far. Clearing it is permanent and cannot be
+            undone.
           </p>
           <button
             type="button"
