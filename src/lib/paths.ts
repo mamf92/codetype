@@ -14,3 +14,5 @@ export const keyStagePath = (trackId: string, stageId: string): string =>
   `/basics/keys/${trackId}/${stageId}`
 
 export const KEYFALL_PATH = '/basics/keyfall'
+
+export const speedTestPath = (testId: string): string => `/basics/speed/${testId}`

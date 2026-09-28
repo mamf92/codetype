@@ -1,14 +1,22 @@
 import { Link } from 'react-router-dom'
 import { KEY_TRACKS } from '@/content/basics/index'
+import { SPEED_TESTS } from '@/content/speed/index'
 import { rankForPractice } from '@/engine/practice/ranking'
 import { MAX_PRACTICE_KEYS, practiceTargets } from '@/engine/practice/weakKeys'
 import { useProgress } from '@/store/useProgress'
-import { bestGames, lifetimeLedger, practiceSummary, stageStanding } from '@/store/progress'
+import {
+  bestGames,
+  lifetimeLedger,
+  practiceSummary,
+  speedTestStanding,
+  stageStanding,
+} from '@/store/progress'
 import { PageHead } from '@/components/layout/Shell'
 import { SectionLabel } from '@/components/ui/primitives'
 import { KeyMap } from '@/components/basics/KeyMap'
 import { NeedsWork, Strongest } from '@/components/basics/KeyStandings'
 import { KeyfallCard, KeyTrackCard, MethodCard } from '@/components/basics/PracticeCards'
+import { SpeedTestPanel } from '@/components/basics/SpeedTestPanel'
 import { weakKeyPath } from '@/lib/paths'
 
 /**
@@ -98,11 +106,24 @@ export default function Basics() {
       </section>
 
       <section className="reveal flex flex-col gap-3.5" style={{ animationDelay: '0.26s' }}>
+        <SectionLabel>Speed test</SectionLabel>
+        <p className="max-w-2xl text-[11px] leading-relaxed text-muted">
+          Nothing to learn here, only something to measure. Results go to Statistics, and stay off
+          the drill graphs: a three-second alphabet is not a drill.
+        </p>
+        <SpeedTestPanel
+          standings={Object.fromEntries(
+            SPEED_TESTS.map((test) => [test.id, speedTestStanding(progress, test.id)]),
+          )}
+        />
+      </section>
+
+      <section className="reveal flex flex-col gap-3.5" style={{ animationDelay: '0.33s' }}>
         <SectionLabel>Under pressure</SectionLabel>
         <KeyfallCard leaders={leaders} />
       </section>
 
-      <section className="reveal flex flex-col gap-3.5" style={{ animationDelay: '0.33s' }}>
+      <section className="reveal flex flex-col gap-3.5" style={{ animationDelay: '0.4s' }}>
         <SectionLabel>Every key</SectionLabel>
         <KeyMap ledger={ledger} />
       </section>

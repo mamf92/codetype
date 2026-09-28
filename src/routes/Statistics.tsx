@@ -1,13 +1,24 @@
 import { Link } from 'react-router-dom'
 import { TRACKS } from '@/content/index'
+import { SPEED_TESTS } from '@/content/speed/index'
+import { SPEED_GROUP_TITLES } from '@/content/speed/schema'
 import { useNow } from '@/lib/useNow'
 import { useProgress } from '@/store/useProgress'
-import { dailySeries, dueForRevisit, headline, lifetimeLedger, standingFor } from '@/store/progress'
+import {
+  dailySeries,
+  dueForRevisit,
+  headline,
+  lifetimeLedger,
+  speedTestStanding,
+  standingFor,
+} from '@/store/progress'
+import type { ProgressDocument } from '@/store/progress'
 import { troubleKeys } from '@/engine/metrics'
 import { PageHead } from '@/components/layout/Shell'
-import { Empty, KeyCap, Panel, SectionLabel } from '@/components/ui/primitives'
+import { Empty, KeyCap, Panel, SectionLabel, Sparkline } from '@/components/ui/primitives'
 import { AreaChart } from '@/components/ui/AreaChart'
-import { weakKeyPath } from '@/lib/paths'
+import { bestResult } from '@/components/basics/speedResult'
+import { speedTestPath, weakKeyPath } from '@/lib/paths'
 
 const DAY_MS = 86_400_000
 
@@ -29,6 +40,62 @@ function ticks(days: string[]): string[] {
 const short = (day: string): string =>
   day === '' ? '' : new Date(day).toLocaleDateString(undefined, { day: '2-digit', month: 'short' })
 
+const SPEED_COLUMNS = 'grid-cols-[2.4fr_1fr_0.7fr_0.9fr_1.1fr_1.3fr]'
+
+/**
+ * Speed tests, one row each. Kept apart from the charts above: those are
+ * built from drills only, and a speed test is measured on its own terms — a
+ * sprint on time, the rest on wpm over a fixed clock.
+ */
+function SpeedTests({ progress, now }: { progress: ProgressDocument; now: number }) {
+  return (
+    <section className="reveal flex flex-col gap-2.5" style={{ animationDelay: '0.15s' }}>
+      <SectionLabel>Speed tests</SectionLabel>
+      <div className="overflow-x-auto">
+        <div className="min-w-[760px]">
+          <div
+            className={`grid ${SPEED_COLUMNS} gap-3 border-b border-ink-line px-3.5 py-2.5 text-[9px] tracking-[0.16em] text-faint uppercase`}
+          >
+            <span>Test</span>
+            <span>Last run</span>
+            <span>Runs</span>
+            <span>Latest</span>
+            <span>Best</span>
+            <span>Every run, wpm</span>
+          </div>
+          {SPEED_TESTS.map((test, i) => {
+            const standing = speedTestStanding(progress, test.id)
+            const never = standing.runs === 0
+            return (
+              <Link
+                key={test.id}
+                to={speedTestPath(test.id)}
+                className={`group grid ${SPEED_COLUMNS} items-center gap-3 border-b border-ink-raised px-3.5 py-3 text-[11px] ${
+                  never ? 'text-ghost' : 'text-parchment'
+                } ${i % 2 === 1 ? 'bg-ink-sunk' : ''}`}
+              >
+                <span className="flex items-baseline gap-2 truncate">
+                  <span className="text-[9px] tracking-[0.14em] text-faint uppercase">
+                    {SPEED_GROUP_TITLES[test.group]}
+                  </span>
+                  <span className="truncate group-hover:text-amber">{test.title}</span>
+                </span>
+                <span className={never ? '' : 'text-muted'}>{relative(standing.lastAt, now)}</span>
+                <span>{standing.runs}</span>
+                <span>{never ? '—' : `${standing.lastWpm} wpm`}</span>
+                <span className={never ? '' : 'font-display font-light text-amber'}>
+                  {bestResult(test, standing) ?? 'never run'}
+                </span>
+                <Sparkline values={standing.wpm.slice(-30)} height={20} />
+              </Link>
+            )
+          })}
+        </div>
+      </div>
+    </section>
+  )
+}
+
 export default function Statistics() {
   const progress = useProgress()
   const now = useNow()
@@ -40,6 +107,9 @@ export default function Statistics() {
 
   // Drills, not sessions: a practice run alone would otherwise skip this and
   // render charts with nothing in them, since every derivation reads drills.
+  // A speed test alone is worth showing, but it is not a drill: the page head
+  // and the charts still wait for real ones.
+  const tested = progress.sessions.some((session) => session.kind === 'test')
   if (stats.sessionCount === 0) {
     return (
       <div className="flex flex-col gap-6">
@@ -51,6 +121,7 @@ export default function Statistics() {
           Every completed passage is stored locally with its own keyboard ledger, so these graphs
           are built from your real keystrokes rather than an average of them.
         </Empty>
+        {tested && <SpeedTests progress={progress} now={now} />}
       </div>
     )
   }
@@ -144,6 +215,8 @@ export default function Statistics() {
           )}
         </Panel>
       </div>
+
+      <SpeedTests progress={progress} now={now} />
 
       <section className="reveal flex flex-col gap-2.5" style={{ animationDelay: '0.2s' }}>
         <SectionLabel>Track by track</SectionLabel>

@@ -31,8 +31,13 @@ export interface SessionRecord {
    * speed graphs are built from, and a practice rep would corrupt them
    * quietly. A record with no `kind` (written before this field existed)
    * is treated as `'drill'`; every session on record so far was one.
+   *
+   * A speed test (`kind: 'test'`) stays off them too, for a different
+   * reason: its prose and its sprints are not drills, and a two-second A to
+   * Z would be the fastest "drill" anyone ever typed. It is measured on its
+   * own terms instead — see `speedTestStanding`.
    */
-  kind: 'drill' | 'practice'
+  kind: 'drill' | 'practice' | 'test'
 }
 
 /**
@@ -126,7 +131,7 @@ export function readProgress(): ProgressDocument {
       // Every session recorded before `kind` existed was a real drill.
       sessions: doc.sessions.map((session) => ({
         ...session,
-        kind: session.kind === 'practice' ? 'practice' : 'drill',
+        kind: session.kind === 'practice' || session.kind === 'test' ? session.kind : 'drill',
       })),
       games: Array.isArray(doc.games) ? doc.games.filter(isGameRecord) : [],
       ...(theme !== undefined ? { theme } : {}),
@@ -336,3 +341,46 @@ export const bestGames = (doc: ProgressDocument, count = 5): GameRecord[] =>
     .slice()
     .sort((a, b) => b.score - a.score || a.at - b.at)
     .slice(0, count)
+
+// ---------------------------------------------------------------------------
+// Speed tests
+// ---------------------------------------------------------------------------
+
+export interface SpeedTestStanding {
+  runs: number
+  lastAt: number | null
+  lastWpm: number
+  bestWpm: number
+  /**
+   * The fastest run that finished with every character right — corrections
+   * allowed, since fixing a slip costs its own time. What a sprint is ranked
+   * on; a timed test always runs the same length, so its best is its wpm.
+   */
+  fastestCleanMs: number | null
+  /** Every run's wpm, oldest first. */
+  wpm: number[]
+}
+
+/**
+ * How a speed test has gone. Saved as a session with `kind: 'test'` and the
+ * test's id as `drillId`, which `speed.test.ts` keeps unique against every
+ * other id that gets saved.
+ */
+export function speedTestStanding(doc: ProgressDocument, testId: string): SpeedTestStanding {
+  const runs = doc.sessions
+    .filter((session) => session.kind === 'test' && session.drillId === testId)
+    .sort((a, b) => a.at - b.at)
+  const last = runs[runs.length - 1]
+  if (last === undefined) {
+    return { runs: 0, lastAt: null, lastWpm: 0, bestWpm: 0, fastestCleanMs: null, wpm: [] }
+  }
+  const clean = runs.filter((run) => run.correctness >= 1).map((run) => run.durationMs)
+  return {
+    runs: runs.length,
+    lastAt: last.at,
+    lastWpm: last.wpm,
+    bestWpm: Math.max(...runs.map((run) => run.wpm)),
+    fastestCleanMs: clean.length === 0 ? null : Math.min(...clean),
+    wpm: runs.map((run) => run.wpm),
+  }
+}

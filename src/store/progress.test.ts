@@ -9,6 +9,7 @@ import {
   lifetimeLedger,
   practiceSummary,
   readProgress,
+  speedTestStanding,
   stageStanding,
 } from './progress'
 import type { GameRecord, SessionRecord } from './progress'
@@ -124,6 +125,46 @@ describe('games', () => {
   })
 })
 
+describe('speed tests', () => {
+  const run = (over: Partial<SessionRecord>): SessionRecord =>
+    baseSession({ kind: 'test', trackId: 'speed-test', drillId: 'speed-alphabet', ...over })
+
+  it('never reach the speed graphs, the ledger or the practice total', () => {
+    const doc = appendSession(emptyProgress(), run({ wpm: 400 }))
+    expect(headline(doc).sessionCount).toBe(0)
+    expect(dailySeries(doc)).toEqual([])
+    expect(lifetimeLedger(doc)).toEqual({})
+    expect(practiceSummary(doc).sessions).toBe(0)
+  })
+
+  it('is empty for a test never taken', () => {
+    expect(speedTestStanding(emptyProgress(), 'speed-alphabet')).toEqual({
+      runs: 0,
+      lastAt: null,
+      lastWpm: 0,
+      bestWpm: 0,
+      fastestCleanMs: null,
+      wpm: [],
+    })
+  })
+
+  it('ranks time on clean runs only, and keeps every wpm in order', () => {
+    let doc = appendSession(emptyProgress(), run({ at: 3, wpm: 90, durationMs: 3_000 }))
+    doc = appendSession(doc, run({ at: 1, wpm: 80, durationMs: 4_000, correctness: 1 }))
+    doc = appendSession(doc, run({ at: 2, wpm: 120, durationMs: 2_000, correctness: 0.9 }))
+    doc = appendSession(doc, run({ at: 4, drillId: 'speed-pangram', durationMs: 1 }))
+    doc = appendSession(doc, run({ at: 5, kind: 'practice', durationMs: 1, correctness: 1 }))
+    expect(speedTestStanding(doc, 'speed-alphabet')).toEqual({
+      runs: 3,
+      lastAt: 3,
+      lastWpm: 90,
+      bestWpm: 120,
+      fastestCleanMs: 4_000,
+      wpm: [80, 120, 90],
+    })
+  })
+})
+
 describe('readProgress', () => {
   afterEach(() => vi.unstubAllGlobals())
 
@@ -134,6 +175,19 @@ describe('readProgress', () => {
       setItem: () => undefined,
     })
   }
+
+  it('keeps each session kind, reading anything unknown as a drill', () => {
+    stored({
+      version: 1,
+      favouriteLanguages: [],
+      sessions: [
+        baseSession({ kind: 'test' }),
+        baseSession({ kind: 'practice' }),
+        { ...baseSession(), kind: undefined },
+      ],
+    })
+    expect(readProgress().sessions.map((s) => s.kind)).toEqual(['test', 'practice', 'drill'])
+  })
 
   it('reads a document written before games existed with an empty list', () => {
     stored({ version: 1, favouriteLanguages: [], sessions: [] })
