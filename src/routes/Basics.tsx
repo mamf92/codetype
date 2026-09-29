@@ -74,7 +74,7 @@ export default function Basics() {
         className="reveal grid gap-5 lg:grid-cols-[1.35fr_1fr]"
         style={{ animationDelay: '0.05s' }}
       >
-        <NeedsWork ranked={ranked} ledger={ledger} />
+        <NeedsWork ledger={ledger} />
         <Strongest ledger={ledger} />
       </div>
 

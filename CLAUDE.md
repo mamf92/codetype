@@ -130,6 +130,12 @@ a test.
   schema and its own test (`basics.test.ts`), and stays out of `TRACKS`. That
   keeps a stage made of nothing but digits out of the corpus frequency table
   the weak-key ranking is weighted by.
+- **Every "Keys that need work" list is the same list.** Home, Basics and
+  Statistics all read `keysThatNeedWork` (`src/engine/practice/ranking.ts`):
+  the practice ranking, cut to keys actually missed. A panel that ranked by
+  raw miss rate instead would disagree with the practice button beside it.
+  A bar in such a list is drawn from the ranked cost, not the miss rate, so
+  the bars and the order agree.
 - **Keyfall games are raw records, not a high score.** `ProgressDocument.games`
   holds every finished game, and the high-score table is derived from them, by
   the same no-stored-counters rule as everything else.

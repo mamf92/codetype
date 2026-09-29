@@ -3,6 +3,7 @@ import { LANGUAGES, capstoneCount, drillCount, isReview } from '@/content/schema
 import type { Track } from '@/content/schema'
 import type { TrackStanding } from '@/store/progress'
 import { Meter, Panel } from '@/components/ui/primitives'
+import { drillPath } from '@/lib/paths'
 
 function Status({
   track,
@@ -37,8 +38,12 @@ export function TrackCard({
   const isDispatch = track.kind === 'dispatch'
   const accent = stale ? 'fault' : isDispatch ? 'amber' : undefined
 
+  // The title's link is stretched over the whole card, so the card still
+  // opens the track wherever it is clicked; the lesson rows sit above that
+  // layer as links of their own. A link can't be nested inside another, which
+  // is why the card is not simply wrapped in one.
   return (
-    <Link to={`/drill/${track.id}`} aria-label={track.title} className="group block">
+    <article className="group relative">
       <Panel
         {...(accent === undefined ? {} : { accent })}
         className="flex h-full min-h-[216px] flex-col justify-between transition-colors group-hover:border-ink-edge"
@@ -60,27 +65,36 @@ export function TrackCard({
           </div>
 
           <h3 className="font-display text-[17px] leading-snug text-parchment group-hover:text-amber-soft">
-            {track.title}
+            <Link
+              to={drillPath(track.id)}
+              className="after:absolute after:inset-0 after:content-[''] focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:outline-amber"
+            >
+              {track.title}
+            </Link>
           </h3>
 
           {showLessons ? (
-            <div className="flex flex-col gap-1.5 text-[10px] text-muted">
+            <ol className="flex flex-col gap-1.5 text-[10px] text-muted">
               {/* Reviews sit outside the numbering rather than continuing it:
                   the sequence a learner sees is 01 02 03 04 05 REVIEW, and a
                   review numbered 06 would read as a sixth concept. */}
               {track.lessons.map((lesson) => {
                 const numbered = track.lessons.filter((l) => !isReview(l)).indexOf(lesson)
-                return isReview(lesson) ? (
-                  <span key={lesson.id} className="text-amber-soft">
-                    REVIEW — {lesson.title.replace(/^Review: /, '')}
-                  </span>
-                ) : (
-                  <span key={lesson.id}>
-                    {String(numbered + 1).padStart(2, '0')} — {lesson.title}
-                  </span>
+                const first = lesson.drills[0]
+                return (
+                  <li key={lesson.id}>
+                    <Link
+                      to={drillPath(track.id, first?.id)}
+                      className={`relative z-10 hover:text-amber ${isReview(lesson) ? 'text-amber-soft' : ''}`}
+                    >
+                      {isReview(lesson)
+                        ? `REVIEW — ${lesson.title.replace(/^Review: /, '')}`
+                        : `${String(numbered + 1).padStart(2, '0')} — ${lesson.title}`}
+                    </Link>
+                  </li>
                 )
               })}
-            </div>
+            </ol>
           ) : (
             <p className="text-[11px] leading-relaxed text-muted">{track.blurb}</p>
           )}
@@ -99,6 +113,6 @@ export function TrackCard({
           </div>
         </div>
       </Panel>
-    </Link>
+    </article>
   )
 }

@@ -49,9 +49,9 @@ export function KeyMap({ ledger }: { ledger: KeyLedger }) {
   return (
     <div className="panel flex flex-col gap-4 p-5">
       <div className="flex flex-wrap items-baseline justify-between gap-3">
-        <h2 className="text-[10px] tracking-[0.2em] text-faint uppercase">
+        <h3 className="text-[10px] tracking-[0.2em] text-faint uppercase">
           The whole keyboard, from your real drills
-        </h2>
+        </h3>
         <ul className="flex flex-wrap gap-x-4 gap-y-1.5 text-[10px] text-faint">
           {LEGEND.map(({ tone, label }) => (
             <li key={tone} className="flex items-center gap-1.5">

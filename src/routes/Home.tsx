@@ -1,11 +1,20 @@
-import { Link } from 'react-router-dom'
+import { useEffect } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import { TRACKS } from '@/content/index'
 import { useNow } from '@/lib/useNow'
 import type { Track } from '@/content/schema'
 import { useProgress } from '@/store/useProgress'
-import { dailySeries, dueForRevisit, headline, lifetimeLedger, standingFor } from '@/store/progress'
-import { favouriteKeys, troubleKeys } from '@/engine/metrics'
-import { rankForPractice } from '@/engine/practice/ranking'
+import {
+  dailySeries,
+  dueForRevisit,
+  headline,
+  lifetimeLedger,
+  resumePoint,
+  standingFor,
+} from '@/store/progress'
+import type { ResumePoint } from '@/store/progress'
+import { favouriteKeys } from '@/engine/metrics'
+import { keysThatNeedWork } from '@/engine/practice/ranking'
 import {
   Empty,
   KeyCap,
@@ -16,14 +25,15 @@ import {
   StatTile,
 } from '@/components/ui/primitives'
 import { TrackCard } from '@/components/catalogue/TrackCard'
-import { weakKeyPath } from '@/lib/paths'
+import { drillPath, weakKeyPath } from '@/lib/paths'
+import { isCapstone, isReview } from '@/content/schema'
 
 function KeyLedgerPanel() {
   const progress = useProgress()
   const ledger = lifetimeLedger(progress)
   const good = favouriteKeys(ledger)
-  const bad = troubleKeys(ledger)
-  const worst = rankForPractice(ledger)[0]
+  // The same list, in the same order, as Basics and Statistics show.
+  const bad = keysThatNeedWork(ledger)
 
   if (good.length === 0) {
     return (
@@ -52,10 +62,10 @@ function KeyLedgerPanel() {
           <span className="text-[10px] tracking-[0.18em] text-faint uppercase">
             Keys that need work
           </span>
-          {worst !== undefined && (
+          {bad.length > 0 && (
             <Link
               to={weakKeyPath('ladder')}
-              className="bg-amber px-3 py-1.5 text-[10px] tracking-[0.16em] text-ink uppercase hover:bg-amber-soft"
+              className="border border-ink-edge px-3 py-1.5 text-[10px] tracking-[0.16em] text-parchment uppercase hover:border-amber hover:text-amber"
             >
               Practice weak keys
             </Link>
@@ -77,12 +87,79 @@ function KeyLedgerPanel() {
   )
 }
 
+/**
+ * Home's one primary action: the next drill in the track you were last in.
+ * Enter follows it from anywhere on the page, unless focus is on something
+ * that already answers to Enter itself.
+ */
+function ContinuePanel({ point, firstVisit }: { point: ResumePoint; firstVisit: boolean }) {
+  const navigate = useNavigate()
+  const to = drillPath(point.track.id, point.drill.id)
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent): void => {
+      if (event.key !== 'Enter' || event.ctrlKey || event.metaKey || event.altKey) return
+      if (
+        event.target instanceof HTMLElement &&
+        event.target.closest('a, button, input, select, textarea') !== null
+      )
+        return
+      event.preventDefault()
+      navigate(to)
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [navigate, to])
+
+  const kind = isReview(point.lesson)
+    ? 'Review stage'
+    : isCapstone(point.drill)
+      ? 'Capstone'
+      : 'Next variant'
+
+  return (
+    <Panel accent="amber" className="reveal">
+      <div className="flex flex-wrap items-center justify-between gap-x-8 gap-y-4">
+        <div className="flex min-w-0 flex-col gap-2">
+          <span className="text-[10px] tracking-[0.18em] text-faint uppercase">
+            {firstVisit ? 'Start here' : point.fresh ? 'Up next' : 'Continue where you left off'}
+          </span>
+          <h2 className="font-display text-lg font-light text-parchment">
+            {point.track.title}
+            <span className="text-faint"> · </span>
+            {point.lesson.title}
+          </h2>
+          <p className="text-[11px] leading-relaxed text-muted">
+            {firstVisit ? (
+              <>
+                Every lesson here says one thing several ways — you type the variants back to back
+                until the shape of the idea is in your hands, not just its spelling.
+              </>
+            ) : (
+              <>
+                {kind}: <span className="text-amber-soft">{point.drill.label}</span>
+              </>
+            )}
+          </p>
+        </div>
+        <Link
+          to={to}
+          className="shrink-0 bg-amber px-4 py-2 text-[10px] tracking-[0.18em] text-ink uppercase hover:bg-amber-soft"
+        >
+          {firstVisit ? 'Start typing' : 'Continue'} · Enter
+        </Link>
+      </div>
+    </Panel>
+  )
+}
+
 export default function Home() {
   const progress = useProgress()
   const now = useNow()
   const stats = headline(progress)
   const series = dailySeries(progress)
   const stale = new Set(dueForRevisit(progress, TRACKS, now).map((track) => track.id))
+  const resume = resumePoint(progress, TRACKS)
 
   const favourite = new Set(progress.favouriteLanguages)
   const inYourStack = (track: Track): boolean => favourite.has(track.language)
@@ -98,6 +175,7 @@ export default function Home() {
   return (
     <div className="flex flex-col gap-7">
       <h1 className="sr-only">Home</h1>
+      {resume !== undefined && <ContinuePanel point={resume} firstVisit={!hasHistory} />}
       <div className="grid gap-5 lg:grid-cols-[1fr_420px]">
         <div className="grid gap-3.5 sm:grid-cols-2 xl:grid-cols-4">
           <div className="reveal" style={{ animationDelay: '0.05s' }}>
@@ -165,24 +243,6 @@ export default function Home() {
           <KeyLedgerPanel />
         </div>
       </div>
-
-      {!hasHistory && (
-        <Panel accent="amber" className="reveal">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <p className="max-w-xl text-[11px] leading-relaxed text-muted">
-              Nothing typed yet. Every lesson here says one thing several ways — you type the
-              variants back to back until the shape of the idea is in your hands, not just its
-              spelling.
-            </p>
-            <Link
-              to={`/drill/${TRACKS[0]?.id ?? ''}`}
-              className="bg-amber px-4 py-2 text-[10px] tracking-[0.18em] text-ink uppercase hover:bg-amber-soft"
-            >
-              Start typing
-            </Link>
-          </div>
-        </Panel>
-      )}
 
       {dispatches.length > 0 && (
         <section className="reveal flex flex-col gap-3.5" style={{ animationDelay: '0.4s' }}>

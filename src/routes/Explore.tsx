@@ -114,6 +114,7 @@ export default function Explore() {
         </div>
       </div>
 
+      <h2 className="sr-only">Tracks</h2>
       {visible.length === 0 ? (
         <p className="reveal py-16 text-center text-[11px] text-muted">
           Nothing matches that combination yet.

@@ -8,7 +8,7 @@ import { TypingSurface } from '@/components/typing/TypingSurface'
 import { isLongPassage } from '@/lib/passage'
 import { rankForPractice } from '@/engine/practice/ranking'
 import { useResultKeyboardNav } from '@/lib/useResultKeyboardNav'
-import { weakKeyPath } from '@/lib/paths'
+import { drillPath, weakKeyPath } from '@/lib/paths'
 import NotFound from './NotFound'
 
 function Readout({
@@ -187,17 +187,49 @@ export default function Drill() {
           className="reveal flex flex-col items-center gap-2.5 text-center"
           style={{ animationDelay: '0.05s' }}
         >
-          <span className="text-[10px] tracking-[0.22em] text-faint uppercase">
-            {review ? (
-              <span className="text-amber">
-                Review · {coveredLessons(track, lesson).length} concepts
-              </span>
-            ) : (
-              <>
-                Lesson {lessonIndex + 1} of {conceptTotal}
-              </>
-            )}
-          </span>
+          {/* Every lesson in the track, so any of them is one click away rather
+              than only reachable by typing through the ones before it. Each
+              opens at its first drill not yet typed. Reviews keep their
+              word instead of a number — 01 02 03 04 05 REVIEW. */}
+          <nav
+            aria-label="Lessons in this track"
+            className="flex flex-wrap items-center justify-center gap-x-1 gap-y-1.5 text-[10px] tracking-[0.22em] text-faint uppercase"
+          >
+            <span className="mr-2">
+              {review ? (
+                <span className="text-amber">
+                  Review · {coveredLessons(track, lesson).length} concepts
+                </span>
+              ) : (
+                <span className="sr-only">
+                  Lesson {lessonIndex + 1} of {conceptTotal}.{' '}
+                </span>
+              )}
+              {!review && <span aria-hidden="true">Lesson</span>}
+            </span>
+            {track.lessons.map((other) => {
+              const here = other.id === lesson.id
+              const numbered = track.lessons.filter((l) => !isReview(l)).indexOf(other)
+              const target =
+                other.drills.find((candidate) => !completed.has(candidate.id)) ?? other.drills[0]
+              return (
+                <Link
+                  key={other.id}
+                  to={drillPath(track.id, target?.id)}
+                  aria-current={here ? 'page' : undefined}
+                  title={other.title}
+                  aria-label={
+                    isReview(other) ? other.title : `Lesson ${numbered + 1}: ${other.title}`
+                  }
+                  className={`px-1.5 py-1 tracking-[0.14em] ${
+                    here ? 'text-amber' : 'text-ghost hover:text-parchment'
+                  }`}
+                >
+                  {isReview(other) ? 'Review' : String(numbered + 1).padStart(2, '0')}
+                </Link>
+              )
+            })}
+          </nav>
           <h1 className="font-display text-xl font-light text-parchment md:text-2xl">
             {lesson.title}
           </h1>
