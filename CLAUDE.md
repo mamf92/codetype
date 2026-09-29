@@ -88,6 +88,14 @@ a test.
   line's width, and on a line that already fills the surface that wraps it
   onto a row of its own — the passage appears to grow a blank line and lose
   it again when Enter is pressed.
+- **The caret is never inside the passage's text.** It is one element laid
+  over the passage and moved onto the character awaiting input
+  (`useCaretPosition` in `src/components/typing/TypingSurface.tsx`).
+  Anything placed between two characters, even with no width, can become a
+  line-break opportunity in some browser, and a wrapped word then breaks at
+  the caret: typed letters jump back up to the row above one keystroke at a
+  time. Chromium stopped doing this for an absolutely positioned caret, so
+  testing there alone will not catch a regression.
 - **Progress has no stored counters.** Everything on Home, Statistics and
   Explore — best WPM, streaks, per-key accuracy, due-for-revisit — is derived
   fresh from `ProgressDocument.sessions` (`src/store/progress.ts`) on every

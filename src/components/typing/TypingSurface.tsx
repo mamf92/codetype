@@ -1,4 +1,11 @@
-import { forwardRef, useEffect, useRef, type KeyboardEvent as ReactKeyboardEvent } from 'react'
+import {
+  forwardRef,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  type KeyboardEvent as ReactKeyboardEvent,
+  type RefObject,
+} from 'react'
 import { colourForScope } from '@/lib/scopes'
 import { isLongPassage } from '@/lib/passage'
 import type { CompiledDrill, EntryState } from '@/engine/types'
@@ -21,24 +28,65 @@ const SCROLL_MARGIN_LINES = 2
 const WRAP_INDENT = '1.6em'
 
 /**
- * The caret is drawn out of flow, hung off an empty inline anchor, and must
- * stay that way. An `inline-block` caret is an atomic inline, and the line
- * breaker treats every atomic inline as a place a row may break. A wrapped
- * word would then break at the caret as it passed through: the characters
- * already typed jumping back up to the row above, one per keystroke, until
- * the word left the caret behind and the whole of it fell back down. An empty
- * inline offers no break opportunity, so rows wrap where they first wrapped
- * and stay there, the way a narrow editor's do.
+ * The caret is not part of the passage's text at all. It is one element laid
+ * over the passage and moved onto the character awaiting input, measured
+ * after every render and whenever the passage reflows.
+ *
+ * It must stay out of the text. Anything placed between two characters of a
+ * word, even something that takes no width, can become a place the line
+ * breaker is willing to break: an `inline-block` caret is one in every
+ * browser, and an absolutely positioned one still is in some. A wrapped word
+ * then breaks at the caret as it passes through, the characters already typed
+ * jumping back up to the row above one keystroke at a time. Kept outside the
+ * text, the caret cannot move a row, and rows stay where they first wrapped,
+ * the way a narrow editor's do.
+ *
+ * It is keyed on the cursor so each keystroke mounts it afresh and it burns
+ * bright again where it lands, rather than carrying on fading.
  */
-function Caret() {
-  return (
-    <span className="relative">
-      <span
-        className="caret absolute top-1/2 left-[-1.5px] w-[3px] -translate-y-1/2 bg-amber"
-        style={{ height: '1.25em' }}
-      />
-    </span>
-  )
+function useCaretPosition(
+  textRef: RefObject<HTMLDivElement | null>,
+  caretRef: RefObject<HTMLSpanElement | null>,
+  cursor: number,
+  compiled: CompiledDrill,
+): void {
+  useLayoutEffect(() => {
+    const text = textRef.current
+    if (text === null) return
+
+    const place = (): void => {
+      const caret = caretRef.current
+      if (caret === null) return
+      // The character (or line-break marker) awaiting input. Past the end of
+      // the passage there is none, so the caret sits after the last one.
+      const at = text.querySelector<HTMLElement>(`[data-cell="${cursor}"]`)
+      const target = at ?? text.querySelector<HTMLElement>(`[data-cell="${cursor - 1}"]`)
+      if (target === null) {
+        caret.style.visibility = 'hidden'
+        return
+      }
+      const box = text.getBoundingClientRect()
+      const cell = target.getBoundingClientRect()
+      const x = (at === null ? cell.right : cell.left) - box.left
+      const y = cell.top + cell.height / 2 - box.top
+      caret.style.transform = `translate(${x}px, ${y}px)`
+      caret.style.visibility = 'visible'
+    }
+
+    place()
+    // The passage reflows without a render when the surface is resized or the
+    // web font arrives, and the caret has to follow it.
+    const observer = new ResizeObserver(place)
+    observer.observe(text)
+    let live = true
+    void document.fonts.ready.then(() => {
+      if (live) place()
+    })
+    return () => {
+      live = false
+      observer.disconnect()
+    }
+  }, [textRef, caretRef, cursor, compiled])
 }
 
 /**
@@ -60,16 +108,17 @@ function Caret() {
  * space, so there is no break opportunity in front of it: if the end of the
  * line wraps, the marker wraps with the word it belongs to.
  */
-function Return({ lit, typed }: { lit: boolean; typed: boolean }) {
+function Return({ index, lit, typed }: { index: number; lit: boolean; typed: boolean }) {
   // Typed: the colour typed punctuation takes, since that is what it is.
   const colour = lit ? 'var(--color-amber)' : typed ? 'var(--color-muted)' : PENDING
   return (
-    <span
-      aria-hidden="true"
-      className="ml-[0.4em] text-[0.7em] select-none"
-      style={{ color: colour }}
-    >
-      ⏎
+    // The outer span is set in the passage's own size, so the caret measures
+    // the same row height here as on any character; the margin sits inside
+    // it, so the caret lands at the end of the line, not beside the marker.
+    <span aria-hidden="true" data-cell={index} className="select-none">
+      <span className="ml-[0.4em] text-[0.7em]" style={{ color: colour }}>
+        ⏎
+      </span>
     </span>
   )
 }
@@ -119,6 +168,8 @@ export const TypingSurface = forwardRef<
   const long = isLongPassage(compiled)
   const viewportRef = useRef<HTMLDivElement | null>(null)
   const caretRowRef = useRef<HTMLDivElement | null>(null)
+  const textRef = useRef<HTMLDivElement | null>(null)
+  const caretRef = useRef<HTMLSpanElement | null>(null)
 
   // The cell at `cursor` is the one awaiting input. Once the passage is
   // finished there is no such cell, so fall back to the last line rather than
@@ -140,6 +191,8 @@ export const TypingSurface = forwardRef<
     }
   }, [caretLine, compiled])
 
+  useCaretPosition(textRef, caretRef, cursor, compiled)
+
   return (
     <div
       ref={ref}
@@ -158,7 +211,8 @@ export const TypingSurface = forwardRef<
         className={`relative ${long ? 'sm:min-h-0 sm:flex-1 sm:overflow-y-auto' : ''}`}
       >
         <div
-          className={`font-mono tracking-code break-words whitespace-pre-wrap ${
+          ref={textRef}
+          className={`relative font-mono tracking-code break-words whitespace-pre-wrap ${
             long
               ? 'text-sm leading-[1.85] sm:text-base md:text-lg'
               : 'text-base leading-[2.05] sm:text-lg md:text-xl'
@@ -190,42 +244,46 @@ export const TypingSurface = forwardRef<
                     const state = entries[index] ?? 'pending'
 
                     return (
-                      <span key={index}>
-                        {cursor === index && <Caret />}
-                        <span
-                          style={
-                            state === 'correct'
-                              ? { color: colourForScope(cell.scope) }
-                              : state === 'wrong'
-                                ? {
-                                    color: 'var(--color-fault)',
-                                    background:
-                                      'color-mix(in srgb, var(--color-fault) 14%, transparent)',
-                                    borderBottom: '2px solid var(--color-fault)',
-                                  }
-                                : { color: PENDING }
-                          }
-                        >
-                          {cell.char}
-                        </span>
+                      <span
+                        key={index}
+                        data-cell={index}
+                        style={
+                          state === 'correct'
+                            ? { color: colourForScope(cell.scope) }
+                            : state === 'wrong'
+                              ? {
+                                  color: 'var(--color-fault)',
+                                  background:
+                                    'color-mix(in srgb, var(--color-fault) 14%, transparent)',
+                                  borderBottom: '2px solid var(--color-fault)',
+                                }
+                              : { color: PENDING }
+                        }
+                      >
+                        {cell.char}
                       </span>
                     )
                   })}
 
                   {!isLast && (
-                    <>
-                      {cursor === newlineIndex && <Caret />}
-                      <Return
-                        lit={cursor === newlineIndex}
-                        typed={entries[newlineIndex] === 'correct'}
-                      />
-                    </>
+                    <Return
+                      index={newlineIndex}
+                      lit={cursor === newlineIndex}
+                      typed={entries[newlineIndex] === 'correct'}
+                    />
                   )}
-                  {isLast && cursor >= compiled.cells.length && <Caret />}
                 </span>
               </div>
             )
           })}
+
+          <span
+            key={cursor}
+            ref={caretRef}
+            aria-hidden="true"
+            className="caret pointer-events-none invisible absolute top-0 left-0 -mt-[0.625em] -ml-[1.5px] w-[3px] bg-amber"
+            style={{ height: '1.25em' }}
+          />
         </div>
       </div>
     </div>
