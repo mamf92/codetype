@@ -257,6 +257,51 @@ export function dueForRevisit(doc: ProgressDocument, tracks: Track[], now: numbe
     .map(({ track }) => track)
 }
 
+/** Where Home's Continue button goes: a track, a lesson in it, and a drill. */
+export interface ResumePoint {
+  track: Track
+  lesson: Track['lessons'][number]
+  drill: Track['lessons'][number]['drills'][number]
+  /** True when nothing in this track has been typed yet. */
+  fresh: boolean
+}
+
+const firstUndone = (track: Track, done: Set<string>): Omit<ResumePoint, 'fresh'> | undefined => {
+  for (const lesson of track.lessons) {
+    const drill = lesson.drills.find((candidate) => !done.has(candidate.id))
+    if (drill !== undefined) return { track, lesson, drill }
+  }
+  return undefined
+}
+
+/**
+ * The next thing to type. The track you touched most recently, at its first
+ * drill not yet done — the same drill the drill screen picks when opened on a
+ * track with no drill named. A finished track gives way to the next track you
+ * have worked in, then to the first one you haven't. Undefined only once the
+ * whole catalogue has been typed.
+ */
+export function resumePoint(doc: ProgressDocument, tracks: Track[]): ResumePoint | undefined {
+  const done = new Set(drillSessions(doc).map((session) => session.drillId))
+  const recent = [...drillSessions(doc)]
+    .sort((a, b) => b.at - a.at)
+    .map((session) => session.trackId)
+  const touched = [...new Set(recent)]
+    .map((id) => tracks.find((track) => track.id === id))
+    .filter((track): track is Track => track !== undefined)
+
+  for (const track of touched) {
+    const next = firstUndone(track, done)
+    if (next !== undefined) return { ...next, fresh: false }
+  }
+  for (const track of tracks) {
+    if (touched.includes(track)) continue
+    const next = firstUndone(track, done)
+    if (next !== undefined) return { ...next, fresh: true }
+  }
+  return undefined
+}
+
 /** Daily best wpm, oldest first — the shape the progress graph wants. */
 export interface DailyPoint {
   day: string

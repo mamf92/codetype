@@ -42,17 +42,17 @@ const LEGEND: Array<{ tone: KeyTone; label: string }> = [
 ]
 
 const tileClass = (tone: KeyTone): string =>
-  `flex h-7 w-7 items-center justify-center rounded-[3px] border font-mono text-xs ${TILE[tone]}`
+  `flex h-7 w-7 items-center justify-center rounded-[3px] border font-mono text-body ${TILE[tone]}`
 
 /** Every key, coloured by how you actually type it. Anything you have typed practices on click. */
 export function KeyMap({ ledger }: { ledger: KeyLedger }) {
   return (
     <div className="panel flex flex-col gap-4 p-5">
       <div className="flex flex-wrap items-baseline justify-between gap-3">
-        <h2 className="text-[10px] tracking-[0.2em] text-faint uppercase">
+        <h3 className="text-label tracking-label text-faint uppercase">
           The whole keyboard, from your real drills
-        </h2>
-        <ul className="flex flex-wrap gap-x-4 gap-y-1.5 text-[10px] text-faint">
+        </h3>
+        <ul className="flex flex-wrap gap-x-4 gap-y-1.5 text-meta text-faint">
           {LEGEND.map(({ tone, label }) => (
             <li key={tone} className="flex items-center gap-1.5">
               <span className={`h-2.5 w-2.5 rounded-[2px] border ${TILE[tone]}`} />
@@ -64,7 +64,7 @@ export function KeyMap({ ledger }: { ledger: KeyLedger }) {
 
       {ROWS.map((row) => (
         <div key={row.label} className="flex flex-col gap-2 sm:flex-row sm:items-start sm:gap-4">
-          <span className="w-16 shrink-0 pt-1.5 text-[9px] tracking-[0.18em] text-faint uppercase">
+          <span className="w-16 shrink-0 pt-1.5 text-label tracking-label text-faint uppercase">
             {row.label}
           </span>
           <ul className="flex flex-wrap gap-1.5">

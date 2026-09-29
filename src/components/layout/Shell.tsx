@@ -7,7 +7,7 @@ export function Shell({ children }: { children: ReactNode }) {
     <div className="crt min-h-dvh">
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[60] focus:bg-amber focus:px-4 focus:py-2 focus:text-[11px] focus:tracking-[0.14em] focus:text-ink focus:uppercase"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[60] focus:bg-amber focus:px-4 focus:py-2 focus:text-label focus:tracking-label focus:text-ink focus:uppercase"
       >
         Skip to content
       </a>
@@ -36,7 +36,7 @@ export function PageHead({
     <div className="reveal flex flex-wrap items-end justify-between gap-4">
       <div className="flex flex-col gap-2.5">
         <h1 className="font-display text-2xl font-light text-parchment md:text-3xl">{title}</h1>
-        <p className="max-w-xl text-xs leading-relaxed text-muted">{blurb}</p>
+        <p className="max-w-xl text-body leading-relaxed text-muted">{blurb}</p>
       </div>
       {aside}
     </div>

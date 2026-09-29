@@ -130,6 +130,12 @@ a test.
   schema and its own test (`basics.test.ts`), and stays out of `TRACKS`. That
   keeps a stage made of nothing but digits out of the corpus frequency table
   the weak-key ranking is weighted by.
+- **Every "Keys that need work" list is the same list.** Home, Basics and
+  Statistics all read `keysThatNeedWork` (`src/engine/practice/ranking.ts`):
+  the practice ranking, cut to keys actually missed. A panel that ranked by
+  raw miss rate instead would disagree with the practice button beside it.
+  A bar in such a list is drawn from the ranked cost, not the miss rate, so
+  the bars and the order agree.
 - **Keyfall games are raw records, not a high score.** `ProgressDocument.games`
   holds every finished game, and the high-score table is derived from them, by
   the same no-stored-counters rule as everything else.
@@ -142,6 +148,15 @@ a test.
   behind AltGr on the digit row, so anything that reasons about "adjacent
   keys" using US-keyboard assumptions will be wrong for a real fraction of
   users.
+- **Sizes, letter-spacing and page spacing come from one scale.** The
+  `--text-*`, `--tracking-*` and `--spacing-page|grid|section` tokens in
+  `src/styles/index.css` are the only values allowed, picked by role
+  (label, meta, body, …); buttons come from `BUTTON` in
+  `src/components/ui/button.ts`. `src/lib/scale.test.ts` fails on a literal
+  `text-[Npx]` or `tracking-[…]`. If nothing fits, add a token and say
+  why. See `docs/decisions/0008-type-and-spacing-scale.md`.
+  The phone nav is the one exception: it drops the tracking below `sm` so
+  five links fit without scrolling.
 - **axe-core cannot see contrast on this site.** The page background is a
   layered gradient; axe reports every element's contrast `incomplete`
   rather than pass/fail, which is not the same as passing. Contrast is

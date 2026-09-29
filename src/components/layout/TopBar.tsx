@@ -20,7 +20,7 @@ export function TopBar() {
     // the whole page sideways.
     <header className="relative z-10 flex flex-wrap items-center justify-between gap-y-3 border-b border-ink-line bg-gradient-to-b from-[rgba(255,176,0,0.035)] to-transparent px-6 py-4 md:px-10 lg:h-[68px] lg:flex-nowrap lg:py-0">
       <NavLink to="/" className="flex items-center gap-2.5">
-        <span className="font-display text-[15px] font-semibold tracking-[0.02em] text-amber">
+        <span className="font-display text-logo font-semibold tracking-display text-amber">
           CODETYPE
         </span>
         <span className="caret h-[15px] w-[7px] bg-amber" />
@@ -33,7 +33,9 @@ export function TopBar() {
             to={link.to}
             end={link.end}
             className={({ isActive }) =>
-              `shrink-0 text-[10px] tracking-[0.04em] uppercase transition-colors sm:text-[11px] sm:tracking-[0.16em] ${
+              // Below `sm` the one exception to the tracking rule: five
+              // tracked labels overflow a phone's width and the bar scrolls.
+              `shrink-0 py-1.5 text-label tracking-normal uppercase transition-colors sm:py-0 sm:tracking-label ${
                 isActive ? 'text-amber' : 'text-faint hover:text-parchment'
               }`
             }
@@ -50,7 +52,7 @@ export function TopBar() {
         ))}
       </nav>
 
-      <div className="hidden items-baseline gap-3.5 text-[11px] text-faint sm:flex">
+      <div className="hidden items-baseline gap-3.5 text-meta text-faint sm:flex">
         <span>
           <span className="font-display text-sm font-light text-amber">
             {Math.round(stats.recentWpm)}

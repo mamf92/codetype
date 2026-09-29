@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { corpusCount, corpusTotal, frequencyPer1000 } from './corpusFrequency'
-import { rankForPractice, smoothedErrorRate } from './ranking'
+import { keysThatNeedWork, rankForPractice, smoothedErrorRate } from './ranking'
 import {
   CODE_WORDS,
   contextFragments,
@@ -59,6 +59,28 @@ describe('smoothedErrorRate', () => {
 
   it('treats an untouched key as 50/50, not 0', () => {
     expect(smoothedErrorRate(undefined)).toBe(0.5)
+  })
+})
+
+describe('keysThatNeedWork', () => {
+  it('is the practice ranking in the same order, cut to keys actually missed', () => {
+    const ledger: KeyLedger = {
+      '(': key({ pressed: 40, missed: 4 }),
+      a: key({ pressed: 40, missed: 0 }),
+      '{': key({ pressed: 40, missed: 8 }),
+      ';': key({ pressed: 40, missed: 2 }),
+    }
+    const shown = keysThatNeedWork(ledger).map((k) => k.char)
+    const ranked = rankForPractice(ledger).map((k) => k.char)
+    expect(shown).not.toContain('a')
+    expect(shown).toEqual(ranked.filter((char) => char !== 'a'))
+  })
+
+  it('stops at the count asked for', () => {
+    const ledger: KeyLedger = Object.fromEntries(
+      'abcdefgh'.split('').map((c) => [c, key({ pressed: 20, missed: 2 })]),
+    )
+    expect(keysThatNeedWork(ledger, 3)).toHaveLength(3)
   })
 })
 

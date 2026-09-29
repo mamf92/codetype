@@ -158,7 +158,7 @@ export const TypingSurface = forwardRef<
         className={`relative ${long ? 'sm:min-h-0 sm:flex-1 sm:overflow-y-auto' : ''}`}
       >
         <div
-          className={`font-mono tracking-[-0.04em] break-words whitespace-pre-wrap ${
+          className={`font-mono tracking-code break-words whitespace-pre-wrap ${
             long
               ? 'text-sm leading-[1.85] sm:text-base md:text-lg'
               : 'text-base leading-[2.05] sm:text-lg md:text-xl'

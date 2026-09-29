@@ -9,6 +9,7 @@ import { useResultKeyboardNav } from '@/lib/useResultKeyboardNav'
 import { TypingSurface } from '@/components/typing/TypingSurface'
 import { FocusHeader } from '@/components/layout/FocusHeader'
 import { KeyCap } from '@/components/ui/primitives'
+import { BUTTON } from '@/components/ui/button'
 import { accuracyOf } from '@/components/basics/keyStanding'
 
 /** How long a finished rep stays on screen before a streak moves on by itself. */
@@ -219,7 +220,7 @@ export function PracticeRunner({
         </div>
         <main className="relative z-10 mx-auto flex w-full max-w-[860px] flex-1 flex-col justify-center gap-6 px-6 py-10 md:px-10">
           <div className="reveal flex flex-col gap-2.5">
-            <span className="text-[10px] tracking-[0.22em] text-faint uppercase">{eyebrow}</span>
+            <span className="text-label tracking-section text-faint uppercase">{eyebrow}</span>
             <h1 className="font-display text-2xl font-light text-parchment md:text-3xl">
               Run complete
             </h1>
@@ -250,15 +251,13 @@ export function PracticeRunner({
               },
             ].map((tile) => (
               <div key={tile.label} className="flex flex-col gap-1.5 bg-ink-sunk px-5 py-4">
-                <span className="text-[9px] tracking-[0.2em] text-faint uppercase">
-                  {tile.label}
-                </span>
+                <span className="text-label tracking-label text-faint uppercase">{tile.label}</span>
                 <span>
                   <span className={`font-display text-3xl font-light ${tile.tone}`}>
                     {tile.value}
                   </span>
                   {tile.unit !== undefined && (
-                    <span className="ml-1 text-[10px] text-faint">{tile.unit}</span>
+                    <span className="ml-1 text-meta text-faint">{tile.unit}</span>
                   )}
                 </span>
               </div>
@@ -270,7 +269,7 @@ export function PracticeRunner({
               className="panel reveal flex flex-col gap-3 p-5"
               style={{ animationDelay: '0.1s' }}
             >
-              <span className="text-[10px] tracking-[0.18em] text-faint uppercase">
+              <span className="text-label tracking-label text-faint uppercase">
                 Target keys · this run against your real drills
               </span>
               <div className="flex flex-col gap-2">
@@ -279,7 +278,7 @@ export function PracticeRunner({
                   const before = accuracyIn(lifetime, char)
                   const better = now !== null && before !== null && now > before
                   return (
-                    <div key={char} className="flex items-center gap-3 text-[11px]">
+                    <div key={char} className="flex items-center gap-3 text-meta">
                       <KeyCap char={char} tone={better ? 'signal' : 'fault'} small />
                       <span className={better ? 'text-signal' : 'text-parchment'}>
                         {percent(now)}
@@ -289,7 +288,7 @@ export function PracticeRunner({
                   )
                 })}
               </div>
-              <p className="text-[10px] leading-relaxed text-faint">
+              <p className="text-body leading-relaxed text-faint">
                 Practice never certifies itself. The number that counts is the second one, and it
                 only moves when you use the key in real drills.
               </p>
@@ -297,7 +296,7 @@ export function PracticeRunner({
           )}
 
           <section className="reveal flex flex-col gap-2.5" style={{ animationDelay: '0.14s' }}>
-            <span className="text-[10px] tracking-[0.18em] text-faint uppercase">
+            <span className="text-label tracking-label text-faint uppercase">
               {missed.length === 0 ? 'No key missed this run' : 'Missed this run'}
             </span>
             {missed.length > 0 && (
@@ -310,35 +309,19 @@ export function PracticeRunner({
           </section>
 
           <div className="reveal flex flex-wrap gap-3" style={{ animationDelay: '0.18s' }}>
-            <button
-              type="button"
-              onClick={again}
-              className="border border-ink-edge px-4 py-2 text-[10px] tracking-[0.18em] text-parchment uppercase hover:border-amber hover:text-amber"
-            >
+            <button type="button" onClick={again} className={BUTTON.secondary}>
               Again · R
             </button>
             {next === undefined ? (
-              <button
-                type="button"
-                onClick={() => navigate(exitTo)}
-                className="bg-amber px-4 py-2 text-[10px] tracking-[0.18em] text-ink uppercase hover:bg-amber-soft"
-              >
+              <button type="button" onClick={() => navigate(exitTo)} className={BUTTON.primary}>
                 Back to Basics · Enter
               </button>
             ) : (
               <>
-                <button
-                  type="button"
-                  onClick={() => navigate(exitTo)}
-                  className="border border-ink-edge px-4 py-2 text-[10px] tracking-[0.18em] text-parchment uppercase hover:border-amber hover:text-amber"
-                >
+                <button type="button" onClick={() => navigate(exitTo)} className={BUTTON.secondary}>
                   Back to Basics
                 </button>
-                <button
-                  type="button"
-                  onClick={() => navigate(next.to)}
-                  className="bg-amber px-4 py-2 text-[10px] tracking-[0.18em] text-ink uppercase hover:bg-amber-soft"
-                >
+                <button type="button" onClick={() => navigate(next.to)} className={BUTTON.primary}>
                   {next.label} · Enter
                 </button>
               </>
@@ -353,7 +336,7 @@ export function PracticeRunner({
     <div className="crt flex min-h-dvh flex-col">
       <a
         href="#practice-main"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[60] focus:bg-amber focus:px-4 focus:py-2 focus:text-[11px] focus:tracking-[0.14em] focus:text-ink focus:uppercase"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[60] focus:bg-amber focus:px-4 focus:py-2 focus:text-label focus:tracking-label focus:text-ink focus:uppercase"
       >
         Skip to typing surface
       </a>
@@ -368,13 +351,13 @@ export function PracticeRunner({
         className="relative z-10 mx-auto flex w-full max-w-[1040px] flex-1 flex-col items-center justify-center px-6 py-10 md:px-10 focus:outline-none"
       >
         <div className="reveal flex flex-col items-center gap-2.5 text-center">
-          <span className="text-[10px] tracking-[0.22em] text-faint uppercase">
+          <span className="text-label tracking-section text-faint uppercase">
             {eyebrow} · Step {step + 1} of {steps.length}
           </span>
           <h1 className="font-display text-xl font-light text-parchment md:text-2xl">
             {title ?? current.name}
           </h1>
-          <p className="max-w-xl text-xs leading-relaxed text-muted">{blurb}</p>
+          <p className="max-w-xl text-body leading-relaxed text-muted">{blurb}</p>
         </div>
 
         <ol
@@ -386,7 +369,7 @@ export function PracticeRunner({
             <li
               key={`${i}-${s.name}`}
               aria-current={i === step ? 'step' : undefined}
-              className={`px-3 py-1.5 text-[10px] ${
+              className={`px-3 py-1.5 text-meta ${
                 i === step
                   ? 'bg-amber text-ink shadow-[0_0_14px_rgba(255,176,0,0.35)]'
                   : i < step
@@ -401,7 +384,7 @@ export function PracticeRunner({
 
         {streak !== undefined && (
           <div
-            className="reveal mt-5 flex items-center gap-3 text-[10px] tracking-[0.16em] uppercase"
+            className="reveal mt-5 flex items-center gap-3 text-label tracking-label uppercase"
             style={{ animationDelay: '0.12s' }}
           >
             <span className="text-faint">Clean in a row</span>
@@ -444,29 +427,21 @@ export function PracticeRunner({
           <div className="panel reveal mt-7 flex w-full flex-wrap items-center justify-between gap-5 p-6">
             <div className="flex flex-wrap items-baseline gap-4">
               <span className="font-display text-lg text-signal">Step done</span>
-              <span className="text-[11px] text-muted">
+              <span className="text-meta text-muted">
                 {metrics.wpm} wpm · {(metrics.accuracy * 100).toFixed(0)}% accurate
               </span>
             </div>
             <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={restart}
-                className="border border-ink-edge px-4 py-2 text-[10px] tracking-[0.18em] text-parchment uppercase hover:border-amber hover:text-amber"
-              >
+              <button type="button" onClick={restart} className={BUTTON.secondary}>
                 Retry · R
               </button>
-              <button
-                type="button"
-                onClick={advance}
-                className="bg-amber px-4 py-2 text-[10px] tracking-[0.18em] text-ink uppercase hover:bg-amber-soft"
-              >
+              <button type="button" onClick={advance} className={BUTTON.primary}>
                 {isLastStep ? 'Finish · Enter' : 'Next step · Enter'}
               </button>
             </div>
           </div>
         ) : (
-          <div className="mt-6 flex w-full flex-wrap items-center justify-between gap-3 text-[10px] text-faint">
+          <div className="mt-6 flex w-full flex-wrap items-center justify-between gap-3 text-meta text-faint">
             <span>
               {metrics.wpm} wpm · {(metrics.accuracy * 100).toFixed(0)}% accurate
               {streak !== undefined && reps > 0 && ` · ${reps} ${reps === 1 ? 'rep' : 'reps'}`}
@@ -475,7 +450,7 @@ export function PracticeRunner({
               <button
                 type="button"
                 onClick={skip}
-                className="tracking-[0.16em] uppercase hover:text-parchment"
+                className="tracking-label uppercase hover:text-parchment"
               >
                 {isLastStep ? 'Finish here' : 'Skip this line'}
               </button>

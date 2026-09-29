@@ -13,7 +13,7 @@ import {
   standingFor,
 } from '@/store/progress'
 import type { ProgressDocument } from '@/store/progress'
-import { troubleKeys } from '@/engine/metrics'
+import { keysThatNeedWork } from '@/engine/practice/ranking'
 import { PageHead } from '@/components/layout/Shell'
 import { Empty, KeyCap, Panel, SectionLabel, Sparkline } from '@/components/ui/primitives'
 import { AreaChart } from '@/components/ui/AreaChart'
@@ -40,7 +40,11 @@ function ticks(days: string[]): string[] {
 const short = (day: string): string =>
   day === '' ? '' : new Date(day).toLocaleDateString(undefined, { day: '2-digit', month: 'short' })
 
-const SPEED_COLUMNS = 'grid-cols-[2.4fr_1fr_0.7fr_0.9fr_1.1fr_1.3fr]'
+// On a phone each table keeps the columns that answer "how am I doing" and
+// drops the rest, rather than scrolling a desktop table sideways.
+const SPEED_COLUMNS = 'grid-cols-[1fr_auto] sm:grid-cols-[2.4fr_1fr_0.7fr_0.9fr_1.1fr_1.3fr]'
+const TRACK_COLUMNS = 'grid-cols-[1fr_auto_auto] sm:grid-cols-[2.4fr_1fr_0.8fr_0.8fr_1fr_1.2fr]'
+const WIDE = 'hidden sm:block'
 
 /**
  * Speed tests, one row each. Kept apart from the charts above: those are
@@ -49,19 +53,19 @@ const SPEED_COLUMNS = 'grid-cols-[2.4fr_1fr_0.7fr_0.9fr_1.1fr_1.3fr]'
  */
 function SpeedTests({ progress, now }: { progress: ProgressDocument; now: number }) {
   return (
-    <section className="reveal flex flex-col gap-2.5" style={{ animationDelay: '0.15s' }}>
+    <section className="reveal flex flex-col gap-section" style={{ animationDelay: '0.15s' }}>
       <SectionLabel>Speed tests</SectionLabel>
       <div className="overflow-x-auto">
-        <div className="min-w-[760px]">
+        <div className="sm:min-w-[760px]">
           <div
-            className={`grid ${SPEED_COLUMNS} gap-3 border-b border-ink-line px-3.5 py-2.5 text-[9px] tracking-[0.16em] text-faint uppercase`}
+            className={`grid ${SPEED_COLUMNS} gap-3 border-b border-ink-line px-3.5 py-2.5 text-label tracking-label text-faint uppercase`}
           >
             <span>Test</span>
-            <span>Last run</span>
-            <span>Runs</span>
-            <span>Latest</span>
+            <span className={WIDE}>Last run</span>
+            <span className={WIDE}>Runs</span>
+            <span className={WIDE}>Latest</span>
             <span>Best</span>
-            <span>Every run, wpm</span>
+            <span className={WIDE}>Every run, wpm</span>
           </div>
           {SPEED_TESTS.map((test, i) => {
             const standing = speedTestStanding(progress, test.id)
@@ -70,23 +74,27 @@ function SpeedTests({ progress, now }: { progress: ProgressDocument; now: number
               <Link
                 key={test.id}
                 to={speedTestPath(test.id)}
-                className={`group grid ${SPEED_COLUMNS} items-center gap-3 border-b border-ink-raised px-3.5 py-3 text-[11px] ${
+                className={`group grid ${SPEED_COLUMNS} items-center gap-3 border-b border-ink-raised px-3.5 py-3 text-meta ${
                   never ? 'text-ghost' : 'text-parchment'
                 } ${i % 2 === 1 ? 'bg-ink-sunk' : ''}`}
               >
                 <span className="flex items-baseline gap-2 truncate">
-                  <span className="text-[9px] tracking-[0.14em] text-faint uppercase">
+                  <span className="text-label tracking-label text-faint uppercase">
                     {SPEED_GROUP_TITLES[test.group]}
                   </span>
                   <span className="truncate group-hover:text-amber">{test.title}</span>
                 </span>
-                <span className={never ? '' : 'text-muted'}>{relative(standing.lastAt, now)}</span>
-                <span>{standing.runs}</span>
-                <span>{never ? '—' : `${standing.lastWpm} wpm`}</span>
+                <span className={`${WIDE} ${never ? '' : 'text-muted'}`}>
+                  {relative(standing.lastAt, now)}
+                </span>
+                <span className={WIDE}>{standing.runs}</span>
+                <span className={WIDE}>{never ? '—' : `${standing.lastWpm} wpm`}</span>
                 <span className={never ? '' : 'font-display font-light text-amber'}>
                   {bestResult(test, standing) ?? 'never run'}
                 </span>
-                <Sparkline values={standing.wpm.slice(-30)} height={20} />
+                <span className={WIDE}>
+                  <Sparkline values={standing.wpm.slice(-30)} height={20} />
+                </span>
               </Link>
             )
           })}
@@ -102,7 +110,8 @@ export default function Statistics() {
   const stats = headline(progress)
   const series = dailySeries(progress)
   const ledger = lifetimeLedger(progress)
-  const trouble = troubleKeys(ledger, 5)
+  const trouble = keysThatNeedWork(ledger, 5)
+  const costliest = Math.max(...trouble.map((key) => key.expectedMissesPer1000), 0.01)
   const stale = new Set(dueForRevisit(progress, TRACKS, now).map((track) => track.id))
 
   // Drills, not sessions: a practice run alone would otherwise skip this and
@@ -112,7 +121,7 @@ export default function Statistics() {
   const tested = progress.sessions.some((session) => session.kind === 'test')
   if (stats.sessionCount === 0) {
     return (
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-page">
         <PageHead
           title="Nothing measured yet"
           blurb="Speed, accuracy and your per-key record all come from completed drills. Run a few and this page fills itself in."
@@ -129,13 +138,13 @@ export default function Statistics() {
   const worstKey = trouble[0]
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-page">
       <PageHead
         title={`${series.length} ${series.length === 1 ? 'day' : 'days'} at the keys`}
         blurb={`${stats.sessionCount} drills, ${Math.round(stats.minutesTyped)} minutes, best run ${Math.round(stats.bestWpm)} wpm.`}
         aside={
           stats.trend === null ? undefined : (
-            <span className={`text-[10px] ${stats.trend >= 0 ? 'text-signal' : 'text-fault'}`}>
+            <span className={`text-meta ${stats.trend >= 0 ? 'text-signal' : 'text-fault'}`}>
               {stats.trend >= 0 ? '+' : ''}
               {Math.round(stats.trend)} wpm on your previous ten
             </span>
@@ -143,12 +152,10 @@ export default function Statistics() {
         }
       />
 
-      <Panel className="reveal flex h-[284px] flex-col gap-3.5">
-        <div className="flex items-baseline justify-between">
-          <span className="text-[10px] tracking-[0.2em] text-faint uppercase">
-            Best speed per day
-          </span>
-          <span className="text-[10px] text-signal">peak {Math.round(stats.bestWpm)} wpm</span>
+      <Panel className="reveal flex h-[240px] flex-col gap-3.5 sm:h-[284px]">
+        <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+          <h2 className="text-label tracking-label text-faint uppercase">Best speed per day</h2>
+          <span className="text-meta text-signal">peak {Math.round(stats.bestWpm)} wpm</span>
         </div>
         <AreaChart
           values={series.map((point) => point.wpm)}
@@ -158,13 +165,13 @@ export default function Statistics() {
         />
       </Panel>
 
-      <div className="reveal grid gap-5 lg:grid-cols-2" style={{ animationDelay: '0.1s' }}>
+      <div className="reveal grid gap-grid lg:grid-cols-2" style={{ animationDelay: '0.1s' }}>
         <Panel className="flex h-[208px] flex-col gap-3.5">
-          <div className="flex items-baseline justify-between">
-            <span className="text-[10px] tracking-[0.2em] text-faint uppercase">
+          <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+            <h2 className="text-label tracking-label text-faint uppercase">
               Accuracy, first press
-            </span>
-            <span className="text-[10px] text-muted">
+            </h2>
+            <span className="text-meta text-muted">
               holding near {(stats.recentAccuracy * 100).toFixed(0)}%
             </span>
           </div>
@@ -176,41 +183,42 @@ export default function Statistics() {
           />
         </Panel>
 
-        <Panel className="flex h-[208px] flex-col gap-3.5">
-          <div className="flex items-baseline justify-between">
-            <span className="text-[10px] tracking-[0.2em] text-faint uppercase">
-              Keys that need work
-            </span>
-            <span className="text-[10px] text-muted">miss rate, 12+ presses</span>
+        <Panel className="flex min-h-[208px] flex-col gap-3.5 sm:h-[208px]">
+          <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+            <h2 className="text-label tracking-label text-faint uppercase">Keys that need work</h2>
+            <span className="text-meta text-muted">ranked by misses per 1,000 characters</span>
           </div>
           {trouble.length === 0 ? (
-            <p className="flex flex-1 items-center text-[11px] text-muted">
-              No key has been pressed enough times yet to say anything honest about it.
+            <p className="flex flex-1 items-center text-meta text-muted">
+              No key has cost you anything yet, or not often enough to say so honestly.
             </p>
           ) : (
             <div className="flex flex-1 flex-col justify-between gap-2">
-              {trouble.map((key) => (
-                <Link
-                  key={key.char}
-                  to={weakKeyPath('ladder', [key.char])}
-                  className="group flex items-center gap-3"
-                >
-                  <KeyCap char={key.char} tone={key.errorRate > 0.18 ? 'fault' : 'warn'} small />
-                  <div className="h-2 flex-1 bg-ink-line">
-                    <div
-                      className="h-full"
-                      style={{
-                        width: `${Math.min(100, key.errorRate * 100).toFixed(0)}%`,
-                        background:
-                          key.errorRate > 0.18 ? 'var(--color-fault)' : 'var(--color-amber-soft)',
-                      }}
-                    />
-                  </div>
-                  <span className="w-[34px] text-right text-[10px] text-muted group-hover:text-amber">
-                    {(key.errorRate * 100).toFixed(0)}%
-                  </span>
-                </Link>
-              ))}
+              {trouble.map((key) => {
+                const rate = key.missed / key.pressed
+                return (
+                  <Link
+                    key={key.char}
+                    to={weakKeyPath('ladder', [key.char])}
+                    className="group flex items-center gap-3"
+                  >
+                    <KeyCap char={key.char} tone={rate > 0.18 ? 'fault' : 'warn'} small />
+                    <div className="h-2 flex-1 bg-ink-line">
+                      <div
+                        className="h-full"
+                        style={{
+                          width: `${Math.max(2, (key.expectedMissesPer1000 / costliest) * 100).toFixed(0)}%`,
+                          background:
+                            rate > 0.18 ? 'var(--color-fault)' : 'var(--color-amber-soft)',
+                        }}
+                      />
+                    </div>
+                    <span className="w-[64px] text-right text-meta text-muted group-hover:text-amber">
+                      {(rate * 100).toFixed(0)}% miss
+                    </span>
+                  </Link>
+                )
+              })}
             </div>
           )}
         </Panel>
@@ -218,16 +226,18 @@ export default function Statistics() {
 
       <SpeedTests progress={progress} now={now} />
 
-      <section className="reveal flex flex-col gap-2.5" style={{ animationDelay: '0.2s' }}>
+      <section className="reveal flex flex-col gap-section" style={{ animationDelay: '0.2s' }}>
         <SectionLabel>Track by track</SectionLabel>
         <div className="overflow-x-auto">
-          <div className="min-w-[760px]">
-            <div className="grid grid-cols-[2.4fr_1fr_0.8fr_0.8fr_1fr_1.2fr] gap-3 border-b border-ink-line px-3.5 py-2.5 text-[9px] tracking-[0.16em] text-faint uppercase">
+          <div className="sm:min-w-[760px]">
+            <div
+              className={`grid ${TRACK_COLUMNS} gap-3 border-b border-ink-line px-3.5 py-2.5 text-label tracking-label text-faint uppercase`}
+            >
               <span>Track</span>
-              <span>Last run</span>
-              <span>Runs</span>
+              <span className={WIDE}>Last run</span>
+              <span className={WIDE}>Runs</span>
               <span>Best</span>
-              <span>Avg accuracy</span>
+              <span className={WIDE}>Avg accuracy</span>
               <span>Freshness</span>
             </div>
             {TRACKS.map((track, i) => {
@@ -236,19 +246,21 @@ export default function Statistics() {
               return (
                 <div
                   key={track.id}
-                  className={`grid grid-cols-[2.4fr_1fr_0.8fr_0.8fr_1fr_1.2fr] gap-3 border-b border-ink-raised px-3.5 py-3 text-[11px] ${
+                  className={`grid ${TRACK_COLUMNS} gap-3 border-b border-ink-raised px-3.5 py-3 text-meta ${
                     never ? 'text-ghost' : 'text-parchment'
                   } ${i % 2 === 1 ? 'bg-ink-sunk' : ''}`}
                 >
                   <span className="truncate">{track.title}</span>
-                  <span className={never ? '' : 'text-muted'}>
+                  <span className={`${WIDE} ${never ? '' : 'text-muted'}`}>
                     {relative(standing.lastAt, now)}
                   </span>
-                  <span>{standing.attempts}</span>
+                  <span className={WIDE}>{standing.attempts}</span>
                   <span className={never ? '' : 'font-display font-light text-amber'}>
                     {never ? '—' : Math.round(standing.bestWpm)}
                   </span>
-                  <span>{never ? '—' : `${(standing.averageAccuracy * 100).toFixed(1)}%`}</span>
+                  <span className={WIDE}>
+                    {never ? '—' : `${(standing.averageAccuracy * 100).toFixed(1)}%`}
+                  </span>
                   <span className={never ? '' : stale.has(track.id) ? 'text-fault' : 'text-signal'}>
                     {never ? 'never run' : stale.has(track.id) ? 'due for a pass' : 'fresh'}
                   </span>
@@ -260,11 +272,11 @@ export default function Statistics() {
       </section>
 
       {worstKey !== undefined && (
-        <p className="text-[10px] text-faint">
+        <p className="text-meta text-faint">
           Your weakest key is{' '}
           <span className="text-fault">{worstKey.char === ' ' ? 'space' : worstKey.char}</span>,
-          missed {(worstKey.errorRate * 100).toFixed(0)}% of the {worstKey.pressed} times you have
-          reached for it.
+          missed {((worstKey.missed / worstKey.pressed) * 100).toFixed(0)}% of the{' '}
+          {worstKey.pressed} times you have reached for it.
         </p>
       )}
     </div>

@@ -8,7 +8,8 @@ import { TypingSurface } from '@/components/typing/TypingSurface'
 import { isLongPassage } from '@/lib/passage'
 import { rankForPractice } from '@/engine/practice/ranking'
 import { useResultKeyboardNav } from '@/lib/useResultKeyboardNav'
-import { weakKeyPath } from '@/lib/paths'
+import { drillPath, weakKeyPath } from '@/lib/paths'
+import { BUTTON } from '@/components/ui/button'
 import NotFound from './NotFound'
 
 function Readout({
@@ -24,10 +25,10 @@ function Readout({
 }) {
   return (
     <div className="flex flex-col gap-1.5 bg-ink-sunk px-5 py-4">
-      <span className="text-[9px] tracking-[0.2em] text-faint uppercase">{label}</span>
+      <span className="text-label tracking-label text-faint uppercase">{label}</span>
       <span>
         <span className={`font-display text-2xl font-light ${tone}`}>{value}</span>
-        {unit !== undefined && <span className="ml-1 text-[10px] text-faint">{unit}</span>}
+        {unit !== undefined && <span className="ml-1 text-meta text-faint">{unit}</span>}
       </span>
     </div>
   )
@@ -151,7 +152,7 @@ export default function Drill() {
     <div className={`crt flex flex-col ${long ? 'min-h-dvh sm:h-dvh' : 'min-h-dvh'}`}>
       <a
         href="#drill-main"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[60] focus:bg-amber focus:px-4 focus:py-2 focus:text-[11px] focus:tracking-[0.14em] focus:text-ink focus:uppercase"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[60] focus:bg-amber focus:px-4 focus:py-2 focus:text-label focus:tracking-label focus:text-ink focus:uppercase"
       >
         Skip to typing surface
       </a>
@@ -160,20 +161,30 @@ export default function Drill() {
       </div>
       <header className="relative z-10 flex h-[68px] items-center justify-between gap-4 border-b border-ink-line px-6 md:px-10">
         <div className="flex min-w-0 items-center gap-3.5">
-          <Link to="/" className="font-display text-[15px] font-semibold text-amber">
+          <Link to="/" className="font-display text-logo font-semibold text-amber">
             CODETYPE
           </Link>
           <span className="text-ink-line">/</span>
-          <Link to="/explore" className="truncate text-[11px] text-muted hover:text-parchment">
+          <Link to="/explore" className="truncate text-meta text-muted hover:text-parchment">
             {track.title}
           </Link>
-          <span className="text-ink-line">/</span>
-          <span className="truncate text-[11px] text-parchment">{lesson.title}</span>
+          {/* On a phone the lesson title is the h1 right below; the crumb
+              would only truncate to nothing. */}
+          <span className="hidden text-ink-line sm:inline">/</span>
+          <span className="hidden truncate text-meta text-parchment sm:inline">{lesson.title}</span>
         </div>
-        <div className="hidden shrink-0 items-center gap-4.5 text-[10px] tracking-[0.14em] text-faint uppercase sm:flex">
+        <div className="hidden shrink-0 items-center gap-4.5 text-label tracking-label text-faint uppercase sm:flex">
           <span>Esc to bail</span>
           <span>Alt+R to restart</span>
         </div>
+        {/* An on-screen keyboard has no Alt+R, so a phone gets the button. */}
+        <button
+          type="button"
+          onClick={restart}
+          className="shrink-0 border border-ink-edge px-3 py-2 text-label tracking-label text-parchment uppercase sm:hidden"
+        >
+          Restart
+        </button>
       </header>
 
       <main
@@ -187,17 +198,49 @@ export default function Drill() {
           className="reveal flex flex-col items-center gap-2.5 text-center"
           style={{ animationDelay: '0.05s' }}
         >
-          <span className="text-[10px] tracking-[0.22em] text-faint uppercase">
-            {review ? (
-              <span className="text-amber">
-                Review · {coveredLessons(track, lesson).length} concepts
-              </span>
-            ) : (
-              <>
-                Lesson {lessonIndex + 1} of {conceptTotal}
-              </>
-            )}
-          </span>
+          {/* Every lesson in the track, so any of them is one click away rather
+              than only reachable by typing through the ones before it. Each
+              opens at its first drill not yet typed. Reviews keep their
+              word instead of a number — 01 02 03 04 05 REVIEW. */}
+          <nav
+            aria-label="Lessons in this track"
+            className="flex flex-wrap items-center justify-center gap-x-1 gap-y-1.5 text-label tracking-section text-faint uppercase"
+          >
+            <span className="mr-2">
+              {review ? (
+                <span className="text-amber">
+                  Review · {coveredLessons(track, lesson).length} concepts
+                </span>
+              ) : (
+                <span className="sr-only">
+                  Lesson {lessonIndex + 1} of {conceptTotal}.{' '}
+                </span>
+              )}
+              {!review && <span aria-hidden="true">Lesson</span>}
+            </span>
+            {track.lessons.map((other) => {
+              const here = other.id === lesson.id
+              const numbered = track.lessons.filter((l) => !isReview(l)).indexOf(other)
+              const target =
+                other.drills.find((candidate) => !completed.has(candidate.id)) ?? other.drills[0]
+              return (
+                <Link
+                  key={other.id}
+                  to={drillPath(track.id, target?.id)}
+                  aria-current={here ? 'page' : undefined}
+                  title={other.title}
+                  aria-label={
+                    isReview(other) ? other.title : `Lesson ${numbered + 1}: ${other.title}`
+                  }
+                  className={`px-1.5 py-1 tracking-label ${
+                    here ? 'text-amber' : 'text-ghost hover:text-parchment'
+                  }`}
+                >
+                  {isReview(other) ? 'Review' : String(numbered + 1).padStart(2, '0')}
+                </Link>
+              )
+            })}
+          </nav>
           <h1 className="font-display text-xl font-light text-parchment md:text-2xl">
             {lesson.title}
           </h1>
@@ -206,7 +249,7 @@ export default function Drill() {
               more specific thing. A review is the exception: its concept is
               the only place the whole project is described. */}
           {(review || drill.brief === undefined) && (
-            <p className="max-w-xl text-xs leading-relaxed text-muted">{lesson.concept}</p>
+            <p className="max-w-xl text-body leading-relaxed text-muted">{lesson.concept}</p>
           )}
         </div>
 
@@ -214,7 +257,7 @@ export default function Drill() {
           className="reveal mt-6 flex flex-wrap items-center justify-center gap-2.5"
           style={{ animationDelay: '0.14s' }}
         >
-          <span className="mr-1.5 text-[10px] tracking-[0.18em] text-faint uppercase">
+          <span className="mr-1.5 text-label tracking-label text-faint uppercase">
             {review ? 'Stages' : 'Variants'}
           </span>
           {lesson.drills.map((sibling) => {
@@ -231,7 +274,7 @@ export default function Drill() {
                 {closer && <span className="mx-0.5 h-px w-5 bg-ink-line" aria-hidden="true" />}
                 <Link to={`/drill/${track.id}/${sibling.id}`}>
                   <span
-                    className={`block px-3 py-1.5 text-[10px] ${
+                    className={`block px-3 py-1.5 text-meta ${
                       isCurrent
                         ? 'bg-amber text-ink shadow-[0_0_14px_rgba(255,176,0,0.35)]'
                         : done
@@ -242,9 +285,7 @@ export default function Drill() {
                     }`}
                   >
                     {closer && (
-                      <span className="mr-1.5 text-[8px] tracking-[0.16em] uppercase">
-                        Capstone
-                      </span>
+                      <span className="mr-1.5 text-label tracking-label uppercase">Capstone</span>
                     )}
                     {sibling.label}
                   </span>
@@ -259,10 +300,10 @@ export default function Drill() {
             className="reveal mt-6 w-full border-l-2 border-amber-soft/40 bg-ink-sunk px-5 py-3.5"
             style={{ animationDelay: '0.18s' }}
           >
-            <span className="text-[9px] tracking-[0.2em] text-amber-soft uppercase">
+            <span className="text-label tracking-label text-amber-soft uppercase">
               {review ? `The brief · ${drill.label}` : 'The brief'}
             </span>
-            <p className="mt-2 text-[11px] leading-relaxed text-muted">{drill.brief}</p>
+            <p className="mt-2 text-body leading-relaxed text-muted">{drill.brief}</p>
           </div>
         )}
 
@@ -295,7 +336,7 @@ export default function Drill() {
         </div>
 
         {drill.note !== undefined && !finished && (
-          <p className="mt-5 max-w-xl text-center text-[11px] leading-relaxed text-faint">
+          <p className="mt-5 max-w-xl text-center text-body leading-relaxed text-faint">
             {drill.note}
           </p>
         )}
@@ -308,31 +349,27 @@ export default function Drill() {
             <div className="flex flex-wrap items-baseline gap-7">
               <span>
                 <span className="font-display text-4xl font-light text-amber">{metrics.wpm}</span>
-                <span className="ml-1.5 text-[10px] text-faint">wpm</span>
+                <span className="ml-1.5 text-meta text-faint">wpm</span>
               </span>
               <span>
                 <span className="font-display text-2xl font-light text-signal">
                   {(metrics.accuracy * 100).toFixed(1)}
                 </span>
-                <span className="ml-1 text-[10px] text-faint">% accurate</span>
+                <span className="ml-1 text-meta text-faint">% accurate</span>
               </span>
               {metrics.errors > 0 && (
-                <span className="text-[11px] text-fault">
+                <span className="text-meta text-fault">
                   {metrics.errors} {metrics.errors === 1 ? 'miss' : 'misses'}
                 </span>
               )}
             </div>
             <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={restart}
-                className="border border-ink-edge px-4 py-2 text-[10px] tracking-[0.18em] text-parchment uppercase hover:border-amber hover:text-amber"
-              >
+              <button type="button" onClick={restart} className={BUTTON.secondary}>
                 Again · R
               </button>
               <Link
                 to={next === undefined ? '/' : `/drill/${track.id}/${next.drill.id}`}
-                className="bg-amber px-4 py-2 text-[10px] tracking-[0.18em] text-ink uppercase hover:bg-amber-soft"
+                className={BUTTON.primary}
               >
                 {next === undefined ? 'Track complete' : 'Next variant · Enter'}
               </Link>
@@ -345,7 +382,7 @@ export default function Drill() {
             const worst = rankForPractice(state.keyLedger, 1)[0]
             if (worst === undefined || worst.missed === 0) return null
             return (
-              <p className="reveal mt-3 w-full text-center text-[11px] text-faint">
+              <p className="reveal mt-3 w-full text-center text-meta text-faint">
                 <Link to={weakKeyPath('ladder')} className="text-amber hover:text-amber-soft">
                   Practice weak keys
                 </Link>{' '}
@@ -373,7 +410,7 @@ export default function Drill() {
               tone={metrics.errors > 0 ? 'text-fault' : 'text-ghost'}
             />
             <div className="flex flex-col justify-center gap-2.5 bg-ink-sunk px-5 py-4">
-              <span className="text-[9px] tracking-[0.2em] text-faint uppercase">
+              <span className="text-label tracking-label text-faint uppercase">
                 Passage {current.position + 1} of {current.total}
               </span>
               <div className="h-1 bg-ink-line">

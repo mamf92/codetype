@@ -21,6 +21,7 @@ import { bestGames, lifetimeLedger } from '@/store/progress'
 import { recordGame, useProgress } from '@/store/useProgress'
 import { FocusHeader } from '@/components/layout/FocusHeader'
 import { KeyCap } from '@/components/ui/primitives'
+import { BUTTON } from '@/components/ui/button'
 import { BASICS_PATH } from '@/lib/paths'
 
 const KINDS: GlyphKind[] = ['lower', 'upper', 'digit', 'symbol', 'token']
@@ -84,7 +85,7 @@ function Lives({ lives }: { lives: number }) {
 
 function ScoreTable() {
   return (
-    <table className="w-full max-w-xs text-left text-[11px]">
+    <table className="w-full max-w-xs text-left text-meta">
       <tbody>
         {KINDS.map((kind) => (
           <tr key={kind} className="border-b border-ink-line last:border-b-0">
@@ -103,10 +104,8 @@ function ScoreTable() {
   )
 }
 
-const buttonPrimary =
-  'bg-amber px-4 py-2 text-[10px] tracking-[0.18em] text-ink uppercase hover:bg-amber-soft'
-const buttonQuiet =
-  'border border-ink-edge px-4 py-2 text-[10px] tracking-[0.18em] text-parchment uppercase hover:border-amber hover:text-amber'
+const buttonPrimary = BUTTON.primary
+const buttonQuiet = BUTTON.secondary
 
 /**
  * Keyfall: characters fall, you type them before they land. The rules live
@@ -258,17 +257,17 @@ export default function Keyfall() {
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div className="flex items-baseline gap-6">
             <span>
-              <span className="block text-[9px] tracking-[0.2em] text-faint uppercase">Score</span>
+              <span className="block text-label tracking-label text-faint uppercase">Score</span>
               <span className="font-display text-3xl font-light text-amber tabular-nums">
                 {state.score}
               </span>
             </span>
             <span>
-              <span className="block text-[9px] tracking-[0.2em] text-faint uppercase">Level</span>
+              <span className="block text-label tracking-label text-faint uppercase">Level</span>
               <span className="font-display text-xl font-light text-parchment">{level}</span>
             </span>
             <span className="hidden sm:block">
-              <span className="block text-[9px] tracking-[0.2em] text-faint uppercase">Best</span>
+              <span className="block text-label tracking-label text-faint uppercase">Best</span>
               <span className="font-display text-xl font-light text-muted">
                 {Math.max(leaders[0]?.score ?? 0, state.score)}
               </span>
@@ -277,7 +276,7 @@ export default function Keyfall() {
           <div className="flex flex-col items-end gap-2">
             <Lives lives={state.lives} />
             {state.status === 'running' && nextUnlock !== undefined && (
-              <span className="text-[9px] tracking-[0.16em] text-faint uppercase">
+              <span className="text-label tracking-label text-faint uppercase">
                 {GLYPH_LABELS[nextUnlock]}s at level {UNLOCKS_AT[nextUnlock]}
               </span>
             )}
@@ -332,16 +331,16 @@ export default function Keyfall() {
             <div className="absolute inset-0 flex items-center justify-center overflow-y-auto bg-ink/80 p-6 backdrop-blur-[1px]">
               {state.status === 'ready' && (
                 <div className="reveal flex max-w-md flex-col items-center gap-5 text-center">
-                  <h2 className="font-display text-3xl font-light tracking-[0.08em] text-amber">
+                  <h2 className="font-display text-3xl font-light tracking-display text-amber">
                     KEYFALL
                   </h2>
-                  <p className="text-[11px] leading-relaxed text-muted">
+                  <p className="text-body leading-relaxed text-muted">
                     Type each character before it hits the ground. Three lives. Every ten hits the
                     fall gets faster and a new kind of key joins in.
                   </p>
                   <ScoreTable />
                   {weakKeys.length > 0 && (
-                    <label className="flex cursor-pointer items-center gap-2.5 text-[11px] text-muted">
+                    <label className="flex cursor-pointer items-center gap-2.5 text-meta text-muted">
                       <input
                         type="checkbox"
                         checked={useWeakKeys}
@@ -359,7 +358,7 @@ export default function Keyfall() {
                   <button type="button" onClick={start} className={buttonPrimary}>
                     Start · Enter
                   </button>
-                  <p className="text-[10px] text-faint sm:hidden">
+                  <p className="text-meta text-faint sm:hidden">
                     Keyfall needs a physical keyboard.
                   </p>
                 </div>
@@ -388,14 +387,14 @@ export default function Keyfall() {
                     <span className="font-display text-5xl font-light text-amber">
                       {state.score}
                     </span>
-                    <span className="text-[11px] text-faint">points</span>
+                    <span className="text-meta text-faint">points</span>
                   </div>
                   {newBest && (
-                    <span className="border border-signal-line px-3 py-1 text-[10px] tracking-[0.18em] text-signal uppercase">
+                    <span className="border border-signal-line px-3 py-1 text-label tracking-label text-signal uppercase">
                       New best
                     </span>
                   )}
-                  <dl className="grid grid-cols-2 gap-x-8 gap-y-1.5 text-[11px] sm:grid-cols-4">
+                  <dl className="grid grid-cols-2 gap-x-8 gap-y-1.5 text-meta sm:grid-cols-4">
                     {[
                       ['Level', level],
                       ['Hits', state.hits],
@@ -403,14 +402,12 @@ export default function Keyfall() {
                       ['Accuracy', `${(keyfallAccuracy(state) * 100).toFixed(0)}%`],
                     ].map(([label, value]) => (
                       <div key={label} className="flex flex-col">
-                        <dt className="text-[9px] tracking-[0.18em] text-faint uppercase">
-                          {label}
-                        </dt>
+                        <dt className="text-label tracking-label text-faint uppercase">{label}</dt>
                         <dd className="font-display text-lg font-light text-parchment">{value}</dd>
                       </div>
                     ))}
                   </dl>
-                  <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-[10px] text-muted">
+                  <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-meta text-muted">
                     {KINDS.filter((kind) => state.pointsBy[kind] > 0).map((kind) => (
                       <span key={kind}>
                         {GLYPH_LABELS[kind]}s {state.pointsBy[kind]}

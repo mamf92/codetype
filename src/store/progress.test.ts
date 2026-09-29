@@ -9,10 +9,12 @@ import {
   lifetimeLedger,
   practiceSummary,
   readProgress,
+  resumePoint,
   speedTestStanding,
   stageStanding,
 } from './progress'
 import type { GameRecord, SessionRecord } from './progress'
+import type { Track } from '@/content/schema'
 
 const baseSession = (over: Partial<SessionRecord> = {}): SessionRecord => ({
   id: over.id ?? 'id',
@@ -202,5 +204,63 @@ describe('readProgress', () => {
       games: [game(), { ...game(), score: 'lots' }, null, { game: 'pong' }],
     })
     expect(readProgress().games).toEqual([game()])
+  })
+})
+
+describe('resumePoint', () => {
+  const drill = (id: string) => ({ id, label: id, code: 'x', grammar: 'typescript' as const })
+  const track = (id: string, lessons: string[][]): Track => ({
+    id,
+    kind: 'course',
+    language: 'typescript',
+    title: id,
+    blurb: '',
+    level: 'working',
+    tags: [],
+    freshnessDays: 30,
+    lessons: lessons.map((drills, i) => ({
+      id: `${id}-l${i}`,
+      title: `${id} lesson ${i}`,
+      summary: '',
+      concept: '',
+      drills: drills.map(drill),
+    })),
+  })
+  const a = track('a', [['a1', 'a2'], ['a3']])
+  const b = track('b', [['b1']])
+  const done = (trackId: string, drillId: string, at: number) =>
+    baseSession({ id: drillId, trackId, drillId, at })
+  const doc = (...sessions: SessionRecord[]) => ({ ...emptyProgress(), sessions })
+
+  it('starts at the very first drill when nothing has been typed', () => {
+    const point = resumePoint(doc(), [a, b])
+    expect(point?.drill.id).toBe('a1')
+    expect(point?.fresh).toBe(true)
+  })
+
+  it('continues the most recently touched track at its first undone drill', () => {
+    const point = resumePoint(doc(done('a', 'a1', 1), done('b', 'b1', 2), done('a', 'a2', 3)), [
+      a,
+      b,
+    ])
+    expect(point?.track.id).toBe('a')
+    expect(point?.lesson.id).toBe('a-l1')
+    expect(point?.drill.id).toBe('a3')
+    expect(point?.fresh).toBe(false)
+  })
+
+  it('moves on when the latest track is finished', () => {
+    const point = resumePoint(doc(done('a', 'a1', 1), done('b', 'b1', 2)), [a, b])
+    expect(point?.drill.id).toBe('a2')
+  })
+
+  it('ignores practice and speed test runs', () => {
+    const practice = { ...done('b', 'b1', 5), kind: 'practice' as const }
+    expect(resumePoint(doc(done('a', 'a1', 1), practice), [a, b])?.drill.id).toBe('a2')
+  })
+
+  it('is undefined once everything has been typed', () => {
+    const all = ['a1', 'a2', 'a3'].map((id, i) => done('a', id, i)).concat(done('b', 'b1', 9))
+    expect(resumePoint(doc(...all), [a, b])).toBeUndefined()
   })
 })

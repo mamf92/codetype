@@ -24,6 +24,7 @@ import { BASICS_PATH } from '@/lib/paths'
 import { FocusHeader } from '@/components/layout/FocusHeader'
 import { TypingSurface } from '@/components/typing/TypingSurface'
 import { KeyCap, Meter } from '@/components/ui/primitives'
+import { BUTTON } from '@/components/ui/button'
 
 /** How often the clock on screen refreshes, and the deadline is checked. */
 const TICK_MS = 100
@@ -31,10 +32,8 @@ const TICK_MS = 100
 /** Under this long left, the countdown turns red. */
 const HURRY_MS = 10_000
 
-const primary =
-  'bg-amber px-4 py-2 text-[10px] tracking-[0.18em] text-ink uppercase hover:bg-amber-soft'
-const quiet =
-  'border border-ink-edge px-4 py-2 text-[10px] tracking-[0.18em] text-parchment uppercase hover:border-amber hover:text-amber'
+const primary = BUTTON.primary
+const quiet = BUTTON.secondary
 
 export default function SpeedTest() {
   const { testId } = useParams()
@@ -191,13 +190,13 @@ function SpeedTestRunner({ test }: { test: SpeedTestContent }) {
         </div>
         <main className="relative z-10 mx-auto flex w-full max-w-[860px] flex-1 flex-col justify-center gap-6 px-6 py-10 md:px-10">
           <div className="reveal flex flex-col gap-2.5">
-            <span className="text-[10px] tracking-[0.22em] text-faint uppercase">{eyebrow}</span>
+            <span className="text-label tracking-section text-faint uppercase">{eyebrow}</span>
             <div className="flex flex-wrap items-center gap-4">
               <h1 className="font-display text-2xl font-light text-parchment md:text-3xl">
                 {test.title}
               </h1>
               {best && (
-                <span className="border border-signal-line px-3 py-1 text-[10px] tracking-[0.18em] text-signal uppercase">
+                <span className="border border-signal-line px-3 py-1 text-label tracking-label text-signal uppercase">
                   {previous === null ? 'First on record' : 'New best'}
                 </span>
               )}
@@ -228,15 +227,13 @@ function SpeedTestRunner({ test }: { test: SpeedTestContent }) {
               },
             ].map((tile) => (
               <div key={tile.label} className="flex flex-col gap-1.5 bg-ink-sunk px-5 py-4">
-                <span className="text-[9px] tracking-[0.2em] text-faint uppercase">
-                  {tile.label}
-                </span>
+                <span className="text-label tracking-label text-faint uppercase">{tile.label}</span>
                 <span>
                   <span className={`font-display text-3xl font-light ${tile.tone}`}>
                     {tile.value}
                   </span>
                   {tile.unit !== undefined && (
-                    <span className="ml-1 text-[10px] text-faint">{tile.unit}</span>
+                    <span className="ml-1 text-meta text-faint">{tile.unit}</span>
                   )}
                 </span>
               </div>
@@ -244,7 +241,7 @@ function SpeedTestRunner({ test }: { test: SpeedTestContent }) {
           </div>
 
           <div
-            className="reveal flex flex-col gap-1.5 text-[11px] text-muted"
+            className="reveal flex flex-col gap-1.5 text-meta text-muted"
             style={{ animationDelay: '0.1s' }}
           >
             {previous !== null && (
@@ -266,7 +263,7 @@ function SpeedTestRunner({ test }: { test: SpeedTestContent }) {
           </div>
 
           <section className="reveal flex flex-col gap-2.5" style={{ animationDelay: '0.14s' }}>
-            <span className="text-[10px] tracking-[0.18em] text-faint uppercase">
+            <span className="text-label tracking-label text-faint uppercase">
               {missed.length === 0 ? 'No key missed this run' : 'Missed this run'}
             </span>
             {missed.length > 0 && (
@@ -299,7 +296,7 @@ function SpeedTestRunner({ test }: { test: SpeedTestContent }) {
     <div className="crt flex min-h-dvh flex-col">
       <a
         href="#speed-main"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[60] focus:bg-amber focus:px-4 focus:py-2 focus:text-[11px] focus:tracking-[0.14em] focus:text-ink focus:uppercase"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[60] focus:bg-amber focus:px-4 focus:py-2 focus:text-label focus:tracking-label focus:text-ink focus:uppercase"
       >
         Skip to typing surface
       </a>
@@ -311,11 +308,11 @@ function SpeedTestRunner({ test }: { test: SpeedTestContent }) {
         className="relative z-10 mx-auto flex w-full max-w-[1040px] flex-1 flex-col items-center justify-center px-6 py-10 md:px-10 focus:outline-none"
       >
         <div className="reveal flex flex-col items-center gap-2.5 text-center">
-          <span className="text-[10px] tracking-[0.22em] text-faint uppercase">{eyebrow}</span>
+          <span className="text-label tracking-section text-faint uppercase">{eyebrow}</span>
           <h1 className="font-display text-xl font-light text-parchment md:text-2xl">
             {test.title}
           </h1>
-          <p className="max-w-xl text-xs leading-relaxed text-muted">{test.summary}</p>
+          <p className="max-w-xl text-body leading-relaxed text-muted">{test.summary}</p>
         </div>
 
         <div
@@ -324,7 +321,7 @@ function SpeedTestRunner({ test }: { test: SpeedTestContent }) {
         >
           <div className="flex items-end justify-between gap-6">
             <span>
-              <span className="block text-[9px] tracking-[0.2em] text-faint uppercase">
+              <span className="block text-label tracking-label text-faint uppercase">
                 {remaining === null ? 'Time' : 'Left'}
               </span>
               <span
@@ -337,13 +334,13 @@ function SpeedTestRunner({ test }: { test: SpeedTestContent }) {
             </span>
             <span className="flex gap-6 text-right">
               <span>
-                <span className="block text-[9px] tracking-[0.2em] text-faint uppercase">wpm</span>
+                <span className="block text-label tracking-label text-faint uppercase">wpm</span>
                 <span className="font-display text-xl font-light text-parchment tabular-nums">
                   {metrics.wpm}
                 </span>
               </span>
               <span>
-                <span className="block text-[9px] tracking-[0.2em] text-faint uppercase">
+                <span className="block text-label tracking-label text-faint uppercase">
                   Accuracy
                 </span>
                 <span className="font-display text-xl font-light text-parchment tabular-nums">
@@ -370,7 +367,7 @@ function SpeedTestRunner({ test }: { test: SpeedTestContent }) {
           />
         </div>
 
-        <p className="mt-6 text-[10px] text-faint">
+        <p className="mt-6 text-meta text-faint">
           {state.startedAt === null
             ? 'The clock starts on your first key.'
             : sprint

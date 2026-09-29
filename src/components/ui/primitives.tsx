@@ -18,13 +18,17 @@ export function Panel({
   return <div className={`panel p-5 ${edge} ${className}`}>{children}</div>
 }
 
-/** A section heading with the rule that runs out to the edge of the column. */
+/**
+ * A section heading with the rule that runs out to the edge of the column.
+ * It is the page's `h2`: every page opens on an `h1` and every card title is
+ * an `h3`, so a screen reader's heading list has the same shape as the page.
+ */
 export function SectionLabel({ children }: { children: ReactNode }) {
   return (
-    <div className="flex items-center gap-3 text-[10px] tracking-[0.22em] text-faint uppercase">
+    <h2 className="flex items-center gap-3 text-label font-normal tracking-section text-faint uppercase">
       {children}
-      <span className="h-px flex-1 bg-ink-line" />
-    </div>
+      <span className="h-px flex-1 bg-ink-line" aria-hidden="true" />
+    </h2>
   )
 }
 
@@ -42,7 +46,7 @@ export function Chip({
     fault: 'border border-fault-line text-fault',
     absent: 'border border-dashed border-ink-line text-ghost',
   }
-  return <span className={`px-3 py-1.5 text-[10px] ${tones[tone]}`}>{children}</span>
+  return <span className={`px-3 py-1.5 text-meta ${tones[tone]}`}>{children}</span>
 }
 
 export function KeyCap({
@@ -59,7 +63,7 @@ export function KeyCap({
     fault: 'text-fault border-fault-line',
     warn: 'text-amber-soft border-ink-edge',
   }
-  const size = small ? 'w-[26px] h-6 text-xs' : 'w-9 h-[38px] text-[13px]'
+  const size = small ? 'w-[26px] h-6 text-body' : 'w-9 h-[38px] text-glyph'
   return (
     <span
       className={`flex items-center justify-center rounded-[3px] border bg-gradient-to-b from-ink-raised to-ink-sunk ${tones[tone]} ${size}`}
@@ -88,14 +92,17 @@ export function StatTile({
   return (
     // A floor, not a fixed height, so a row of tiles stretches to match
     // whatever sits beside it (the key panel on Home) instead of ending short.
-    <Panel className="flex h-full min-h-[152px] flex-col justify-between">
-      <div className="text-[10px] tracking-[0.18em] text-faint uppercase">{label}</div>
+    // Two to a row on a phone, so the number and padding step down there.
+    <Panel className="flex h-full min-h-[120px] flex-col justify-between gap-2 p-4! sm:min-h-[152px] sm:gap-0 sm:p-5!">
+      <div className="text-label tracking-label text-faint uppercase">{label}</div>
       <div className="flex items-baseline gap-1.5">
-        <span className="font-display text-[40px] leading-none font-light text-amber">{value}</span>
-        {unit !== undefined && <span className="text-[11px] text-faint">{unit}</span>}
+        <span className="font-display text-3xl leading-none font-light text-amber sm:text-figure">
+          {value}
+        </span>
+        {unit !== undefined && <span className="text-meta text-faint">{unit}</span>}
       </div>
       {children}
-      {footer !== undefined && <div className="text-[10px]">{footer}</div>}
+      {footer !== undefined && <div className="text-meta">{footer}</div>}
     </Panel>
   )
 }
@@ -159,7 +166,7 @@ export function Meter({
 export function Empty({ children }: { children: ReactNode }) {
   return (
     <Panel className="flex min-h-[152px] items-center justify-center">
-      <p className="max-w-sm text-center text-[11px] leading-relaxed text-muted">{children}</p>
+      <p className="max-w-sm text-center text-body leading-relaxed text-muted">{children}</p>
     </Panel>
   )
 }
