@@ -67,10 +67,7 @@ function useCaretPosition(
       }
       const box = text.getBoundingClientRect()
       const cell = target.getBoundingClientRect()
-      // The line-break marker is spaced off its line by a margin, and the
-      // caret belongs at the end of the line, not beside the marker.
-      const gap = parseFloat(getComputedStyle(target).marginLeft) || 0
-      const x = (at === null ? cell.right : cell.left - gap) - box.left
+      const x = (at === null ? cell.right : cell.left) - box.left
       const y = cell.top + cell.height / 2 - box.top
       caret.style.transform = `translate(${x}px, ${y}px)`
       caret.style.visibility = 'visible'
@@ -115,13 +112,13 @@ function Return({ index, lit, typed }: { index: number; lit: boolean; typed: boo
   // Typed: the colour typed punctuation takes, since that is what it is.
   const colour = lit ? 'var(--color-amber)' : typed ? 'var(--color-muted)' : PENDING
   return (
-    <span
-      aria-hidden="true"
-      data-cell={index}
-      className="ml-[0.4em] text-[0.7em] select-none"
-      style={{ color: colour }}
-    >
-      ⏎
+    // The outer span is set in the passage's own size, so the caret measures
+    // the same row height here as on any character; the margin sits inside
+    // it, so the caret lands at the end of the line, not beside the marker.
+    <span aria-hidden="true" data-cell={index} className="select-none">
+      <span className="ml-[0.4em] text-[0.7em]" style={{ color: colour }}>
+        ⏎
+      </span>
     </span>
   )
 }
