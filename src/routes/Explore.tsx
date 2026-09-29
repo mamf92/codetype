@@ -21,7 +21,7 @@ const LANGUAGE_IDS = Object.keys(LANGUAGES) as LanguageId[]
 function FilterRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-wrap items-center gap-2.5">
-      <span className="w-[78px] shrink-0 text-[9px] tracking-[0.2em] text-faint uppercase">
+      <span className="w-[78px] shrink-0 text-label tracking-label text-faint uppercase">
         {label}
       </span>
       {children}
@@ -51,12 +51,12 @@ export default function Explore() {
   const capstones = TRACKS.reduce((sum, track) => sum + capstoneCount(track), 0)
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-page">
       <PageHead
         title="Everything typeable"
         blurb={`${TRACKS.length} tracks, ${lessons} lessons, ${drills} passages, ${capstones} of them capstones. Every lesson says one thing several ways and then puts it to work in a real codebase, because that is the only way it sticks.`}
         aside={
-          <span className="text-[10px] tracking-[0.2em] text-faint uppercase">
+          <span className="text-label tracking-label text-faint uppercase">
             {visible.length} of {TRACKS.length} shown
           </span>
         }
@@ -116,12 +116,12 @@ export default function Explore() {
 
       <h2 className="sr-only">Tracks</h2>
       {visible.length === 0 ? (
-        <p className="reveal py-16 text-center text-[11px] text-muted">
+        <p className="reveal py-16 text-center text-meta text-muted">
           Nothing matches that combination yet.
         </p>
       ) : (
         <div
-          className="reveal grid gap-5 md:grid-cols-2 xl:grid-cols-3"
+          className="reveal grid gap-grid md:grid-cols-2 xl:grid-cols-3"
           style={{ animationDelay: '0.2s' }}
         >
           {visible.map((track) => (

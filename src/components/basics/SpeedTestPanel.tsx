@@ -28,7 +28,7 @@ export function SpeedTestPanel({ standings }: { standings: Record<string, SpeedT
             <h3 className="font-display text-base font-light text-parchment">
               {SPEED_GROUP_TITLES[group]}
             </h3>
-            <p className="text-[11px] leading-relaxed text-muted">{blurb}</p>
+            <p className="text-body leading-relaxed text-muted">{blurb}</p>
           </div>
           <ul className="flex flex-col">
             {SPEED_TESTS.filter((test) => test.group === group).map((test) => {
@@ -37,14 +37,14 @@ export function SpeedTestPanel({ standings }: { standings: Record<string, SpeedT
                 <li key={test.id} className="border-b border-ink-line last:border-b-0">
                   <Link
                     to={speedTestPath(test.id)}
-                    className="group flex items-baseline gap-3 py-2 text-[11px]"
+                    className="group flex items-baseline gap-3 py-2 text-meta"
                   >
                     <span className="flex-1 text-parchment group-hover:text-amber">
                       {test.title}
                     </span>
-                    <span className="text-[10px] text-faint">{testLength(test)}</span>
+                    <span className="text-meta text-faint">{testLength(test)}</span>
                     <span
-                      className={`w-[82px] text-right text-[10px] tabular-nums ${
+                      className={`w-[82px] text-right text-meta tabular-nums ${
                         best === null ? 'text-ghost' : 'text-amber'
                       }`}
                     >

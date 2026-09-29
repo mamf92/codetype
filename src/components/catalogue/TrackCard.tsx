@@ -51,20 +51,20 @@ export function TrackCard({
         <div className="flex flex-col gap-3">
           <div className="flex items-center justify-between gap-3">
             <span
-              className={`text-[9px] tracking-[0.2em] uppercase ${isDispatch ? 'text-amber' : 'text-faint'}`}
+              className={`text-label tracking-label uppercase ${isDispatch ? 'text-amber' : 'text-faint'}`}
             >
               {isDispatch ? 'Dispatch' : 'Course'} · {track.level}
             </span>
             {isDispatch && track.publishedAt !== undefined ? (
-              <span className="text-[10px] text-faint">{track.publishedAt}</span>
+              <span className="text-meta text-faint">{track.publishedAt}</span>
             ) : (
-              <span className="font-display text-[13px] font-extralight text-ink-edge">
+              <span className="font-display text-glyph font-extralight text-ink-edge">
                 {LANGUAGES[track.language].short}
               </span>
             )}
           </div>
 
-          <h3 className="font-display text-[17px] leading-snug text-parchment group-hover:text-amber-soft">
+          <h3 className="font-display text-title leading-snug text-parchment group-hover:text-amber-soft">
             <Link
               to={drillPath(track.id)}
               className="after:absolute after:inset-0 after:content-[''] focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:outline-amber"
@@ -74,7 +74,7 @@ export function TrackCard({
           </h3>
 
           {showLessons ? (
-            <ol className="flex flex-col gap-1.5 text-[10px] text-muted">
+            <ol className="flex flex-col gap-1.5 text-meta text-muted">
               {/* Reviews sit outside the numbering rather than continuing it:
                   the sequence a learner sees is 01 02 03 04 05 REVIEW, and a
                   review numbered 06 would read as a sixth concept. */}
@@ -96,7 +96,7 @@ export function TrackCard({
               })}
             </ol>
           ) : (
-            <p className="text-[11px] leading-relaxed text-muted">{track.blurb}</p>
+            <p className="text-body leading-relaxed text-muted">{track.blurb}</p>
           )}
         </div>
 
@@ -104,7 +104,7 @@ export function TrackCard({
           {standing.attempts > 0 && (
             <Meter fraction={standing.drillsTouched / Math.max(1, drillCount(track))} />
           )}
-          <div className="flex items-center justify-between text-[10px]">
+          <div className="flex items-center justify-between text-meta">
             <span className="text-faint">
               {track.lessons.length} lessons · {drillCount(track)} drills · {capstoneCount(track)}{' '}
               capstones

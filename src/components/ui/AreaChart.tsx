@@ -19,7 +19,7 @@ export function AreaChart({
 }) {
   if (values.length < 2) {
     return (
-      <div className="flex h-full items-center justify-center text-[11px] text-muted">
+      <div className="flex h-full items-center justify-center text-meta text-muted">
         Two days of history and this becomes a shape worth reading.
       </div>
     )
@@ -38,7 +38,7 @@ export function AreaChart({
   return (
     <div className="flex h-full flex-col gap-2">
       <div className="flex min-h-0 flex-1 gap-3.5">
-        <div className="flex flex-col justify-between py-0.5 text-[9px] text-ghost">
+        <div className="flex flex-col justify-between py-0.5 text-meta leading-none text-ghost">
           <span>{Math.round(high)}</span>
           <span>{Math.round((high + low) / 2)}</span>
           <span>{Math.round(low)}</span>
@@ -81,7 +81,7 @@ export function AreaChart({
         </svg>
       </div>
       {labels !== undefined && labels.length > 0 && (
-        <div className="flex justify-between pl-8 text-[9px] text-ghost">
+        <div className="flex justify-between pl-8 text-meta leading-none text-ghost">
           {labels.map((label, i) => (
             <span key={`${label}-${i}`}>{label}</span>
           ))}

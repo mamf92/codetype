@@ -15,6 +15,7 @@ import {
 } from '@/engine/practice/weakKeys'
 import { PracticeRunner } from '@/components/practice/PracticeRunner'
 import { KeyCap } from '@/components/ui/primitives'
+import { BUTTON } from '@/components/ui/button'
 import { BASICS_PATH } from '@/lib/paths'
 
 export default function WeakKeyPractice() {
@@ -51,21 +52,15 @@ export default function WeakKeyPractice() {
     return (
       <div className="crt flex min-h-dvh flex-col items-center justify-center gap-5 px-6 text-center">
         <h1 className="font-display text-xl font-light text-parchment">Nothing to practice yet</h1>
-        <p className="max-w-sm text-[11px] leading-relaxed text-muted">
+        <p className="max-w-sm text-body leading-relaxed text-muted">
           Weak keys are found from real drills. Type a few passages and the keys giving you trouble
           will show up here — or warm up on a key track in the meantime.
         </p>
         <div className="flex gap-3">
-          <Link
-            to={BASICS_PATH}
-            className="border border-ink-edge px-4 py-2 text-[10px] tracking-[0.18em] text-parchment uppercase hover:border-amber hover:text-amber"
-          >
+          <Link to={BASICS_PATH} className={BUTTON.secondary}>
             Back to Basics
           </Link>
-          <Link
-            to="/explore"
-            className="bg-amber px-4 py-2 text-[10px] tracking-[0.18em] text-ink uppercase hover:bg-amber-soft"
-          >
+          <Link to="/explore" className={BUTTON.primary}>
             Find a drill
           </Link>
         </div>
