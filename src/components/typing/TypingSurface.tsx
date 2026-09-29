@@ -20,12 +20,24 @@ const SCROLL_MARGIN_LINES = 2
  */
 const WRAP_INDENT = '1.6em'
 
+/**
+ * The caret is drawn out of flow, hung off an empty inline anchor, and must
+ * stay that way. An `inline-block` caret is an atomic inline, and the line
+ * breaker treats every atomic inline as a place a row may break. A wrapped
+ * word would then break at the caret as it passed through: the characters
+ * already typed jumping back up to the row above, one per keystroke, until
+ * the word left the caret behind and the whole of it fell back down. An empty
+ * inline offers no break opportunity, so rows wrap where they first wrapped
+ * and stay there, the way a narrow editor's do.
+ */
 function Caret() {
   return (
-    <span
-      className="caret -mx-[1.5px] inline-block w-[3px] bg-amber align-[-0.22em]"
-      style={{ height: '1.25em' }}
-    />
+    <span className="relative">
+      <span
+        className="caret absolute top-1/2 left-[-1.5px] w-[3px] -translate-y-1/2 bg-amber"
+        style={{ height: '1.25em' }}
+      />
+    </span>
   )
 }
 
