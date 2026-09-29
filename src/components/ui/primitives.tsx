@@ -18,13 +18,17 @@ export function Panel({
   return <div className={`panel p-5 ${edge} ${className}`}>{children}</div>
 }
 
-/** A section heading with the rule that runs out to the edge of the column. */
+/**
+ * A section heading with the rule that runs out to the edge of the column.
+ * It is the page's `h2`: every page opens on an `h1` and every card title is
+ * an `h3`, so a screen reader's heading list has the same shape as the page.
+ */
 export function SectionLabel({ children }: { children: ReactNode }) {
   return (
-    <div className="flex items-center gap-3 text-[10px] tracking-[0.22em] text-faint uppercase">
+    <h2 className="flex items-center gap-3 text-[10px] font-normal tracking-[0.22em] text-faint uppercase">
       {children}
-      <span className="h-px flex-1 bg-ink-line" />
-    </div>
+      <span className="h-px flex-1 bg-ink-line" aria-hidden="true" />
+    </h2>
   )
 }
 

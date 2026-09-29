@@ -63,3 +63,14 @@ export function rankForPractice(ledger: KeyLedger, minimumPresses = 5): Practice
     })
     .sort((a, b) => b.expectedMissesPer1000 - a.expectedMissesPer1000)
 }
+
+/**
+ * The list every "Keys that need work" panel shows — Home, Basics and
+ * Statistics alike — so the three can't disagree. It is the practice ranking
+ * itself, cut to keys you have actually missed: the keys shown are the keys
+ * the practice buttons beside them will drill, in the same order.
+ */
+export const keysThatNeedWork = (ledger: KeyLedger, count = 6): PracticeCandidate[] =>
+  rankForPractice(ledger)
+    .filter((key) => key.missed > 0)
+    .slice(0, count)

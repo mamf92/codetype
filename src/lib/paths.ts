@@ -1,5 +1,9 @@
 import type { WeakKeyMode } from '@/engine/practice/weakKeys'
 
+/** A track at the drill you are due next, or at one drill in particular. */
+export const drillPath = (trackId: string, drillId?: string): string =>
+  drillId === undefined ? `/drill/${trackId}` : `/drill/${trackId}/${drillId}`
+
 /** The Basics page's routes, in one place so a link can't drift from its route. */
 
 export const BASICS_PATH = '/basics'

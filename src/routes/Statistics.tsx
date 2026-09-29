@@ -13,7 +13,7 @@ import {
   standingFor,
 } from '@/store/progress'
 import type { ProgressDocument } from '@/store/progress'
-import { troubleKeys } from '@/engine/metrics'
+import { keysThatNeedWork } from '@/engine/practice/ranking'
 import { PageHead } from '@/components/layout/Shell'
 import { Empty, KeyCap, Panel, SectionLabel, Sparkline } from '@/components/ui/primitives'
 import { AreaChart } from '@/components/ui/AreaChart'
@@ -102,7 +102,8 @@ export default function Statistics() {
   const stats = headline(progress)
   const series = dailySeries(progress)
   const ledger = lifetimeLedger(progress)
-  const trouble = troubleKeys(ledger, 5)
+  const trouble = keysThatNeedWork(ledger, 5)
+  const costliest = Math.max(...trouble.map((key) => key.expectedMissesPer1000), 0.01)
   const stale = new Set(dueForRevisit(progress, TRACKS, now).map((track) => track.id))
 
   // Drills, not sessions: a practice run alone would otherwise skip this and
@@ -145,9 +146,7 @@ export default function Statistics() {
 
       <Panel className="reveal flex h-[284px] flex-col gap-3.5">
         <div className="flex items-baseline justify-between">
-          <span className="text-[10px] tracking-[0.2em] text-faint uppercase">
-            Best speed per day
-          </span>
+          <h2 className="text-[10px] tracking-[0.2em] text-faint uppercase">Best speed per day</h2>
           <span className="text-[10px] text-signal">peak {Math.round(stats.bestWpm)} wpm</span>
         </div>
         <AreaChart
@@ -161,9 +160,9 @@ export default function Statistics() {
       <div className="reveal grid gap-5 lg:grid-cols-2" style={{ animationDelay: '0.1s' }}>
         <Panel className="flex h-[208px] flex-col gap-3.5">
           <div className="flex items-baseline justify-between">
-            <span className="text-[10px] tracking-[0.2em] text-faint uppercase">
+            <h2 className="text-[10px] tracking-[0.2em] text-faint uppercase">
               Accuracy, first press
-            </span>
+            </h2>
             <span className="text-[10px] text-muted">
               holding near {(stats.recentAccuracy * 100).toFixed(0)}%
             </span>
@@ -178,39 +177,42 @@ export default function Statistics() {
 
         <Panel className="flex h-[208px] flex-col gap-3.5">
           <div className="flex items-baseline justify-between">
-            <span className="text-[10px] tracking-[0.2em] text-faint uppercase">
+            <h2 className="text-[10px] tracking-[0.2em] text-faint uppercase">
               Keys that need work
-            </span>
-            <span className="text-[10px] text-muted">miss rate, 12+ presses</span>
+            </h2>
+            <span className="text-[10px] text-muted">ranked by misses per 1,000 characters</span>
           </div>
           {trouble.length === 0 ? (
             <p className="flex flex-1 items-center text-[11px] text-muted">
-              No key has been pressed enough times yet to say anything honest about it.
+              No key has cost you anything yet, or not often enough to say so honestly.
             </p>
           ) : (
             <div className="flex flex-1 flex-col justify-between gap-2">
-              {trouble.map((key) => (
-                <Link
-                  key={key.char}
-                  to={weakKeyPath('ladder', [key.char])}
-                  className="group flex items-center gap-3"
-                >
-                  <KeyCap char={key.char} tone={key.errorRate > 0.18 ? 'fault' : 'warn'} small />
-                  <div className="h-2 flex-1 bg-ink-line">
-                    <div
-                      className="h-full"
-                      style={{
-                        width: `${Math.min(100, key.errorRate * 100).toFixed(0)}%`,
-                        background:
-                          key.errorRate > 0.18 ? 'var(--color-fault)' : 'var(--color-amber-soft)',
-                      }}
-                    />
-                  </div>
-                  <span className="w-[34px] text-right text-[10px] text-muted group-hover:text-amber">
-                    {(key.errorRate * 100).toFixed(0)}%
-                  </span>
-                </Link>
-              ))}
+              {trouble.map((key) => {
+                const rate = key.missed / key.pressed
+                return (
+                  <Link
+                    key={key.char}
+                    to={weakKeyPath('ladder', [key.char])}
+                    className="group flex items-center gap-3"
+                  >
+                    <KeyCap char={key.char} tone={rate > 0.18 ? 'fault' : 'warn'} small />
+                    <div className="h-2 flex-1 bg-ink-line">
+                      <div
+                        className="h-full"
+                        style={{
+                          width: `${Math.max(2, (key.expectedMissesPer1000 / costliest) * 100).toFixed(0)}%`,
+                          background:
+                            rate > 0.18 ? 'var(--color-fault)' : 'var(--color-amber-soft)',
+                        }}
+                      />
+                    </div>
+                    <span className="w-[64px] text-right text-[10px] text-muted group-hover:text-amber">
+                      {(rate * 100).toFixed(0)}% miss
+                    </span>
+                  </Link>
+                )
+              })}
             </div>
           )}
         </Panel>
@@ -263,8 +265,8 @@ export default function Statistics() {
         <p className="text-[10px] text-faint">
           Your weakest key is{' '}
           <span className="text-fault">{worstKey.char === ' ' ? 'space' : worstKey.char}</span>,
-          missed {(worstKey.errorRate * 100).toFixed(0)}% of the {worstKey.pressed} times you have
-          reached for it.
+          missed {((worstKey.missed / worstKey.pressed) * 100).toFixed(0)}% of the{' '}
+          {worstKey.pressed} times you have reached for it.
         </p>
       )}
     </div>
