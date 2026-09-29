@@ -20,6 +20,14 @@ import { KeyfallCard, KeyTrackCard, MethodCard } from '@/components/basics/Pract
 import { SpeedTestPanel } from '@/components/basics/SpeedTestPanel'
 import { weakKeyPath } from '@/lib/paths'
 
+const JUMPS = [
+  ['weak-keys', 'Weak keys'],
+  ['key-tracks', 'Key tracks'],
+  ['speed-test', 'Speed test'],
+  ['keyfall', 'Keyfall'],
+  ['every-key', 'Every key'],
+] as const
+
 /**
  * Basics — the keys themselves, for people who already know where they are.
  *
@@ -65,6 +73,23 @@ export default function Basics() {
         }
       />
 
+      {/* The longest page by far on a phone; this is its table of contents
+          there. From `sm` up the sections are in view quickly enough. */}
+      <nav aria-label="On this page" className="-mx-6 overflow-x-auto px-6 sm:hidden">
+        <ul className="flex gap-2">
+          {JUMPS.map(([id, label]) => (
+            <li key={id} className="shrink-0">
+              <a
+                href={`#${id}`}
+                className="block border border-ink-edge px-3 py-2 text-label tracking-label text-parchment uppercase"
+              >
+                {label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
       <div
         className="reveal grid gap-grid lg:grid-cols-[1.35fr_1fr]"
         style={{ animationDelay: '0.05s' }}
@@ -73,7 +98,11 @@ export default function Basics() {
         <Strongest ledger={ledger} />
       </div>
 
-      <section className="reveal flex flex-col gap-section" style={{ animationDelay: '0.12s' }}>
+      <section
+        id="weak-keys"
+        className="reveal flex scroll-mt-4 flex-col gap-section"
+        style={{ animationDelay: '0.12s' }}
+      >
         <SectionLabel>Weak keys, two ways</SectionLabel>
         <div className="grid gap-grid md:grid-cols-2">
           <MethodCard mode="ladder" targets={targets} emphasis />
@@ -81,7 +110,11 @@ export default function Basics() {
         </div>
       </section>
 
-      <section className="reveal flex flex-col gap-section" style={{ animationDelay: '0.19s' }}>
+      <section
+        id="key-tracks"
+        className="reveal flex scroll-mt-4 flex-col gap-section"
+        style={{ animationDelay: '0.19s' }}
+      >
         <SectionLabel>Key tracks</SectionLabel>
         <p className="max-w-2xl text-body leading-relaxed text-muted">
           Four stages each: bare reps, the shapes the keys come in, real lines of code, then dense
@@ -100,7 +133,11 @@ export default function Basics() {
         </div>
       </section>
 
-      <section className="reveal flex flex-col gap-section" style={{ animationDelay: '0.26s' }}>
+      <section
+        id="speed-test"
+        className="reveal flex scroll-mt-4 flex-col gap-section"
+        style={{ animationDelay: '0.26s' }}
+      >
         <SectionLabel>Speed test</SectionLabel>
         <p className="max-w-2xl text-body leading-relaxed text-muted">
           Nothing to learn here, only something to measure. Results go to Statistics, and stay off
@@ -113,12 +150,20 @@ export default function Basics() {
         />
       </section>
 
-      <section className="reveal flex flex-col gap-section" style={{ animationDelay: '0.33s' }}>
+      <section
+        id="keyfall"
+        className="reveal flex scroll-mt-4 flex-col gap-section"
+        style={{ animationDelay: '0.33s' }}
+      >
         <SectionLabel>Under pressure</SectionLabel>
         <KeyfallCard leaders={leaders} />
       </section>
 
-      <section className="reveal flex flex-col gap-section" style={{ animationDelay: '0.4s' }}>
+      <section
+        id="every-key"
+        className="reveal flex scroll-mt-4 flex-col gap-section"
+        style={{ animationDelay: '0.4s' }}
+      >
         <SectionLabel>Every key</SectionLabel>
         <KeyMap ledger={ledger} />
       </section>

@@ -40,7 +40,11 @@ function ticks(days: string[]): string[] {
 const short = (day: string): string =>
   day === '' ? '' : new Date(day).toLocaleDateString(undefined, { day: '2-digit', month: 'short' })
 
-const SPEED_COLUMNS = 'grid-cols-[2.4fr_1fr_0.7fr_0.9fr_1.1fr_1.3fr]'
+// On a phone each table keeps the columns that answer "how am I doing" and
+// drops the rest, rather than scrolling a desktop table sideways.
+const SPEED_COLUMNS = 'grid-cols-[1fr_auto] sm:grid-cols-[2.4fr_1fr_0.7fr_0.9fr_1.1fr_1.3fr]'
+const TRACK_COLUMNS = 'grid-cols-[1fr_auto_auto] sm:grid-cols-[2.4fr_1fr_0.8fr_0.8fr_1fr_1.2fr]'
+const WIDE = 'hidden sm:block'
 
 /**
  * Speed tests, one row each. Kept apart from the charts above: those are
@@ -52,16 +56,16 @@ function SpeedTests({ progress, now }: { progress: ProgressDocument; now: number
     <section className="reveal flex flex-col gap-section" style={{ animationDelay: '0.15s' }}>
       <SectionLabel>Speed tests</SectionLabel>
       <div className="overflow-x-auto">
-        <div className="min-w-[760px]">
+        <div className="sm:min-w-[760px]">
           <div
             className={`grid ${SPEED_COLUMNS} gap-3 border-b border-ink-line px-3.5 py-2.5 text-label tracking-label text-faint uppercase`}
           >
             <span>Test</span>
-            <span>Last run</span>
-            <span>Runs</span>
-            <span>Latest</span>
+            <span className={WIDE}>Last run</span>
+            <span className={WIDE}>Runs</span>
+            <span className={WIDE}>Latest</span>
             <span>Best</span>
-            <span>Every run, wpm</span>
+            <span className={WIDE}>Every run, wpm</span>
           </div>
           {SPEED_TESTS.map((test, i) => {
             const standing = speedTestStanding(progress, test.id)
@@ -80,13 +84,17 @@ function SpeedTests({ progress, now }: { progress: ProgressDocument; now: number
                   </span>
                   <span className="truncate group-hover:text-amber">{test.title}</span>
                 </span>
-                <span className={never ? '' : 'text-muted'}>{relative(standing.lastAt, now)}</span>
-                <span>{standing.runs}</span>
-                <span>{never ? '—' : `${standing.lastWpm} wpm`}</span>
+                <span className={`${WIDE} ${never ? '' : 'text-muted'}`}>
+                  {relative(standing.lastAt, now)}
+                </span>
+                <span className={WIDE}>{standing.runs}</span>
+                <span className={WIDE}>{never ? '—' : `${standing.lastWpm} wpm`}</span>
                 <span className={never ? '' : 'font-display font-light text-amber'}>
                   {bestResult(test, standing) ?? 'never run'}
                 </span>
-                <Sparkline values={standing.wpm.slice(-30)} height={20} />
+                <span className={WIDE}>
+                  <Sparkline values={standing.wpm.slice(-30)} height={20} />
+                </span>
               </Link>
             )
           })}
@@ -144,8 +152,8 @@ export default function Statistics() {
         }
       />
 
-      <Panel className="reveal flex h-[284px] flex-col gap-3.5">
-        <div className="flex items-baseline justify-between">
+      <Panel className="reveal flex h-[240px] flex-col gap-3.5 sm:h-[284px]">
+        <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
           <h2 className="text-label tracking-label text-faint uppercase">Best speed per day</h2>
           <span className="text-meta text-signal">peak {Math.round(stats.bestWpm)} wpm</span>
         </div>
@@ -159,7 +167,7 @@ export default function Statistics() {
 
       <div className="reveal grid gap-grid lg:grid-cols-2" style={{ animationDelay: '0.1s' }}>
         <Panel className="flex h-[208px] flex-col gap-3.5">
-          <div className="flex items-baseline justify-between">
+          <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
             <h2 className="text-label tracking-label text-faint uppercase">
               Accuracy, first press
             </h2>
@@ -175,8 +183,8 @@ export default function Statistics() {
           />
         </Panel>
 
-        <Panel className="flex h-[208px] flex-col gap-3.5">
-          <div className="flex items-baseline justify-between">
+        <Panel className="flex min-h-[208px] flex-col gap-3.5 sm:h-[208px]">
+          <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
             <h2 className="text-label tracking-label text-faint uppercase">Keys that need work</h2>
             <span className="text-meta text-muted">ranked by misses per 1,000 characters</span>
           </div>
@@ -221,13 +229,15 @@ export default function Statistics() {
       <section className="reveal flex flex-col gap-section" style={{ animationDelay: '0.2s' }}>
         <SectionLabel>Track by track</SectionLabel>
         <div className="overflow-x-auto">
-          <div className="min-w-[760px]">
-            <div className="grid grid-cols-[2.4fr_1fr_0.8fr_0.8fr_1fr_1.2fr] gap-3 border-b border-ink-line px-3.5 py-2.5 text-label tracking-label text-faint uppercase">
+          <div className="sm:min-w-[760px]">
+            <div
+              className={`grid ${TRACK_COLUMNS} gap-3 border-b border-ink-line px-3.5 py-2.5 text-label tracking-label text-faint uppercase`}
+            >
               <span>Track</span>
-              <span>Last run</span>
-              <span>Runs</span>
+              <span className={WIDE}>Last run</span>
+              <span className={WIDE}>Runs</span>
               <span>Best</span>
-              <span>Avg accuracy</span>
+              <span className={WIDE}>Avg accuracy</span>
               <span>Freshness</span>
             </div>
             {TRACKS.map((track, i) => {
@@ -236,19 +246,21 @@ export default function Statistics() {
               return (
                 <div
                   key={track.id}
-                  className={`grid grid-cols-[2.4fr_1fr_0.8fr_0.8fr_1fr_1.2fr] gap-3 border-b border-ink-raised px-3.5 py-3 text-meta ${
+                  className={`grid ${TRACK_COLUMNS} gap-3 border-b border-ink-raised px-3.5 py-3 text-meta ${
                     never ? 'text-ghost' : 'text-parchment'
                   } ${i % 2 === 1 ? 'bg-ink-sunk' : ''}`}
                 >
                   <span className="truncate">{track.title}</span>
-                  <span className={never ? '' : 'text-muted'}>
+                  <span className={`${WIDE} ${never ? '' : 'text-muted'}`}>
                     {relative(standing.lastAt, now)}
                   </span>
-                  <span>{standing.attempts}</span>
+                  <span className={WIDE}>{standing.attempts}</span>
                   <span className={never ? '' : 'font-display font-light text-amber'}>
                     {never ? '—' : Math.round(standing.bestWpm)}
                   </span>
-                  <span>{never ? '—' : `${(standing.averageAccuracy * 100).toFixed(1)}%`}</span>
+                  <span className={WIDE}>
+                    {never ? '—' : `${(standing.averageAccuracy * 100).toFixed(1)}%`}
+                  </span>
                   <span className={never ? '' : stale.has(track.id) ? 'text-fault' : 'text-signal'}>
                     {never ? 'never run' : stale.has(track.id) ? 'due for a pass' : 'fresh'}
                   </span>

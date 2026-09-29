@@ -168,13 +168,23 @@ export default function Drill() {
           <Link to="/explore" className="truncate text-meta text-muted hover:text-parchment">
             {track.title}
           </Link>
-          <span className="text-ink-line">/</span>
-          <span className="truncate text-meta text-parchment">{lesson.title}</span>
+          {/* On a phone the lesson title is the h1 right below; the crumb
+              would only truncate to nothing. */}
+          <span className="hidden text-ink-line sm:inline">/</span>
+          <span className="hidden truncate text-meta text-parchment sm:inline">{lesson.title}</span>
         </div>
         <div className="hidden shrink-0 items-center gap-4.5 text-label tracking-label text-faint uppercase sm:flex">
           <span>Esc to bail</span>
           <span>Alt+R to restart</span>
         </div>
+        {/* An on-screen keyboard has no Alt+R, so a phone gets the button. */}
+        <button
+          type="button"
+          onClick={restart}
+          className="shrink-0 border border-ink-edge px-3 py-2 text-label tracking-label text-parchment uppercase sm:hidden"
+        >
+          Restart
+        </button>
       </header>
 
       <main
