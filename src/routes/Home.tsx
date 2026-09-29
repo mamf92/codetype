@@ -172,7 +172,7 @@ export default function Home() {
       <h1 className="sr-only">Home</h1>
       {resume !== undefined && <ContinuePanel point={resume} firstVisit={!hasHistory} />}
       <div className="grid gap-grid lg:grid-cols-[1fr_420px]">
-        <div className="grid gap-grid sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:gap-grid xl:grid-cols-4">
           <div className="reveal" style={{ animationDelay: '0.05s' }}>
             <StatTile
               label="Recent speed"

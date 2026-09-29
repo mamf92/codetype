@@ -104,10 +104,11 @@ export function TrackCard({
           {standing.attempts > 0 && (
             <Meter fraction={standing.drillsTouched / Math.max(1, drillCount(track))} />
           )}
-          <div className="flex items-center justify-between text-meta">
+          <div className="flex items-center justify-between gap-3 text-meta whitespace-nowrap">
             <span className="text-faint">
-              {track.lessons.length} lessons · {drillCount(track)} drills · {capstoneCount(track)}{' '}
-              capstones
+              {track.lessons.length} lessons · {drillCount(track)} drills
+              {/* Dropped on a phone, where the line would otherwise wrap mid-phrase. */}
+              <span className="hidden sm:inline"> · {capstoneCount(track)} capstones</span>
             </span>
             <Status track={track} standing={standing} stale={stale} />
           </div>

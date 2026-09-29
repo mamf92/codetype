@@ -92,10 +92,13 @@ export function StatTile({
   return (
     // A floor, not a fixed height, so a row of tiles stretches to match
     // whatever sits beside it (the key panel on Home) instead of ending short.
-    <Panel className="flex h-full min-h-[152px] flex-col justify-between">
+    // Two to a row on a phone, so the number and padding step down there.
+    <Panel className="flex h-full min-h-[120px] flex-col justify-between gap-2 p-4! sm:min-h-[152px] sm:gap-0 sm:p-5!">
       <div className="text-label tracking-label text-faint uppercase">{label}</div>
       <div className="flex items-baseline gap-1.5">
-        <span className="font-display text-figure leading-none font-light text-amber">{value}</span>
+        <span className="font-display text-3xl leading-none font-light text-amber sm:text-figure">
+          {value}
+        </span>
         {unit !== undefined && <span className="text-meta text-faint">{unit}</span>}
       </div>
       {children}

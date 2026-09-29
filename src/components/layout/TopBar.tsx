@@ -33,7 +33,9 @@ export function TopBar() {
             to={link.to}
             end={link.end}
             className={({ isActive }) =>
-              `shrink-0 text-label tracking-label uppercase transition-colors sm:text-label sm:tracking-label ${
+              // Below `sm` the one exception to the tracking rule: five
+              // tracked labels overflow a phone's width and the bar scrolls.
+              `shrink-0 py-1.5 text-label tracking-normal uppercase transition-colors sm:py-0 sm:tracking-label ${
                 isActive ? 'text-amber' : 'text-faint hover:text-parchment'
               }`
             }

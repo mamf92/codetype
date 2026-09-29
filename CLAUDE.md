@@ -155,6 +155,8 @@ a test.
   `src/components/ui/button.ts`. `src/lib/scale.test.ts` fails on a literal
   `text-[Npx]` or `tracking-[…]`. If nothing fits, add a token and say
   why. See `docs/decisions/0008-type-and-spacing-scale.md`.
+  The phone nav is the one exception: it drops the tracking below `sm` so
+  five links fit without scrolling.
 - **axe-core cannot see contrast on this site.** The page background is a
   layered gradient; axe reports every element's contrast `incomplete`
   rather than pass/fail, which is not the same as passing. Contrast is
