@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { ThemePicker } from '@/components/theme/ThemePicker'
 import { applyTheme, guessInitialTheme, highContrastSibling } from '@/lib/themes'
 import type { ThemeId } from '@/lib/themes'
+import { BUTTON } from '@/components/ui/button'
 import { setTheme } from '@/store/useProgress'
 
 /**
@@ -46,10 +47,10 @@ export default function Welcome() {
         className="theme-transition flex w-full max-w-[640px] flex-col items-center gap-8 text-center"
       >
         <div className="flex flex-col items-center gap-3">
-          <span className="font-display text-base font-semibold tracking-[0.02em] text-amber">
+          <span className="font-display text-base font-semibold tracking-display text-amber">
             CODETYPE
           </span>
-          <p className="max-w-md text-[13px] leading-relaxed text-muted">
+          <p className="max-w-md text-glyph leading-relaxed text-muted">
             CodeType is a typing trainer that doubles as concept rehearsal — every lesson says one
             thing several ways, in real TypeScript, React and Tailwind. Pick the screen it feels
             right on; you can change this later in Settings.
@@ -58,11 +59,7 @@ export default function Welcome() {
 
         <ThemePicker value={previewed} onChange={setPreviewed} legend="Choose a theme" />
 
-        <button
-          type="button"
-          onClick={start}
-          className="bg-amber px-6 py-2.5 text-[11px] tracking-[0.18em] text-ink uppercase hover:bg-amber-soft"
-        >
+        <button type="button" onClick={start} className={BUTTON.primary}>
           Start typing · Enter
         </button>
       </div>
@@ -73,7 +70,7 @@ export default function Welcome() {
        * all, which is the whole point of a live preview rather than a label.
        */}
       <div className="panel w-full max-w-[640px] px-6 py-7">
-        <div className="mb-4 text-[9px] tracking-[0.2em] text-faint uppercase">
+        <div className="mb-4 text-label tracking-label text-faint uppercase">
           What a drill looks like
         </div>
         <pre className="font-mono text-sm leading-[1.9] break-words whitespace-pre-wrap sm:text-base">

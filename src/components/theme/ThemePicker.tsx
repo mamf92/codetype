@@ -37,10 +37,10 @@ export function ThemePicker({
               className="sr-only"
             />
             <span className="flex items-center justify-between gap-2">
-              <span className="font-display text-[13px] text-parchment">{theme.label}</span>
-              {checked && <span className="text-[10px] text-amber">selected</span>}
+              <span className="font-display text-glyph text-parchment">{theme.label}</span>
+              {checked && <span className="text-meta text-amber">selected</span>}
             </span>
-            <span className="text-[11px] leading-relaxed text-muted">{theme.description}</span>
+            <span className="text-body leading-relaxed text-muted">{theme.description}</span>
           </label>
         )
       })}

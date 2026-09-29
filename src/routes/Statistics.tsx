@@ -49,12 +49,12 @@ const SPEED_COLUMNS = 'grid-cols-[2.4fr_1fr_0.7fr_0.9fr_1.1fr_1.3fr]'
  */
 function SpeedTests({ progress, now }: { progress: ProgressDocument; now: number }) {
   return (
-    <section className="reveal flex flex-col gap-2.5" style={{ animationDelay: '0.15s' }}>
+    <section className="reveal flex flex-col gap-section" style={{ animationDelay: '0.15s' }}>
       <SectionLabel>Speed tests</SectionLabel>
       <div className="overflow-x-auto">
         <div className="min-w-[760px]">
           <div
-            className={`grid ${SPEED_COLUMNS} gap-3 border-b border-ink-line px-3.5 py-2.5 text-[9px] tracking-[0.16em] text-faint uppercase`}
+            className={`grid ${SPEED_COLUMNS} gap-3 border-b border-ink-line px-3.5 py-2.5 text-label tracking-label text-faint uppercase`}
           >
             <span>Test</span>
             <span>Last run</span>
@@ -70,12 +70,12 @@ function SpeedTests({ progress, now }: { progress: ProgressDocument; now: number
               <Link
                 key={test.id}
                 to={speedTestPath(test.id)}
-                className={`group grid ${SPEED_COLUMNS} items-center gap-3 border-b border-ink-raised px-3.5 py-3 text-[11px] ${
+                className={`group grid ${SPEED_COLUMNS} items-center gap-3 border-b border-ink-raised px-3.5 py-3 text-meta ${
                   never ? 'text-ghost' : 'text-parchment'
                 } ${i % 2 === 1 ? 'bg-ink-sunk' : ''}`}
               >
                 <span className="flex items-baseline gap-2 truncate">
-                  <span className="text-[9px] tracking-[0.14em] text-faint uppercase">
+                  <span className="text-label tracking-label text-faint uppercase">
                     {SPEED_GROUP_TITLES[test.group]}
                   </span>
                   <span className="truncate group-hover:text-amber">{test.title}</span>
@@ -113,7 +113,7 @@ export default function Statistics() {
   const tested = progress.sessions.some((session) => session.kind === 'test')
   if (stats.sessionCount === 0) {
     return (
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-page">
         <PageHead
           title="Nothing measured yet"
           blurb="Speed, accuracy and your per-key record all come from completed drills. Run a few and this page fills itself in."
@@ -130,13 +130,13 @@ export default function Statistics() {
   const worstKey = trouble[0]
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-page">
       <PageHead
         title={`${series.length} ${series.length === 1 ? 'day' : 'days'} at the keys`}
         blurb={`${stats.sessionCount} drills, ${Math.round(stats.minutesTyped)} minutes, best run ${Math.round(stats.bestWpm)} wpm.`}
         aside={
           stats.trend === null ? undefined : (
-            <span className={`text-[10px] ${stats.trend >= 0 ? 'text-signal' : 'text-fault'}`}>
+            <span className={`text-meta ${stats.trend >= 0 ? 'text-signal' : 'text-fault'}`}>
               {stats.trend >= 0 ? '+' : ''}
               {Math.round(stats.trend)} wpm on your previous ten
             </span>
@@ -146,8 +146,8 @@ export default function Statistics() {
 
       <Panel className="reveal flex h-[284px] flex-col gap-3.5">
         <div className="flex items-baseline justify-between">
-          <h2 className="text-[10px] tracking-[0.2em] text-faint uppercase">Best speed per day</h2>
-          <span className="text-[10px] text-signal">peak {Math.round(stats.bestWpm)} wpm</span>
+          <h2 className="text-label tracking-label text-faint uppercase">Best speed per day</h2>
+          <span className="text-meta text-signal">peak {Math.round(stats.bestWpm)} wpm</span>
         </div>
         <AreaChart
           values={series.map((point) => point.wpm)}
@@ -157,13 +157,13 @@ export default function Statistics() {
         />
       </Panel>
 
-      <div className="reveal grid gap-5 lg:grid-cols-2" style={{ animationDelay: '0.1s' }}>
+      <div className="reveal grid gap-grid lg:grid-cols-2" style={{ animationDelay: '0.1s' }}>
         <Panel className="flex h-[208px] flex-col gap-3.5">
           <div className="flex items-baseline justify-between">
-            <h2 className="text-[10px] tracking-[0.2em] text-faint uppercase">
+            <h2 className="text-label tracking-label text-faint uppercase">
               Accuracy, first press
             </h2>
-            <span className="text-[10px] text-muted">
+            <span className="text-meta text-muted">
               holding near {(stats.recentAccuracy * 100).toFixed(0)}%
             </span>
           </div>
@@ -177,13 +177,11 @@ export default function Statistics() {
 
         <Panel className="flex h-[208px] flex-col gap-3.5">
           <div className="flex items-baseline justify-between">
-            <h2 className="text-[10px] tracking-[0.2em] text-faint uppercase">
-              Keys that need work
-            </h2>
-            <span className="text-[10px] text-muted">ranked by misses per 1,000 characters</span>
+            <h2 className="text-label tracking-label text-faint uppercase">Keys that need work</h2>
+            <span className="text-meta text-muted">ranked by misses per 1,000 characters</span>
           </div>
           {trouble.length === 0 ? (
-            <p className="flex flex-1 items-center text-[11px] text-muted">
+            <p className="flex flex-1 items-center text-meta text-muted">
               No key has cost you anything yet, or not often enough to say so honestly.
             </p>
           ) : (
@@ -207,7 +205,7 @@ export default function Statistics() {
                         }}
                       />
                     </div>
-                    <span className="w-[64px] text-right text-[10px] text-muted group-hover:text-amber">
+                    <span className="w-[64px] text-right text-meta text-muted group-hover:text-amber">
                       {(rate * 100).toFixed(0)}% miss
                     </span>
                   </Link>
@@ -220,11 +218,11 @@ export default function Statistics() {
 
       <SpeedTests progress={progress} now={now} />
 
-      <section className="reveal flex flex-col gap-2.5" style={{ animationDelay: '0.2s' }}>
+      <section className="reveal flex flex-col gap-section" style={{ animationDelay: '0.2s' }}>
         <SectionLabel>Track by track</SectionLabel>
         <div className="overflow-x-auto">
           <div className="min-w-[760px]">
-            <div className="grid grid-cols-[2.4fr_1fr_0.8fr_0.8fr_1fr_1.2fr] gap-3 border-b border-ink-line px-3.5 py-2.5 text-[9px] tracking-[0.16em] text-faint uppercase">
+            <div className="grid grid-cols-[2.4fr_1fr_0.8fr_0.8fr_1fr_1.2fr] gap-3 border-b border-ink-line px-3.5 py-2.5 text-label tracking-label text-faint uppercase">
               <span>Track</span>
               <span>Last run</span>
               <span>Runs</span>
@@ -238,7 +236,7 @@ export default function Statistics() {
               return (
                 <div
                   key={track.id}
-                  className={`grid grid-cols-[2.4fr_1fr_0.8fr_0.8fr_1fr_1.2fr] gap-3 border-b border-ink-raised px-3.5 py-3 text-[11px] ${
+                  className={`grid grid-cols-[2.4fr_1fr_0.8fr_0.8fr_1fr_1.2fr] gap-3 border-b border-ink-raised px-3.5 py-3 text-meta ${
                     never ? 'text-ghost' : 'text-parchment'
                   } ${i % 2 === 1 ? 'bg-ink-sunk' : ''}`}
                 >
@@ -262,7 +260,7 @@ export default function Statistics() {
       </section>
 
       {worstKey !== undefined && (
-        <p className="text-[10px] text-faint">
+        <p className="text-meta text-faint">
           Your weakest key is{' '}
           <span className="text-fault">{worstKey.char === ' ' ? 'space' : worstKey.char}</span>,
           missed {((worstKey.missed / worstKey.pressed) * 100).toFixed(0)}% of the{' '}

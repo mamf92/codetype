@@ -6,12 +6,11 @@ import type { PracticeTarget, WeakKeyMode } from '@/engine/practice/weakKeys'
 import { WEAK_KEY_MODES } from '@/engine/practice/weakKeys'
 import type { GameRecord, StageStanding } from '@/store/progress'
 import { KeyCap, Panel } from '@/components/ui/primitives'
+import { BUTTON } from '@/components/ui/button'
 import { KEYFALL_PATH, keyStagePath, weakKeyPath } from '@/lib/paths'
 
-const primary =
-  'inline-block bg-amber px-4 py-2 text-[10px] tracking-[0.18em] text-ink uppercase hover:bg-amber-soft'
-const quiet =
-  'inline-block border border-ink-edge px-4 py-2 text-[10px] tracking-[0.18em] text-parchment uppercase hover:border-amber hover:text-amber'
+const primary = BUTTON.primary
+const quiet = BUTTON.secondary
 
 /** One of the two ways to work weak keys, and the keys it would work right now. */
 export function MethodCard({
@@ -27,16 +26,16 @@ export function MethodCard({
   return (
     <Panel accent={emphasis ? 'amber' : undefined} className="flex h-full flex-col gap-4">
       <div className="flex flex-col gap-2">
-        <span className="text-[9px] tracking-[0.2em] text-faint uppercase">{meta.steps}</span>
+        <span className="text-label tracking-label text-faint uppercase">{meta.steps}</span>
         <h3 className="font-display text-lg font-light text-parchment">{meta.title}</h3>
-        <p className="text-[11px] leading-relaxed text-muted">{meta.summary}</p>
+        <p className="text-body leading-relaxed text-muted">{meta.summary}</p>
       </div>
       <div className="mt-auto flex flex-wrap items-center justify-between gap-3">
         {targets.length > 0 ? (
           <>
             <ul className="flex flex-wrap items-center gap-3" aria-label="Keys this run will drill">
               {targets.map(({ char, partner }) => (
-                <li key={char} className="flex items-center gap-1 text-[10px] text-faint">
+                <li key={char} className="flex items-center gap-1 text-meta text-faint">
                   <KeyCap char={char} tone="fault" small />
                   {partner !== null && mode === 'ladder' && (
                     <>
@@ -52,7 +51,7 @@ export function MethodCard({
             </Link>
           </>
         ) : (
-          <span className="text-[10px] text-faint">
+          <span className="text-meta text-faint">
             Opens once a few real drills have found your weak keys.
           </span>
         )}
@@ -95,7 +94,7 @@ export function KeyTrackCard({
     <Panel className="flex h-full flex-col gap-4">
       <div className="flex flex-col gap-2">
         <h3 className="font-display text-base font-light text-parchment">{track.title}</h3>
-        <p className="text-[11px] leading-relaxed text-muted">{track.blurb}</p>
+        <p className="text-body leading-relaxed text-muted">{track.blurb}</p>
       </div>
       <ol className="flex flex-col">
         {track.stages.map((stage, i) => {
@@ -104,13 +103,13 @@ export function KeyTrackCard({
             <li key={stage.id} className="border-b border-ink-line last:border-b-0">
               <Link
                 to={keyStagePath(track.id, stage.id)}
-                className="group flex items-center gap-3 py-2 text-[11px]"
+                className="group flex items-center gap-3 py-2 text-meta"
               >
-                <span className="w-5 text-[10px] text-faint">{String(i + 1).padStart(2, '0')}</span>
+                <span className="w-5 text-meta text-faint">{String(i + 1).padStart(2, '0')}</span>
                 <span className="flex-1 text-parchment group-hover:text-amber">
                   {STAGE_TITLES[stage.kind]}
                 </span>
-                <span className={`text-[10px] ${status.tone}`}>{status.text}</span>
+                <span className={`text-meta ${status.tone}`}>{status.text}</span>
               </Link>
             </li>
           )
@@ -142,9 +141,9 @@ export function KeyfallCard({ leaders }: { leaders: GameRecord[] }) {
     <Panel accent="amber" className="grid gap-6 md:grid-cols-[1.4fr_1fr]">
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-2">
-          <span className="text-[9px] tracking-[0.2em] text-faint uppercase">Arcade</span>
-          <h3 className="font-display text-2xl font-light tracking-[0.08em] text-amber">KEYFALL</h3>
-          <p className="max-w-md text-[11px] leading-relaxed text-muted">
+          <span className="text-label tracking-label text-faint uppercase">Arcade</span>
+          <h3 className="font-display text-2xl font-light tracking-display text-amber">KEYFALL</h3>
+          <p className="max-w-md text-body leading-relaxed text-muted">
             Characters fall from the top of the glass. Type each one before it lands, or lose one of
             three lives. It starts on letters and gets faster every ten hits, adding capitals,
             numbers, symbols and finally whole operators.
@@ -154,7 +153,7 @@ export function KeyfallCard({ leaders }: { leaders: GameRecord[] }) {
           {SCORING.map((kind) => (
             <li
               key={kind}
-              className="flex items-center gap-2 border border-ink-line px-2.5 py-1.5 text-[10px]"
+              className="flex items-center gap-2 border border-ink-line px-2.5 py-1.5 text-meta"
             >
               <span className="font-mono text-sm text-parchment">{GLYPH_EXAMPLES[kind]}</span>
               <span className="text-amber">{POINTS[kind]}</span>
@@ -182,13 +181,13 @@ export function KeyfallCard({ leaders }: { leaders: GameRecord[] }) {
           ))}
         </div>
         <div className="relative flex flex-col gap-2">
-          <span className="text-[9px] tracking-[0.2em] text-faint uppercase">High scores</span>
+          <span className="text-label tracking-label text-faint uppercase">High scores</span>
           {leaders.length === 0 ? (
-            <span className="text-[11px] text-muted">No games yet.</span>
+            <span className="text-meta text-muted">No games yet.</span>
           ) : (
             <ol className="flex flex-col gap-1">
               {leaders.map((game, i) => (
-                <li key={game.id} className="flex items-baseline gap-3 text-[11px]">
+                <li key={game.id} className="flex items-baseline gap-3 text-meta">
                   <span className="w-4 text-faint">{i + 1}</span>
                   <span className="font-display font-light text-amber tabular-nums">
                     {game.score}

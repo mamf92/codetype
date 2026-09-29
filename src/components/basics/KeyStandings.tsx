@@ -8,8 +8,8 @@ import { accuracyOf, keyName, meanLatencyMs } from './keyStanding'
 
 const Heading = ({ title, aside }: { title: string; aside: string }) => (
   <div className="flex flex-wrap items-baseline justify-between gap-2">
-    <h2 className="text-[10px] tracking-[0.2em] text-faint uppercase">{title}</h2>
-    <span className="text-[10px] text-faint">{aside}</span>
+    <h2 className="text-label tracking-label text-faint uppercase">{title}</h2>
+    <span className="text-meta text-faint">{aside}</span>
   </div>
 )
 
@@ -29,7 +29,7 @@ export function NeedsWork({ ledger }: { ledger: KeyLedger }) {
     <Panel accent="fault" className="flex h-full flex-col gap-4">
       <Heading title="Keys that need work" aside="ranked by misses per 1,000 characters" />
       {shown.length === 0 ? (
-        <p className="flex flex-1 items-center text-[11px] leading-relaxed text-muted">
+        <p className="flex flex-1 items-center text-body leading-relaxed text-muted">
           No key has enough history yet. A few real drills and the keys that cost you the most line
           up here, worst first.
         </p>
@@ -43,7 +43,7 @@ export function NeedsWork({ ledger }: { ledger: KeyLedger }) {
                 <Link
                   to={weakKeyPath('ladder', [key.char])}
                   aria-label={`${keyName(key.char)}: missed ${(rate * 100).toFixed(1)}% of ${key.pressed} presses. Practice this key.`}
-                  className="group grid grid-cols-[auto_1fr_4.5rem_3.5rem] items-center gap-3 text-[10px]"
+                  className="group grid grid-cols-[auto_1fr_5.5rem_3.5rem] items-center gap-3 text-meta"
                 >
                   <KeyCap char={key.char} tone={key.missed > 0 ? 'fault' : 'warn'} small />
                   <span className="h-1.5 bg-ink-line">
@@ -77,7 +77,7 @@ export function Strongest({ ledger }: { ledger: KeyLedger }) {
     <Panel className="flex h-full flex-col gap-4">
       <Heading title="Strongest" aside="12+ presses" />
       {best.length === 0 ? (
-        <p className="flex flex-1 items-center text-[11px] leading-relaxed text-muted">
+        <p className="flex flex-1 items-center text-body leading-relaxed text-muted">
           Nothing measured yet. The keys you never miss show up here once you have typed them enough
           to be sure.
         </p>
@@ -88,7 +88,7 @@ export function Strongest({ ledger }: { ledger: KeyLedger }) {
             return (
               <li
                 key={key.char}
-                className="grid grid-cols-[auto_1fr_auto_3.5rem] items-center gap-3 text-[10px]"
+                className="grid grid-cols-[auto_1fr_auto_3.5rem] items-center gap-3 text-meta"
               >
                 <KeyCap char={key.char} tone="signal" small />
                 <span className="text-signal">{(accuracyOf(stat) * 100).toFixed(1)}%</span>

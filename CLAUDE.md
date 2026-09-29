@@ -148,6 +148,13 @@ a test.
   behind AltGr on the digit row, so anything that reasons about "adjacent
   keys" using US-keyboard assumptions will be wrong for a real fraction of
   users.
+- **Sizes, letter-spacing and page spacing come from one scale.** The
+  `--text-*`, `--tracking-*` and `--spacing-page|grid|section` tokens in
+  `src/styles/index.css` are the only values allowed, picked by role
+  (label, meta, body, …); buttons come from `BUTTON` in
+  `src/components/ui/button.ts`. `src/lib/scale.test.ts` fails on a literal
+  `text-[Npx]` or `tracking-[…]`. If nothing fits, add a token and say
+  why. See `docs/decisions/0008-type-and-spacing-scale.md`.
 - **axe-core cannot see contrast on this site.** The page background is a
   layered gradient; axe reports every element's contrast `incomplete`
   rather than pass/fail, which is not the same as passing. Contrast is
