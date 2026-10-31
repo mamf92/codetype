@@ -53,7 +53,7 @@ export const SPEED_TESTS: SpeedTest[] = [
     id: 'speed-text-5',
     group: 'text',
     title: 'Five minutes',
-    summary: 'Plain prose for five minutes — long enough that holding a pace is the test.',
+    summary: 'Plain prose for five minutes. Long enough that holding a pace is the test.',
     seconds: 300,
     passages: prose,
   },

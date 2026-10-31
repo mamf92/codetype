@@ -190,7 +190,7 @@ export default function Statistics() {
           </div>
           {trouble.length === 0 ? (
             <p className="flex flex-1 items-center text-meta text-muted">
-              No key has cost you anything yet, or not often enough to say so honestly.
+              No key has cost you anything yet, or not often enough to tell.
             </p>
           ) : (
             <div className="flex flex-1 flex-col justify-between gap-2">

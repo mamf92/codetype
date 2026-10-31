@@ -11,7 +11,7 @@ const GROUPS: { group: SpeedTestGroup; blurb: string }[] = [
     group: 'sprint',
     blurb: 'One line, once, against the clock. Ranked on time, and only a clean run has one.',
   },
-  { group: 'text', blurb: 'Plain prose, no code — the number people mean by typing speed.' },
+  { group: 'text', blurb: 'Plain prose, no code. The number people mean by typing speed.' },
   { group: 'code', blurb: 'A minute of each language in the catalogue, Enter and all.' },
 ]
 

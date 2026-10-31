@@ -256,7 +256,7 @@ function SpeedTestRunner({ test }: { test: SpeedTestContent }) {
             )}
             {sprint && !clean && (
               <span className="text-fault">
-                {wrongLeft} {wrongLeft === 1 ? 'character' : 'characters'} left wrong — a time only
+                {wrongLeft} {wrongLeft === 1 ? 'character' : 'characters'} left wrong. A time only
                 counts toward your best when every character ends right. Backspace is allowed.
               </span>
             )}

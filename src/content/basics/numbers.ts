@@ -30,7 +30,7 @@ export const numberRow: KeyTrack = {
     {
       id: 'number-row-patterns',
       kind: 'patterns',
-      summary: 'Sizes, versions, dates, times and addresses — numbers in their usual clothes.',
+      summary: 'Sizes, versions, dates, times and addresses as they usually appear.',
       grammar: 'plain',
       passages: [
         `2 4 8 16 32 64 128 256

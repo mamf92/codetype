@@ -27,7 +27,7 @@ export default function Settings() {
     <div className="flex flex-col gap-page">
       <PageHead
         title="Settings"
-        blurb="The theme picker you saw on your first visit — the promise that you could change it later, kept."
+        blurb="The theme picker from your first visit, available whenever you want to change it."
       />
 
       <div className="reveal flex flex-col gap-section" style={{ animationDelay: '0.05s' }}>
@@ -39,11 +39,10 @@ export default function Settings() {
         <SectionLabel>Data</SectionLabel>
         <Panel accent="fault" className="flex flex-wrap items-center justify-between gap-4">
           <p className="max-w-lg text-body leading-relaxed text-muted">
-            Progress lives only in this browser's local storage — {drills}{' '}
+            Progress lives only in this browser's local storage: {drills}{' '}
             {drills === 1 ? 'drill' : 'drills'}, {practice} practice{' '}
             {practice === 1 ? 'run' : 'runs'}, {tests} speed {tests === 1 ? 'test' : 'tests'} and{' '}
-            {games} {games === 1 ? 'game' : 'games'} so far. Clearing it is permanent and cannot be
-            undone.
+            {games} {games === 1 ? 'game' : 'games'} so far. Clearing it is permanent.
           </p>
           <button
             type="button"

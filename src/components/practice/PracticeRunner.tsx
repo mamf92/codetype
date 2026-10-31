@@ -407,7 +407,7 @@ export function PracticeRunner({
             </span>
             {finished && (
               <span className={cleanRun ? 'text-signal' : 'text-fault'}>
-                {cleanRun ? 'Clean' : 'Missed — again from zero'}
+                {cleanRun ? 'Clean' : 'Missed, again from zero'}
               </span>
             )}
           </div>

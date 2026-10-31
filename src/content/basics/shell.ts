@@ -4,7 +4,7 @@ export const shellSymbols: KeyTrack = {
   id: 'shell-symbols',
   title: 'Shell symbols',
   blurb:
-    'Pipes, redirects, flags, globs and parameter expansion — the terminal is where punctuation is densest and a typo costs the most.',
+    'Pipes, redirects, flags, globs and parameter expansion. The terminal is where punctuation is densest and a typo costs the most.',
   focus: SYMBOL_KEYS,
   stages: [
     {
@@ -61,7 +61,7 @@ alias gs='git status -sb'
     {
       id: 'shell-symbols-load',
       kind: 'load',
-      summary: 'Loops, traps and continuation lines — scripts, not commands.',
+      summary: 'Loops, traps and continuation lines. Scripts, not commands.',
       grammar: 'bash',
       passages: [
         `for f in src/**/*.{ts,tsx}; do
