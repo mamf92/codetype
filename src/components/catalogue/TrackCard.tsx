@@ -88,8 +88,8 @@ export function TrackCard({
                       className={`relative z-10 hover:text-amber ${isReview(lesson) ? 'text-amber-soft' : ''}`}
                     >
                       {isReview(lesson)
-                        ? `REVIEW — ${lesson.title.replace(/^Review: /, '')}`
-                        : `${String(numbered + 1).padStart(2, '0')} — ${lesson.title}`}
+                        ? `REVIEW · ${lesson.title.replace(/^Review: /, '')}`
+                        : `${String(numbered + 1).padStart(2, '0')} · ${lesson.title}`}
                     </Link>
                   </li>
                 )

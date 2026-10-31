@@ -243,7 +243,7 @@ export function Cart() {
           kind: 'capstone',
           label: 'a filtered log table',
           brief:
-            'A log viewer where the filtering is genuinely expensive and the child is genuinely memoized. One useMemo derives the visible rows, a second derives counts from the first, and useCallback keeps the row handler stable so the virtualized child is not thrown away on every keystroke.',
+            'A log viewer where the filtering is expensive and the child is memoized. One useMemo derives the visible rows, a second derives counts from the first, and useCallback keeps the row handler stable so the virtualized child is not thrown away on every keystroke.',
           code: `interface Row {
   id: string
   level: 'info' | 'warn' | 'error'

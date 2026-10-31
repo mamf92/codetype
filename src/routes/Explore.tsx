@@ -54,7 +54,7 @@ export default function Explore() {
     <div className="flex flex-col gap-page">
       <PageHead
         title="Everything typeable"
-        blurb={`${TRACKS.length} tracks, ${lessons} lessons, ${drills} passages, ${capstones} of them capstones. Every lesson says one thing several ways and then puts it to work in a real codebase, because that is the only way it sticks.`}
+        blurb={`${TRACKS.length} tracks, ${lessons} lessons, ${drills} passages, ${capstones} of them capstones. Every lesson says one thing several ways and then puts it to work in a real codebase.`}
         aside={
           <span className="text-label tracking-label text-faint uppercase">
             {visible.length} of {TRACKS.length} shown

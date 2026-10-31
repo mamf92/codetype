@@ -385,8 +385,8 @@ export default function Drill() {
               <p className="reveal mt-3 w-full text-center text-meta text-faint">
                 <Link to={weakKeyPath('ladder')} className="text-amber hover:text-amber-soft">
                   Practice weak keys
-                </Link>{' '}
-                — &quot;{worst.char}&quot; cost you the most this run, and it's not the only one
+                </Link>
+                : &quot;{worst.char}&quot; cost you the most this run, and it's not the only one
                 worth another look.
               </p>
             )

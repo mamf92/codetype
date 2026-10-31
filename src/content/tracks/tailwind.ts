@@ -859,7 +859,7 @@ export const tailwindV4: Track = {
       title: 'Review: one v4 stylesheet, end to end',
       summary: 'The three v4 ideas as the three parts of a single real stylesheet.',
       concept:
-        "A project's whole CSS entry point, in the order you would actually write it: the import and the sources at the top, the theme tokens under it, and the custom utility layer last. Nothing here is new — it is the same three directives from this dispatch, finally sitting next to each other.",
+        "A project's whole CSS entry point, in the order you would actually write it: the import and the sources at the top, the theme tokens under it, and the custom utility layer last. Nothing here is new. It is the same three directives from this dispatch, now side by side.",
       covers: ['tw-v4-theme', 'tw-v4-utility', 'tw-v4-import'],
       drills: [
         {

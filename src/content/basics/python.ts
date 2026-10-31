@@ -27,7 +27,7 @@ f"{x}" f"{x!r}" f"{x:>8}" f"{x:.2f}"`,
     {
       id: 'python-symbols-patterns',
       kind: 'patterns',
-      summary: 'Signatures, comprehensions and decorators — the shapes Python is built from.',
+      summary: 'Signatures, comprehensions and decorators, the shapes Python is built from.',
       grammar: 'plain',
       passages: [
         `f(x):  g(*a, **k):  h(a, /, b, *, c):

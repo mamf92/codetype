@@ -130,8 +130,8 @@ function ContinuePanel({ point, firstVisit }: { point: ResumePoint; firstVisit: 
           <p className="text-body leading-relaxed text-muted">
             {firstVisit ? (
               <>
-                Every lesson here says one thing several ways — you type the variants back to back
-                until the shape of the idea is in your hands, not just its spelling.
+                Every lesson here says one thing several ways. You type the variants back to back
+                until the idea is in your hands as well as its spelling.
               </>
             ) : (
               <>

@@ -21,14 +21,14 @@ export const THEMES: ThemeMeta[] = [
     id: 'dark',
     label: 'Amber phosphor',
     description:
-      'The original warm tube. Amber phosphor lingers a beat after the beam passes — untyped code sits dim on purpose.',
+      'The original warm tube. Amber phosphor lingers a beat after the beam passes. Untyped code sits dim on purpose.',
     scheme: 'dark',
     highContrast: false,
   },
   {
     id: 'dark-contrast',
     label: 'Amber, high contrast',
-    description: 'Same tube, driven harder — even the dimmest token cuts through clean.',
+    description: 'Same tube, driven harder. Even the dimmest token cuts through clean.',
     scheme: 'dark',
     highContrast: true,
   },
@@ -36,7 +36,7 @@ export const THEMES: ThemeMeta[] = [
     id: 'light',
     label: 'Monochrome screen',
     description:
-      'The cool screen that came after — faster phosphor, sharper edges, no lingering glow. Not paper.',
+      'The cool screen that came after. Faster phosphor, sharper edges, no lingering glow. Not paper.',
     scheme: 'light',
     highContrast: false,
   },

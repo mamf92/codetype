@@ -54,7 +54,7 @@ export default function WeakKeyPractice() {
         <h1 className="font-display text-xl font-light text-parchment">Nothing to practice yet</h1>
         <p className="max-w-sm text-body leading-relaxed text-muted">
           Weak keys are found from real drills. Type a few passages and the keys giving you trouble
-          will show up here — or warm up on a key track in the meantime.
+          will show up here. Or warm up on a key track in the meantime.
         </p>
         <div className="flex gap-3">
           <Link to={BASICS_PATH} className={BUTTON.secondary}>
@@ -86,7 +86,7 @@ export default function WeakKeyPractice() {
       eyebrow={`Weak keys · ${meta.title}`}
       blurb={
         mode === 'ladder'
-          ? 'No pass or fail — reps on the keys giving you trouble, from the bare reach up to real code.'
+          ? 'No pass or fail. Reps on the keys giving you trouble, from the bare reach up to real code.'
           : `Type the line ${CLEAN_STREAK} times running without a miss. A slip resets the count; the line comes back by itself.`
       }
       steps={steps}

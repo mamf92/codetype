@@ -51,9 +51,9 @@ export default function Welcome() {
             CODETYPE
           </span>
           <p className="max-w-md text-glyph leading-relaxed text-muted">
-            CodeType is a typing trainer that doubles as concept rehearsal — every lesson says one
+            CodeType is a typing trainer that doubles as concept rehearsal. Every lesson says one
             thing several ways, in real TypeScript, React and Tailwind. Pick the screen it feels
-            right on; you can change this later in Settings.
+            right on. You can change this later in Settings.
           </p>
         </div>
 
